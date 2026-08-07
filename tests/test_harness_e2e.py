@@ -339,7 +339,7 @@ def test_roster_is_well_formed(repo):
     assert len(fams) >= 10, f"only {len(fams)} families — diversity argument weakens"
 
 
-def test_foundation_counts_match_the_pre-specified_instrument(repo):
+def test_foundation_counts_match_the_prespecified_instrument(repo):
     import run_experiment as R
 
     _, _, _, meta = R.load_cfg()

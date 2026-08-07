@@ -75,7 +75,11 @@ def main() -> int:
     # If they differ, scoring the wrong one gives a silently wrong distribution.
     print("\n[2] LABEL TOKENIZATION -- bare vs space-prefixed")
     print("-" * 78)
-    print(f'    {"label":<8} {"ids(\'N\')":<14} {"ids(\' N\')":<14} {"same?":<7} {"single tok?"}')
+    # Built with .format rather than an f-string: f-strings could not contain backslashes
+    # before Python 3.12, and this script must stay runnable on the 3.10 analysis machine
+    # as well as the 3.12 pod.
+    print("    " + "{:<8} {:<14} {:<14} {:<7} {}".format(
+        "label", "ids('N')", "ids(' N')", "same?", "single tok?"))
     for k in cfg["options"]:
         bare = tok.encode(str(k), add_special_tokens=False)
         spaced = tok.encode(f" {k}", add_special_tokens=False)
