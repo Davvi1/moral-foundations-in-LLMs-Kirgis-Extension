@@ -62,6 +62,59 @@ def load_cfg():
     return prompt, models, items, meta
 
 
+def gpu_vram_gib() -> float | None:
+    """Total VRAM in GiB, or None if no GPU is visible."""
+    try:
+        r = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.total", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=10)
+        if r.returncode == 0 and r.stdout.strip():
+            return float(r.stdout.strip().splitlines()[0]) / 1024.0
+    except Exception:
+        pass
+    return None
+
+
+def plan_memory(params_b: float, vram_gib: float | None,
+                default_util: float) -> tuple[float, str]:
+    """Decide gpu_memory_utilization, or refuse before anything is downloaded.
+
+    Qwen2.5-14B is ~28.8 GiB in bf16 and does NOT fit a 32 GiB card; OLMo-2-13B at
+    ~28.2 GiB fits only at high utilisation. Discovering that as an OOM *after* pulling
+    28 GB of weights wastes ten minutes and reads like a mysterious crash. So: estimate,
+    decide, and say so up front.
+
+    fp8 is deliberately NOT used as an escape hatch. Quantising only the two largest models
+    would make numerics differ by model, which is a confound in a study whose entire subject
+    is measurement artifacts.
+    """
+    weights = params_b * 2 * 1.03      # bf16 + embedding/lm_head overhead
+    kv_headroom = 1.5                  # short prompts, small batch
+    if vram_gib is None:
+        return default_util, "no GPU detected — using default utilisation"
+    need = weights + kv_headroom
+    if need < vram_gib * default_util:
+        return default_util, "fits comfortably"
+    if need < vram_gib * 0.95:
+        return 0.95, f"tight ({need:.1f} of {vram_gib:.1f} GiB) — raising utilisation to 0.95"
+    return -1.0, (
+        f"WILL NOT FIT: needs ~{need:.1f} GiB, card has {vram_gib:.1f} GiB. "
+        f"Run this model on a larger GPU (attach the same network volume to an "
+        f"RTX PRO 6000 pod) rather than quantising it — quantising only the largest "
+        f"models would make numerics differ by model, a confound in this study.")
+
+
+def _gpu_name() -> str:
+    """Best-effort. Absent on the dev laptop; must not emit noise or raise there."""
+    try:
+        r = subprocess.run(
+            ["nvidia-smi", "--query-gpu=name", "--format=csv,noheader"],
+            capture_output=True, text=True, timeout=10)
+        return r.stdout.strip() if r.returncode == 0 else ""
+    except Exception:
+        return ""
+
+
 def pkg_versions() -> dict:
     out = {}
     for m in ("vllm", "transformers", "torch"):
@@ -84,6 +137,15 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
 
     print(f"\n{'='*70}\n{mid}  (revision {rev})\n{'='*70}")
     t0 = time.time()
+
+    # PRE-FLIGHT: decide memory before downloading tens of GB.
+    util, why = plan_memory(entry.get("params_b", 0.0), gpu_vram_gib(), args.gpu_util)
+    print(f"  memory: {why}")
+    if util < 0:
+        (RAW / f"{slug(mid)}.SKIPPED.txt").write_text(why + "\n", encoding="utf-8")
+        print(f"  [skip] {mid} — insufficient VRAM, nothing downloaded")
+        return
+
     tok = AutoTokenizer.from_pretrained(mid, revision=rev)
 
     prompts = [C.render_prompt(tok, prompt_cfg, q, i) for i, q in items]
@@ -102,8 +164,37 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
               f"are single tokens on this tokenizer. Label scoring is degraded here — "
               f"re-run scripts/probe_tokenization.py for this family before trusting it.")
 
+    # Build and SERIALISE-CHECK the manifest skeleton BEFORE any inference. Doing this
+    # afterwards once cost a full model's run: config/prompt.yaml has `decided: 2026-08-07`,
+    # which YAML loads as a datetime.date that json.dumps refuses. `default=str` fixes the
+    # serialisation; doing it up front means a manifest bug fails in one second rather than
+    # after twenty minutes of GPU time.
+    manifest_static = {
+        "model": mid, "revision": rev, "family": entry.get("family"),
+        "params_b": entry.get("params_b"),
+        "n_items": len(items), "k_samples": args.k,
+        "conditions": ["label", "string", "greedy", "sampled"],
+        "prompt_sha_first": prompts[0].sha256,
+        "prompt_sha_all_distinct": len(shas) == len(prompts),
+        "prompt_config_sha": C.Prompt(
+            json.dumps(prompt_cfg, sort_keys=True, default=str), -1).sha256,
+        "items_file_sha": C.Prompt(
+            (REPO / "data" / "mfv_116.csv").read_text(encoding="utf-8"), -1).sha256,
+        "option_label_token_ids": {str(k): v for k, v in tok_ids.items()},
+        "packages": pkg_versions(),
+        "python": platform.python_version(),
+        "gpu": _gpu_name(),
+        "env": {kk: os.environ.get(kk) for kk in
+                ("VLLM_USE_FLASHINFER_SAMPLER", "HF_HOME")},
+        "vllm_args": {"max_model_len": args.max_model_len,
+                      "gpu_memory_utilization": util,
+                      "enforce_eager": args.eager, "dtype": "bfloat16"},
+        "seeds": list(range(args.k)),
+    }
+    json.dumps(manifest_static, default=str)  # fail fast, before the GPU work
+
     llm = LLM(model=mid, revision=rev, max_model_len=args.max_model_len,
-              gpu_memory_utilization=args.gpu_util, enforce_eager=args.eager,
+              gpu_memory_utilization=util, enforce_eager=args.eager,
               dtype="bfloat16")
 
     rows: list[dict] = []
@@ -132,30 +223,14 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
         w.writeheader()
         w.writerows(rows)
 
-    manifest = {
-        "model": mid, "revision": rev, "family": entry.get("family"),
-        "params_b": entry.get("params_b"),
-        "n_items": len(items), "k_samples": args.k,
-        "conditions": ["label", "string", "greedy", "sampled"],
-        "prompt_sha_first": prompts[0].sha256,
-        "prompt_sha_all_distinct": len(shas) == len(prompts),
-        "prompt_config_sha": C.Prompt(json.dumps(prompt_cfg, sort_keys=True), -1).sha256,
-        "items_file_sha": C.Prompt(
-            (REPO / "data" / "mfv_116.csv").read_text(encoding="utf-8"), -1).sha256,
-        "option_label_token_ids": tok_ids,
-        "packages": pkg_versions(),
-        "python": platform.python_version(),
-        "gpu": os.popen("nvidia-smi --query-gpu=name --format=csv,noheader").read().strip(),
-        "env": {kk: os.environ.get(kk) for kk in
-                ("VLLM_USE_FLASHINFER_SAMPLER", "HF_HOME")},
-        "vllm_args": {"max_model_len": args.max_model_len,
-                      "gpu_memory_utilization": args.gpu_util,
-                      "enforce_eager": args.eager, "dtype": "bfloat16"},
-        "seeds": list(range(args.k)),
-        "elapsed_s": round(time.time() - t0, 1),
-    }
+    manifest = dict(manifest_static)
+    manifest["elapsed_s"] = round(time.time() - t0, 1)
+    manifest["n_rows"] = len(rows)
+    manifest["parse_failed"] = sum(1 for r in rows if r.get("parse_failed"))
+    manifest["refusals"] = sum(1 for r in rows if r.get("refusal"))
+    manifest["scan_parsed"] = sum(1 for r in rows if r.get("parse_strategy") == "scan")
     (RAW / f"{slug(mid)}.manifest.json").write_text(
-        json.dumps(manifest, indent=2), encoding="utf-8")
+        json.dumps(manifest, indent=2, default=str), encoding="utf-8")
 
     fails = sum(1 for r in rows if r.get("parse_failed"))
     refus = sum(1 for r in rows if r.get("refusal"))
@@ -187,7 +262,11 @@ def main() -> int:
     ap.add_argument("--k", type=int, default=10, help="samples for the sampled condition")
     ap.add_argument("--max-model-len", type=int, default=1024)
     ap.add_argument("--gpu-util", type=float, default=0.85)
-    ap.add_argument("--eager", action="store_true", default=True)
+    # enforce_eager disables CUDA-graph capture. Default ON: graph capture is the part of
+    # vLLM most likely to misbehave on a brand-new architecture (sm_120), and our sequences
+    # are short enough that the speed cost is irrelevant. --no-eager turns it off.
+    ap.add_argument("--no-eager", action="store_false", dest="eager", default=True,
+                    help="enable CUDA graphs (faster, riskier on new GPUs)")
     ap.add_argument("--purge-weights", action="store_true")
     ap.add_argument("--force", action="store_true")
     args = ap.parse_args()

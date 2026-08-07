@@ -81,6 +81,37 @@ Stdlib only, runs on Python 3.10+. Asserts n=116 and the foundation counts (Auth
 Care 16, Fairness 17, Liberty 17, Loyalty 16, Sanctity 17, Social Norms 16) and fails loudly
 rather than emitting a bad questionnaire.
 
+### Tests
+
+```bash
+pip install pytest transformers truststore pyyaml
+pytest                      # 124 tests, ~35s, no GPU needed
+```
+
+vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of the vLLM API
+(`tests/fake_vllm.py`) driven by **real tokenizers** over the **real 116 items**. The suite
+covers the prompt invariant, tokenization claims, all four condition runners, the manifest
+contract, checkpointing, VRAM planning, and sequence-length budget.
+
+Two bugs were caught this way that would each have cost GPU time:
+
+- the manifest crashed on `yaml`'s `datetime.date`, *after* all four conditions had run —
+  destroying a full model's inference on every model;
+- `Qwen2.5-14B` (28.8 GiB in bf16) does not fit a 32 GiB card and would have OOM'd after a
+  28 GB download.
+
+### Pre-flight
+
+Run on the pod before anything expensive:
+
+```bash
+source /workspace/env.sh && python scripts/preflight.py
+```
+
+Thirty seconds. Checks env vars, packages, GPU and `sm_120` kernels, config integrity, the
+memory plan for all 20 models, that every pinned revision resolves, and that a prompt renders
+within the length budget. Exit 0 means safe to start.
+
 ### Inference environment
 
 vLLM is Linux-only and needs a GPU. Verified working configuration:
