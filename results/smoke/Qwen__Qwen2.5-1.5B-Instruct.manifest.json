@@ -1,0 +1,52 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "family": "qwen",
+  "params_b": 1.5,
+  "n_items": 10,
+  "k_samples": 3,
+  "conditions": [
+    "label",
+    "string",
+    "greedy",
+    "sampled"
+  ],
+  "prompt_sha_first": "add09e54f847dca8",
+  "prompt_sha_all_distinct": true,
+  "prompt_config_sha": "ea78a329ca273245",
+  "items_file_sha": "dae9643999520b16",
+  "option_label_token_ids": {
+    "0": 15,
+    "1": 16,
+    "2": 17,
+    "3": 18,
+    "4": 19
+  },
+  "packages": {
+    "vllm": "0.26.0",
+    "transformers": "5.14.1",
+    "torch": "2.11.0+cu130"
+  },
+  "python": "3.12.3",
+  "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+  "env": {
+    "VLLM_USE_FLASHINFER_SAMPLER": "0",
+    "HF_HOME": "/workspace/hf-cache"
+  },
+  "vllm_args": {
+    "max_model_len": 1024,
+    "gpu_memory_utilization": 0.85,
+    "enforce_eager": true,
+    "dtype": "bfloat16"
+  },
+  "seeds": [
+    0,
+    1,
+    2
+  ],
+  "elapsed_s": 118.4,
+  "n_rows": 60,
+  "parse_failed": 0,
+  "refusals": 0,
+  "scan_parsed": 0
+}

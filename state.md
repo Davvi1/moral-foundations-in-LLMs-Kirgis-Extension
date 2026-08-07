@@ -69,6 +69,42 @@ hyphens break its template substitution. Fix: rename the secret to `HF_READ_TOKE
 `HF_TOKEN = {{ RUNPOD_SECRET_HF_READ_TOKEN }}`. Only blocks the gated repos (3× Llama, 2× Gemma),
 so it must be fixed before Step 6 but blocks nothing earlier.
 
+### B4 — smoke test PASSED, 2026-08-07. Harness validated on real hardware.
+
+`Qwen2.5-1.5B-Instruct`, 10 items, all four conditions, k=3. 60 rows, **0 parse failures,
+0 refusals, 0 scan-parses**, 118 s wall (nearly all of it model load). Results and manifest
+in `results/smoke/`. Pre-flight exited 0 and correctly flagged Qwen2.5-14B as not fitting
+and OLMo-2-13B as tight — the local prediction reproduced exactly on the card.
+
+**THE INVARIANT HOLDS.** Prompt hashes per item = {1}: every condition received a
+byte-identical prompt. This is now demonstrated on real hardware, not asserted.
+
+| condition | mean | min | max | logprob mass |
+|---|---|---|---|---|
+| label | 3.508 | 3.19 | 3.79 | 0.9973 |
+| string | 2.620 | 2.36 | 2.81 | 0.1495 |
+| greedy | 3.800 | 3.00 | 4.00 | — |
+| sampled | 3.600 | 2.00 | 4.00 | — |
+
+**The four methods disagree, and not by a little.** On the same ten items with the same
+prompt, string scoring sits ~0.9 scale points below label scoring, and greedy sits above
+both. If that survives to n=20 models and 116 items it is the headline. **Do not read
+anything into it yet** — one model, ten items, no error bars, and the ordering could easily
+be an artifact of this model or these items.
+
+**One number to watch:** string scoring retains only **0.15** probability mass versus 0.997
+for label. That is the "options are visible in the prompt" limitation from
+`config/prompt.yaml` showing up quantitatively — the model is being asked to score a
+continuation it was implicitly steered away from. It does not invalidate the condition (the
+comparison across the five options is still internal and consistent) but it belongs in the
+write-up, and the mass column is what makes it visible.
+
+Token boundary checks came back clean, so the full-sequence alignment in string scoring
+works on this tokenizer. Re-check per family.
+
+Environment as run: vllm 0.26.0, transformers 5.14.1, torch 2.11.0+cu130, Python 3.12.3,
+RTX PRO 4500 Blackwell, bf16, max_model_len 1024, enforce_eager, gpu_util 0.85.
+
 ### B1 — Kirgis reanalysis, 2026-08-07. EXPLORATORY. **My prediction was wrong.**
 
 Full report `results/derived/kirgis_reanalysis.md`, per-row data `kirgis_rescored.csv`,
