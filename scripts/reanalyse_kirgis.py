@@ -1,6 +1,6 @@
 """B1 -- audit Kirgis's logprob estimator on his own committed data. No GPU.
 
-EXPLORATORY. This is a reanalysis of existing public data, not part of the preregistered
+EXPLORATORY. This is a reanalysis of existing public data, not part of the pre-specified
 design, and must be labelled as such in the write-up.
 
 The go/no-go check established that his paper and his code disagree:
@@ -23,10 +23,18 @@ from __future__ import annotations
 import argparse
 import ast
 import json
+import sys
 import math
 from pathlib import Path
 
 import pandas as pd
+
+# Windows consoles default to cp1252, which cannot encode the Greek letters used below.
+# The report files are always written as UTF-8; this only affects the echo to stdout.
+try:
+    sys.stdout.reconfigure(encoding="utf-8")
+except Exception:
+    pass
 
 REPO = Path(__file__).resolve().parent.parent
 OUTDIR = REPO / "results" / "derived"

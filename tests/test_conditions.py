@@ -351,7 +351,7 @@ def test_run_free_greedy_uses_temperature_zero(qwen_tok, prompt_cfg, items):
 
 
 def test_run_free_sampled_uses_distinct_seeds_and_t1(qwen_tok, prompt_cfg, items):
-    """k independent passes, each separately identifiable — the preregistered Monte-Carlo
+    """k independent passes, each separately identifiable — the pre-specified Monte-Carlo
     error term needs replicates, and vLLM's n=k would collapse them."""
     ps = _prompts(qwen_tok, prompt_cfg, items, 2)
     llm = FakeLLM(qwen_tok, lambda p, sp, t: {"text": "1"})

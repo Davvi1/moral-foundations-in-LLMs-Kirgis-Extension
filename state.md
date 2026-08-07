@@ -11,7 +11,7 @@ here, it didn't happen. Update it when something is settled, not at the end.
 See "Go / no-go findings" below. All three blocking questions answered; the instrument,
 the prompt, the human baseline, and Kirgis's per-item responses are all in hand.
 
-**Preregistration is CLOSED as of 2026-08-07.** The variance-ratio cutoff is set at
+**Analysis plan is LOCKED as of 2026-08-07.** The variance-ratio cutoff is set at
 0.25 / 1.0 with a middle band — see the primary-criterion section. No blanks remain.
 Nothing about the decision rule may change once results exist.
 
@@ -73,7 +73,7 @@ so it must be fixed before Step 6 but blocks nothing earlier.
 
 Full report `results/derived/kirgis_reanalysis.md`, per-row data `kirgis_rescored.csv`,
 reproducible via `scripts/reanalyse_kirgis.py`. Analysis of existing public data — **label it
-exploratory in the write-up**, it is not part of the preregistered design.
+exploratory in the write-up**, it is not part of the pre-specified design.
 
 **What I predicted and got wrong.** I expected the argmax-degeneracy (digit filtering leaving
 one survivor) to be the headline. It is **5.6%** of responses (39/696), and it changes nothing:
@@ -245,7 +245,7 @@ the rank statistic — and that N=13 misclassifies a genuinely degraded R about 
 
 ---
 
-## Preregistered before any results exist
+## Pre-specified before any results exist
 
 ### Primary criterion — variance ratio
 
@@ -280,7 +280,7 @@ point estimate, with the credible interval compared against the cutoff; heterosc
 residuals are a one-line change there. Crossed random effects are awkward in
 `statsmodels`; if going frequentist, use `pymer4` or R via `rpy2`.
 
-**Cutoff — SET 2026-08-07, before any model was downloaded. Preregistration closed.**
+**Cutoff — SET 2026-08-07, before any model was downloaded. analysis plan locked.**
 
     R_f < 0.25          -> between-model comparisons robust to scoring method
     0.25 <= R_f <= 1.0  -> degraded; report with explicit caution, rankings not
@@ -622,7 +622,7 @@ fixed, error-free reference — which the Figure 2 mean-difference plot does —
 uncertainty. If you replicate Fig 2, either propagate that error or say plainly that you
 did not.
 
-The positive control in the preregistration is therefore **live**, and the weaker fallback
+The positive control in the analysis plan is therefore **live**, and the weaker fallback
 ("severe care above social-norm items") is not needed. Keep it written down anyway.
 
 ### 5. QSTN as a foundation — VERIFIED, state.md's assertion was right. Recommendation: build on it.
@@ -763,6 +763,14 @@ is one line with no method attached — but it remains corroborating.
 ---
 
 ## Limitations for the write-up — draft now, don't discover later
+
+- **Not externally registered.** Decision 2026-08-07: OSF deposit dropped. The analysis plan
+  is locked in `ANALYSIS_PLAN.md` at git tag `analysis-plan-locked` (commit `75b57b2`), which
+  provably contains no `results/raw/`. **Call this a pre-specified analysis plan, never a
+  preregistration** — a tag in a repository the author controls is an internal discipline
+  device, not independent verification. The discipline is real (changing the decision rule now
+  produces a visible diff against a tagged commit) but the stronger word is not available and
+  using it would be exactly the kind of over-claim that sinks a write-up.
 
 - This did not replicate Kirgis's findings. It replicated his design on a different model
   sample and manipulated something he held fixed by necessity.

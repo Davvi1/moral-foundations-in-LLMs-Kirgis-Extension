@@ -53,7 +53,7 @@ scale:
 #   sampled         mean of k parsed digits at T=1              -> MC error ~ 1/sqrt(k)
 #
 # If label gave an expectation and string gave an argmax, any difference between them would
-# be partly an aggregation artifact. This structure is also what the preregistered
+# be partly an aggregation artifact. This structure is also what the pre-specified
 # method-specific residual variances in state.md are modelling -- the four methods have
 # genuinely different error structure and a single residual variance would inflate R.
 
@@ -96,7 +96,7 @@ scale:
 # refusal and rambling rates on the graphic Sanctity items, in the free-generation arms only.
 # That interacts with the refusal confound already logged in state.md -- differential refusal
 # by foundation masquerades as the foundation x method interaction, which is the headline
-# estimand. Log refusal and parse rates per model x foundation x method, as preregistered,
+# estimand. Log refusal and parse rates per model x foundation x method, as pre-specified,
 # and read them BEFORE looking at any result.
 
 # ---------------------------------------------------------------------------------------
@@ -133,7 +133,7 @@ scale:
 # RESIDUAL LIMITATION: holding the system prompt identical means free generation runs without
 # JSON scaffolding, so its parse-failure rate will exceed what QSTN's default configuration
 # would give. That is the correct trade -- a parse-failure rate is measurable and IS reported
-# under the preregistration, whereas a prompt that varies by condition is an unmeasurable
+# under the analysis plan, whereas a prompt that varies by condition is an unmeasurable
 # confound. Log the rate and say why it is what it is.
 
 # ---------------------------------------------------------------------------------------

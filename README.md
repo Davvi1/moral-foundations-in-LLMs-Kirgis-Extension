@@ -64,7 +64,7 @@ data/mfv_116_meta.csv       foundation labels + Clifford's per-vignette human me
 scripts/build_items.py      derives the two data files from source; self-verifying
 scripts/probe_tokenization.py   the "0" vs " 0" hazard check, per tokenizer
 results/                    probe logs and derived, analysis-ready outputs
-state.md                    living record — decisions, preregistration, findings
+state.md                    living record — decisions, analysis plan, findings
 references.md               every citation verified by fetching the source
 RESUME.md                   operational sequence + pod cheat-sheet
 ```
@@ -152,7 +152,7 @@ rather than recalled.
 - **The human baseline is not nationally representative.** Clifford recruited from a Qualtrics
   panel restricted to ages 18–40 and balanced on ideology, with n ≈ 30 per vignette.
 
-## Preregistration
+## Pre-specified analysis plan
 
 The analysis plan is fixed in `state.md` before any confirmatory data exists. Primary statistic
 is a variance ratio per foundation,

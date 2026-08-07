@@ -1,16 +1,29 @@
-# Preregistration
+# Pre-specified analysis plan
 
 **Title:** Is a language model's measured moral profile stable across scoring methods?
 A within-model audit of Kirgis (2025)
 
 **Author:** David Moth (Hertie School)
-**Date drafted:** 2026-08-07
-**Status:** DRAFT — deposit to OSF before any confirmatory data is collected.
-**Repository commit:** *(fill in the tagged commit SHA at deposit)*
+**Locked:** 2026-08-07, git tag `analysis-plan-locked`, commit `75b57b2`
 
-> Paste-ready for OSF's "Preregistration" template. Sections map onto its standard headings.
-> Everything below was fixed before any model in the confirmatory design was run. The
-> reanalysis of Kirgis's published data (Section 9) is **exploratory** and is labelled so.
+## Status — read this before describing the study anywhere
+
+This plan was fixed **before any confirmatory data existed** (verifiable: the tagged commit
+contains no `results/raw/`). It was deliberately **not** deposited with an external registry.
+
+**Therefore: call this a *pre-specified analysis plan*, never a *preregistration*.** A git tag
+in a repository the author controls is an internal discipline device, not independent
+verification — the author could in principle have retagged. That distinction is small in
+practice and fatal in a write-up if you get it the wrong way round. If the repository is later
+pushed to a public host, the push timestamp becomes third-party evidence *from that date
+onward*, but not before.
+
+What this buys you is still real: the decision rule cannot drift after results arrive, because
+changing it now produces a visible diff against a tagged commit. What it does not buy you is
+the right to say "preregistered".
+
+Everything below was fixed before the confirmatory run. The reanalysis of Kirgis's published
+data (Section 9) is **exploratory** and is labelled so throughout.
 
 ---
 
@@ -78,7 +91,7 @@ only the readout is therefore what audits *his* design.
 
 ## 3. Sampling plan
 
-**Existing data:** none of the confirmatory data exists at the time of this registration.
+**Existing data:** none of the confirmatory data existed when this plan was locked.
 
 **Units:** open-weight instruction-tuned models, ≤14B parameters, target **N ≈ 20**, minimum
 N = 13. All 116 items administered to every model under every condition.
@@ -135,7 +148,7 @@ Estimation is Bayesian (`bambi` / `pymc`), giving a posterior on R_f. This is re
 stylistic: moment estimators return σ̂²_model ≤ 0 — leaving R undefined — on up to 7.4% of
 simulated replicates at N=8.
 
-### Decision rule — fixed in advance
+### Decision rule — fixed in advance, at the tagged commit
 
 | interval position | verdict |
 |---|---|
@@ -214,11 +227,11 @@ A method can win QSTN's criterion and fail this one.
 
 ---
 
-## 9. Exploratory (not preregistered)
+## 9. Exploratory (outside this plan)
 
 A reanalysis of Kirgis's published logprob responses
 (`results/derived/kirgis_reanalysis.md`) found that one model, grok-3-beta, returned
 structurally malformed `top_logprobs` on 44% of responses, and that his code's renormalisation
 step — which differs from the formula printed in his paper — accidentally masks this. **This is
 analysis of existing public data and is reported as exploratory throughout.** It motivated the
-integrity check added to Section 5, which *is* preregistered.
+integrity check added to Section 5, which *is* part of this pre-specified plan.

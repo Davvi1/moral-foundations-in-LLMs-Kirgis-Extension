@@ -32,7 +32,7 @@ from dataclasses import dataclass, field
 
 # Refusal cues. Deliberately conservative -- a false positive silently drops an item from
 # the free-generation arms only, which is exactly the differential-missingness confound the
-# preregistration warns about. Better to under-flag and let parse-failure catch the rest.
+# analysis plan warns about. Better to under-flag and let parse-failure catch the rest.
 REFUSAL_PATTERNS = [
     r"\bi (?:can'?t|cannot|won'?t|am unable to|am not able to)\b",
     r"\bi'?m (?:sorry|unable|not able)\b",
@@ -190,7 +190,7 @@ def run_string(llm, sampling_params_cls, tokenizer, prompts: list[Prompt],
 
     LENGTH NORMALISATION IS A REAL CHOICE, not a default -- option token lengths are unequal
     ({0:4, 1:3, 2:3, 3:2, 4:3} on Qwen), so the unnormalised sum favours short options. Both
-    are computed and both are recorded; the preregistered primary is stated in
+    are computed and both are recorded; the pre-specified primary is stated in
     config/prompt.yaml.
     """
     texts, index = [], []
@@ -256,7 +256,7 @@ def run_free(llm, sampling_params_cls, prompts: list[Prompt], *, greedy: bool,
     """Greedy (k=1, T=0) or sampled (k>1, T=1).
 
     vLLM's `n=k` is deliberately NOT used: k independent passes with distinct seeds keep each
-    replicate separately identifiable, which the preregistered Monte-Carlo error term needs.
+    replicate separately identifiable, which the pre-specified Monte-Carlo error term needs.
     Prefix caching makes the repeated passes cheap in tokens.
     """
     rows = []

@@ -12,7 +12,7 @@ the operational sequence. Working plan: `~/.claude/plans/okay-what-should-be-gle
 | **B0** version control, LICENSE, README | **done** — repo on `main`, clean tree |
 | **B1** Kirgis reanalysis (exploratory) | **done** — found provider data corruption, not estimator degeneracy |
 | **B2** design simulation | **done** — roster raised to N ≈ 20; `indeterminate` verdict added |
-| **B3** OSF preregistration | **drafted** in `PREREGISTRATION.md`, needs your OSF account |
+| **B3** analysis plan | **locked** in `ANALYSIS_PLAN.md`, git tag `analysis-plan-locked`. OSF deposit dropped by decision 2026-08-07 |
 | **B4** QSTN smoke test + four conditions | pod work, not started |
 | **B5** confirmatory run | pod work, needs `HF_TOKEN` fixed |
 | **B6/B7** analysis, write-up | after B5 |
@@ -31,11 +31,16 @@ substitution. Secrets cannot be renamed, so:
 
 Verify after restart with `echo ${#HF_TOKEN}` — should print a non-zero length.
 
-### 2. Deposit the preregistration (~1 h) — must precede B5
+### 2. Nothing — the analysis plan is already locked
 
-`PREREGISTRATION.md` is written to paste into OSF's standard template. Before depositing:
-tag the commit (`git tag prereg-v1`) and put the SHA in the header. **Nothing about the decision
-rule may change afterwards**; anything found later is reported as exploratory.
+OSF deposit was dropped by decision on 2026-08-07. The plan is fixed in `ANALYSIS_PLAN.md`
+at git tag `analysis-plan-locked` (commit `75b57b2`), which provably contains no
+`results/raw/`.
+
+**Language rule, and it matters for the write-up:** call this a *pre-specified analysis
+plan*, never a *preregistration*. A tag in a repo you control is an internal discipline
+device, not independent verification. The discipline is still real — changing the decision
+rule now shows up as a diff against a tagged commit — but the stronger word is not available.
 
 ---
 
@@ -50,7 +55,7 @@ would not (grok-3's mean collapses 1.98 → 1.20, rank 4 → 6). So for those it
 weighting" was actually argmax — **scoring method was not uniform even within his logprob arm.**
 
 → Consequence for us: **log total logprob mass per response** as an integrity check. Now
-preregistered.
+pre-specified.
 
 **B2 changed the roster and the decision rule.** Interior-band classification accuracy: N=8 →
 0.64, N=13 → 0.76, N=20 → 0.86, N=30 → 0.94. Target raised to **N ≈ 20**; N=8 must not carry
