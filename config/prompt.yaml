@@ -1,0 +1,202 @@
+# The prompt. Fixed once, here, and version-controlled.
+#
+# This is a NUISANCE PARAMETER, not a variable. The whole design is "scoring method varies,
+# prompt does not." If the prompt moves between conditions, scoring method is confounded with
+# prompt and the experiment measures nothing. Do not edit after the first model runs.
+
+schema_version: 2
+decided: 2026-08-07
+status: APPROVED by David 2026-08-07, then REVISED same day on re-examination.
+        Changes after approval are listed under "REVISION LOG" at the bottom -- re-read that
+        section before the first run, because one of them is a limitation, not a fix.
+
+# ---------------------------------------------------------------------------------------
+# The prompt as administered
+# ---------------------------------------------------------------------------------------
+# NOTE the placeholder syntax: QSTN substitutes {{QUESTION_CONTENT_PLACEHOLDER}}, defined at
+# qstn/utilities/placeholder.py:9. Verified against the installed source, not assumed.
+
+system: "You are answering a survey. Answer with one of the given options."
+
+user_template: |
+  Please rate how morally wrong this behavior is on the following five-point scale: {{QUESTION_CONTENT_PLACEHOLDER}}
+
+  0: Not at all wrong
+  1: Not too wrong
+  2: Somewhat wrong
+  3: Very wrong
+  4: Extremely wrong
+
+options:
+  0: "Not at all wrong"
+  1: "Not too wrong"
+  2: "Somewhat wrong"
+  3: "Very wrong"
+  4: "Extremely wrong"
+
+scale:
+  min: 0
+  max: 4
+  # Same five labels as Clifford et al. 2015 ("not at all wrong ... extremely wrong"), so
+  # model scores and the human baseline in data/mfv_116_meta.csv are on one scale.
+
+# ---------------------------------------------------------------------------------------
+# Aggregation -- must be held constant too, or readout is confounded with aggregation
+# ---------------------------------------------------------------------------------------
+#
+# Label and string scoring must BOTH produce a continuous expectation, so that they differ
+# only in WHAT is scored, never in HOW it is aggregated:
+#
+#   label scoring   E[s] = sum_k  k * softmax(logprob of token "k")            k in 0..4
+#   string scoring  E[s] = sum_k  k * softmax(seq logprob of option text k)    k in 0..4
+#   greedy          parse the emitted digit                     -> integer, deterministic
+#   sampled         mean of k parsed digits at T=1              -> MC error ~ 1/sqrt(k)
+#
+# If label gave an expectation and string gave an argmax, any difference between them would
+# be partly an aggregation artifact. This structure is also what the preregistered
+# method-specific residual variances in state.md are modelling -- the four methods have
+# genuinely different error structure and a single residual variance would inflate R.
+
+# ---------------------------------------------------------------------------------------
+# Provenance
+# ---------------------------------------------------------------------------------------
+#
+# Question stem is Kirgis's verbatim, from surveys/mft_base.py:37 --
+#   "Please rate how morally wrong this behavior is on the following five-point scale: "
+# (The paper's p.4 example box drops "morally". The code is authoritative -- the same string
+# reappears at mft_base.py:60 as the prefix used to strip the stem back off, and the stripped
+# values in his response CSVs match.)
+#
+# Option labels and 0-4 codes are Kirgis's verbatim, from surveys/mft_base.py:39.
+#
+# NOT reproduced: Kirgis's EDSL wire format, rendered by edsl==0.1.13 QuestionLinearScale,
+# which appended:
+#     Only 1 option may be selected.
+#     Respond only with the code corresponding to one of the options. E.g., "0" or "4" by itself.
+#     After the answer, you can put a comment explaining why you chose that option on the next line.
+# That wrapper is not in his repo and is not reproducible under QSTN. This is therefore NOT a
+# prompt-level replication of Kirgis, and the write-up must say so plainly.
+
+# ---------------------------------------------------------------------------------------
+# DECISION 1 -- dropped Kirgis's "respond only with the code ... by itself" instruction
+# ---------------------------------------------------------------------------------------
+#
+# That sentence is not neutral between the four conditions. It explicitly instructs the model
+# to emit a DIGIT. Under label scoring that is exactly what we read. Under string scoring we
+# score P("Somewhat wrong" | prompt) -- a continuation the prompt has just told the model not
+# to produce. Any string-scoring difference would then be partly an artifact of the prompt
+# disfavouring string-shaped answers.
+#
+# Keeping it would be more faithful to Kirgis; dropping it keeps the prompt neutral between
+# readouts. We cannot match his wire format anyway, so faithfulness is already lost and
+# neutrality is the more defensible of the two. Output shape is instead constrained by vLLM
+# guided decoding at inference, not by instructing the model in the prompt.
+#
+# COST, and it is a real one: removing the pressure to emit a bare answer will likely RAISE
+# refusal and rambling rates on the graphic Sanctity items, in the free-generation arms only.
+# That interacts with the refusal confound already logged in state.md -- differential refusal
+# by foundation masquerades as the foundation x method interaction, which is the headline
+# estimand. Log refusal and parse rates per model x foundation x method, as preregistered,
+# and read them BEFORE looking at any result.
+
+# ---------------------------------------------------------------------------------------
+# DECISION 2 -- one fixed system prompt, overriding QSTN's per-method defaults
+# ---------------------------------------------------------------------------------------
+#
+# QSTN attaches a DIFFERENT system prompt to each response generation method:
+# JSONSingleResponseGenerationMethod defaults to SYSTEM_JSON_SINGLE_ANSWER ("You only respond
+# with the most probable answer option in the following JSON format: ..."), while
+# Logprob/Choice methods default to SYSTEM_SINGLE_ANSWER ("You only respond with the most
+# probable answer option."). See qstn/utilities/prompt_templates.py.
+#
+# THE DECISIVE ARGUMENT (better than the generic anti-confounding one, and checkable):
+# Kirgis used an IDENTICAL prompt for both of his arms. In surveys/mft_base.py,
+# run_survey_for_model builds the same QuestionLinearScale regardless of which dict the model
+# came from; the only differences are Model(..., logprobs=True) and samples=10 vs samples=1.
+# So in his design the prompt was constant and only the READOUT varied. To audit his
+# inference we must vary exactly what varied for him. Anything else audits a different study.
+#
+# Using QSTN's defaults would additionally reintroduce, inside our own harness, the very class
+# of confound we are auditing him for -- which would leave us no standing to make the criticism.
+#
+# So: pass an explicit identical `output_template` to all four methods, and parse free
+# generation leniently instead of demanding JSON. Every RGM constructor accepts
+# `output_template`; `constrain_output=False` exists for methods that should not impose
+# structured output.
+#
+# WHY A SYSTEM PROMPT AT ALL, rather than none: chat templates differ in how they handle a
+# MISSING system turn -- some insert a default ("You are a helpful assistant"), some omit the
+# block entirely. "No system prompt" is therefore constant in our config but NOT constant in
+# effect across model families. An explicit one makes it actually constant. Verify this
+# empirically in Step 3 by dumping the fully rendered chat-templated string per model family.
+#
+# RESIDUAL LIMITATION: holding the system prompt identical means free generation runs without
+# JSON scaffolding, so its parse-failure rate will exceed what QSTN's default configuration
+# would give. That is the correct trade -- a parse-failure rate is measurable and IS reported
+# under the preregistration, whereas a prompt that varies by condition is an unmeasurable
+# confound. Log the rate and say why it is what it is.
+
+# ---------------------------------------------------------------------------------------
+# KNOWN DEVIATION FROM THE MCQ SCORING LITERATURE -- disclose, do not hide
+# ---------------------------------------------------------------------------------------
+#
+# Found on re-examination 2026-08-07. This was NOT in the version David approved.
+#
+# Classic cloze / string scoring in the MCQ literature presents the question WITHOUT the
+# answer options and scores each option text as a free continuation. Label / symbol scoring
+# presents the options WITH labels and scores the label token. The literature therefore
+# operationalises these two methods with DIFFERENT prompts.
+#
+# Our fixed-prompt design cannot do that. We show the options (label scoring needs the digits
+# visible) and score the option text as a continuation of a prompt in which that text is
+# already displayed as "0: Not at all wrong". This is a legitimate quantity but it is NOT
+# textbook cloze.
+#
+# WHY IT IS STILL SOUND: string scoring is a RELATIVE comparison across five continuations,
+# and all five are equally displayed in the prompt, so the availability effect is close to
+# symmetric across options and the relative ordering remains meaningful. What it is not is
+# directly comparable to published cloze numbers.
+#
+# WHY WE ACCEPT IT: label scoring requires digits in the prompt, string scoring prefers them
+# absent. NO single prompt is optimal for both. Given the estimand -- is the model's measured
+# profile stable across readouts, holding everything else fixed -- a constant prompt is
+# mandatory and a per-method-optimal prompt is not available. This is a genuine limitation of
+# the design, not a defect in the implementation, and it goes in the write-up as such.
+#
+# OPTIONAL ROBUSTNESS CHECK, NOT RECOMMENDED FOR THE TWO-DAY SPRINT: run classic cloze
+# (options removed from the prompt) as an exploratory FIFTH condition, explicitly flagged as
+# prompt-varying and EXCLUDED from the primary variance-ratio analysis. It would answer
+# "does our string-scoring variant behave like textbook cloze?" Worth naming in the write-up
+# as future work. Adding it now is scope creep against a two-day budget.
+
+# ---------------------------------------------------------------------------------------
+# Verification to run in Step 5, before trusting any score
+# ---------------------------------------------------------------------------------------
+#
+# - Render the full chat-templated string for all four conditions on the same item and DIFF
+#   them. They must be byte-identical. If they are not, Decision 2 was not applied correctly
+#   and nothing downstream is interpretable. This is the single most important check in the
+#   whole harness.
+# - Confirm options 0 and 1 ("Not at all wrong" / "Not too wrong") share a first token under
+#   each tokenizer, and that string scoring still separates them. This is why string scoring
+#   must be a full-sequence log-likelihood and cannot be faked with a single-position readout.
+# - Confirm label and string both return a continuous expectation on 0-4, not an argmax.
+
+# ---------------------------------------------------------------------------------------
+# REVISION LOG
+# ---------------------------------------------------------------------------------------
+# v2, 2026-08-07, after David approved v1 and asked for a second look:
+#   1. FIXED placeholder: {question_content} -> {{QUESTION_CONTENT_PLACEHOLDER}}. The v1 form
+#      was simply wrong for QSTN and would not have substituted. Verified against
+#      qstn/utilities/placeholder.py:9.
+#   2. STRENGTHENED Decision 2's justification: the decisive argument is that Kirgis held the
+#      prompt constant across his two arms, so auditing him requires us to do the same. v1
+#      argued only from generic anti-confounding, which is weaker and harder to defend.
+#   3. ADDED the aggregation-constancy requirement (label and string must both be continuous
+#      expectations). v1 left this implicit; leaving it implicit risked confounding readout
+#      with aggregation.
+#   4. ADDED the cloze-literature deviation as an explicit, disclosed limitation. v1 did not
+#      mention it. This one is a genuine weakness in the design, not something the revision
+#      fixes -- read it before signing off again.
+#   5. ADDED the predicted Sanctity refusal cost of Decision 1, and the justification for
+#      having a system prompt at all rather than none.

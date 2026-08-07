@@ -1,0 +1,29 @@
+# Large raw model outputs — regenerable from the pod, too big for git.
+# Derived, analysis-ready files in results/derived/ ARE committed.
+results/raw/
+
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+*.egg-info/
+.ipynb_checkpoints/
+
+# Model weights — never commit these
+*.safetensors
+*.bin
+*.gguf
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Secrets — nothing here should ever be committed
+.env
+*.pem
+*_token*
+!scripts/*token*
