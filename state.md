@@ -69,6 +69,45 @@ hyphens break its template substitution. Fix: rename the secret to `HF_READ_TOKE
 `HF_TOKEN = {{ RUNPOD_SECRET_HF_READ_TOKEN }}`. Only blocks the gated repos (3× Llama, 2× Gemma),
 so it must be fixed before Step 6 but blocks nothing earlier.
 
+### B1 — Kirgis reanalysis, 2026-08-07. EXPLORATORY. **My prediction was wrong.**
+
+Full report `results/derived/kirgis_reanalysis.md`, per-row data `kirgis_rescored.csv`,
+reproducible via `scripts/reanalyse_kirgis.py`. Analysis of existing public data — **label it
+exploratory in the write-up**, it is not part of the preregistered design.
+
+**What I predicted and got wrong.** I expected the argmax-degeneracy (digit filtering leaving
+one survivor) to be the headline. It is **5.6%** of responses (39/696), and it changes nothing:
+Spearman between his code's model ranking and plain argmax is **1.00**. Fallback rate is **0%**,
+not the unreported contamination I suspected. Both of my go/no-go hypotheses about his estimator
+were, in effect, non-findings. Say so plainly rather than dressing them up.
+
+**What is actually there, and it is better.** `grok-3-beta` — **51 of 116 responses (44%)** —
+came back from the xAI API with **structurally malformed `top_logprobs`**: two entries instead
+of three, summing to ~0 probability, while the emitted token's own `logprob` reports p = 1.0.
+The two fields contradict each other. Every OpenAI model and grok-2 return clean data
+(top_mass ≈ 1.000); grok-3-beta's mean top_mass is 0.5603.
+
+Three consequences, ascending:
+1. Those 51 scores are computed from corrupted probability data.
+2. **His renormalisation accidentally rescues them.** Near-zero over near-zero recovers the
+   argmax, which equals the emitted (correct) answer, so his published numbers look fine. His
+   *printed formula* would not: grok-3's mean collapses 1.98 → 1.20 and it falls from rank 4 to
+   rank 6 of 6. The paper-vs-code discrepancy is therefore **consequential, but only via this
+   one model** — mean absolute difference is 0.13 overall and ~0.000 for four of six models.
+3. **For those items "top-3 logprob weighting" is not what happened — argmax is.** Inside the
+   arm he treats as one homogeneous method, one of six models is effectively scored by a
+   different method for nearly half its items.
+
+Point 3 is the one that matters here: **direct evidence from his own committed data that
+scoring method was not uniform even within the logprob arm.** It strengthens the audit framing
+and it generalises — provider logprob APIs cannot be assumed well-formed, and a study reading
+them without an integrity check inherits their bugs. **Add a top_mass integrity check to our own
+harness output.**
+
+Not computable from his data: renormalising over all five options. The API returned only the
+top 3 of the vocabulary, so logprobs for options outside it do not exist. His estimator cannot
+be repaired post hoc, only re-collected — itself part of the finding.
+
 ### Tokenization probe results (Qwen2.5-0.5B-Instruct) — day-one risk #1 DISCHARGED
 
 Full output: `results/probe_qwen2.5-0.5b.log`. Re-run per tokenizer family before trusting label
