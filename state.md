@@ -172,6 +172,23 @@ pre-announce the renormalisation effect as large.
   (foundation + Clifford human means), derived by `scripts/build_items.py` from a pinned copy
   of Kirgis's CSV in `data/source/` with `PROVENANCE.md`. Build is self-verifying: it asserts
   n=116 and the foundation counts and fails loudly rather than propagating a bad questionnaire.
+- **REVERSED 2026-08-07: the harness is built on raw vLLM, not QSTN.** The earlier
+  recommendation ("build on QSTN, hand-write only string scoring") was made when QSTN looked
+  like it covered three of four conditions off the shelf. Our own subsequent decisions hollowed
+  that out:
+  - Decision 2 in `config/prompt.yaml` **overrides QSTN's prompt construction entirely**,
+    because QSTN varies the system prompt by response-generation method — which would
+    reintroduce the exact confound under audit. Prompt building was its main contribution.
+  - Its batching wrapper is thin; `vLLM.generate` already batches.
+  - Its sampled path reads `outputs[0]`, so `n=k` is ignored regardless.
+  - What remained was a parser and a logprob space-stripper — roughly sixty lines.
+
+  Against that, **raw vLLM is verified working on the target GPU** (the tokenization probe ran
+  end-to-end); QSTN end-to-end never has been. Building on vLLM removes a whole failure class
+  from B4. Cost: we lose the "same framework as the closest prior work" argument, which was
+  presentational rather than methodological. Harness is `scripts/conditions.py` +
+  `scripts/run_experiment.py`. QSTN remains installed and can be swapped back in for parsing.
+
 - **Prompt fixed in `config/prompt.yaml`** — one user template, one system prompt, identical
   across all four conditions. Two contestable decisions are recorded in that file and need
   sign-off: (1) Kirgis's "respond only with the code ... by itself" instruction is **dropped**,
