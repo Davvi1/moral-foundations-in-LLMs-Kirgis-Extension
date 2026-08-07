@@ -1,158 +1,119 @@
-# RESUME — what to do when you come back
+# RESUME — what to do next
 
-Written 2026-08-07 at the end of the first working session, after Steps 1–3 of
-`~/.claude/plans/okay-what-should-be-gleaming-possum.md`. Read this first; `state.md` has the
-decisions, this has the operational sequence.
+Updated 2026-08-07 after completing B0, B1 and B2. `state.md` holds the decisions; this holds
+the operational sequence. Working plan: `~/.claude/plans/okay-what-should-be-gleaming-possum.md`.
 
 ---
 
-## Part 1 — audit of the work so far
+## Where things stand
 
-### Verified, hard
-
-| claim | how it was checked |
+| | status |
 |---|---|
-| 116 items, correct foundation counts | Build script asserts it; independently re-checked 2026-08-07 |
-| Item text / foundation / human means match the source **row for row** | Diffed all 116 rows against `data/source/kirgis_vignettes_short.csv`: **0 mismatches** on all three fields |
-| Item IDs contiguous 1–116 and aligned between the two files | Set comparison + sort check |
-| No CSV corruption | 117 raw lines for 116 items ⇒ no embedded newlines, despite 2 items containing commas |
-| Source is Clifford Table 1 | 9 rows matched by eye against the published PDF, pp.1183–1186, across 4 foundations |
-| Kirgis's code renormalises; his paper's formula does not | Both read verbatim; quoted in `references.md` |
-| Which 116 of Clifford's 132 | Set difference: all 16 physical-harm Care items dropped |
-| GPU works: sm_120, bf16 | `torch.cuda.get_arch_list()` + live matmul on device |
-| vLLM runs on this card | Only with `VLLM_USE_FLASHINFER_SAMPLER=0`; verified by a completed generation |
-| `"0"` vs `" 0"` are different tokens; model emits bare | Probe: `[15]` vs `[220,15]`; greedy emitted `id=17`=`'2'` |
-| Options 0 and 1 share a first token | Probe: both begin with token `2623` (`'Not'`) |
+| **B0** version control, LICENSE, README | **done** — repo on `main`, clean tree |
+| **B1** Kirgis reanalysis (exploratory) | **done** — found provider data corruption, not estimator degeneracy |
+| **B2** design simulation | **done** — roster raised to N ≈ 20; `indeterminate` verdict added |
+| **B3** OSF preregistration | **drafted** in `PREREGISTRATION.md`, needs your OSF account |
+| **B4** QSTN smoke test + four conditions | pod work, not started |
+| **B5** confirmatory run | pod work, needs `HF_TOKEN` fixed |
+| **B6/B7** analysis, write-up | after B5 |
 
-### NOT verified — deal with these before trusting anything downstream
+## Two things only you can do
 
-**1. QSTN has never been run. This is the biggest untested assumption in the project.**
+### 1. Fix `HF_TOKEN` (5 min, console) — blocks gated models in B5
 
-Everything on the pod so far used **raw vLLM**, not QSTN. QSTN imports
-`from vllm.sampling_params import StructuredOutputsParams` and reads
-`req_output.outputs[0].logprobs[pos].values()` with `.decoded_token` / `.logprob`
-(`local_inference.py:8, 540–541`). Its only pin is `vllm>=0.12` — an open upper bound — and we
-installed **vllm 0.26.0**, many releases newer. vLLM breaks internal APIs regularly.
+RunPod silently dropped `{{ RUNPOD_SECRET_HF-read-token }}` because hyphens break its template
+substitution. Secrets cannot be renamed, so:
 
-*If QSTN is broken against 0.26*, options in order of preference: (a) pin an older vLLM in the
-venv, (b) patch the two or three call sites, (c) drop QSTN and use raw vLLM for all four
-conditions. Option (c) costs perhaps half a day and loses the "same framework as the closest
-prior work" argument, but the project survives it. **Decide this in the first 20 minutes back,
-not on day two.**
+1. **Settings → Secrets** → create **`HF_READ_TOKEN`** (underscores) with the same token.
+   Delete the old one.
+2. **Edit Pod** → set `HF_TOKEN = {{ RUNPOD_SECRET_HF_READ_TOKEN }}`.
+   Use the existing pod — it keeps the volume, weights and wheel cache. Do not create a new one.
 
-**2. The probe's prompt was rendered by hand, not by QSTN.**
+Verify after restart with `echo ${#HF_TOKEN}` — should print a non-zero length.
 
-`scripts/probe_tokenization.py` substitutes `{{QUESTION_CONTENT_PLACEHOLDER}}` itself. So the
-tokenization findings are sound for *that* string, but we have **not** confirmed QSTN builds the
-same string. The byte-identical-across-conditions check in Step 5 must use QSTN's real output,
-not ours. If QSTN's builder injects anything extra, the probe must be re-run.
+### 2. Deposit the preregistration (~1 h) — must precede B5
 
-**3. Sampled generation (T=1) untested with the native sampler.**
-
-We disabled FlashInfer. Greedy + logprobs works. Temperature-1 sampling through vLLM's native
-PyTorch sampler is untested — likely fine, but it is one of the four conditions.
-
-**4. Tokenization findings are Qwen-specific.** Re-run the probe per tokenizer family
-(Llama, Gemma, Mistral, Phi, OLMo) before trusting their label scores. Chat templates differ,
-and whether the bare or spaced digit wins depends on what the template emits last.
-
-**5. `HF_TOKEN` still broken** — blocks the 5 gated models only.
-
-### One honest caveat found in the probe
-
-Renormalised vs unnormalised expectation differed by **0.0018** on the probe item, because
-top-20 captured 99.9% of the mass. Kirgis used **top-3**, so his gap will be larger — but this
-suggests **the renormalisation half of the audit may be a small effect**, and the *degeneracy*
-half (argmax collapse) is the likelier finding. Step 4 settles it. Do not pre-announce
-renormalisation as the headline.
+`PREREGISTRATION.md` is written to paste into OSF's standard template. Before depositing:
+tag the commit (`git tag prereg-v1`) and put the SHA in the header. **Nothing about the decision
+rule may change afterwards**; anything found later is reported as exploratory.
 
 ---
 
-## Part 2 — the sequence when you return
+## What B1 and B2 changed
 
-### A. Console, ~5 min, before anything else
+**B1 falsified both of my go/no-go hypotheses about Kirgis's estimator.** Argmax degeneracy is
+5.6% and changes nothing (Spearman 1.00 against his code's ranking); the silent fallback never
+fires (0%). What is actually there: **grok-3-beta returned malformed `top_logprobs` on 44% of
+responses** — two entries instead of three, summing to ~0 probability, while the emitted token's
+own logprob says p = 1.0. His renormalisation accidentally rescues it; his *printed formula*
+would not (grok-3's mean collapses 1.98 → 1.20, rank 4 → 6). So for those items "logprob
+weighting" was actually argmax — **scoring method was not uniform even within his logprob arm.**
 
-1. **Settings → Secrets** — create `HF_READ_TOKEN` (underscores) with your token. Delete
-   `HF-read-token`. RunPod secrets can't be renamed, hence the recreate.
-2. **Edit Pod** — set `HF_TOKEN = {{ RUNPOD_SECRET_HF_READ_TOKEN }}`. Do **not** create a new
-   pod; the existing one keeps the volume, weights, and wheel cache.
-3. Leave the pod **stopped** for now. Step 4 is local and free.
+→ Consequence for us: **log total logprob mass per response** as an integrity check. Now
+preregistered.
 
-### B. Step 4 — Kirgis reanalysis. Local, $0, ~1 h. Do this before restarting the pod.
+**B2 changed the roster and the decision rule.** Interior-band classification accuracy: N=8 →
+0.64, N=13 → 0.76, N=20 → 0.86, N=30 → 0.94. Target raised to **N ≈ 20**; N=8 must not carry
+the primary claim. A fourth verdict, **`indeterminate`**, was added for intervals straddling a
+band boundary — no feasible N resolves those, so forcing a call would be false precision. My
+earlier analytic estimate of interval width (×/÷2.5 at N=13) was **optimistic by roughly a
+factor of two**; the true multiplicative width is ~12×. Do not quote the old number.
 
-Runs on `data/source/` and the scratch clone of his repo (re-clone if the temp dir is gone:
-`git -c http.sslBackend=schannel clone https://github.com/peterkirgis/llm-moral-foundations`).
-Four numbers from his 696 committed logprob responses:
+---
 
-1. Degeneracy rate — how many of each top-3 are digits (distribution over 1/2/3).
-2. Argmax-collapse rate — fraction where exactly one digit survives, so his estimator returns an
-   integer exactly.
-3. Fallback rate — how often extraction returns `None` and his code silently substitutes the
-   EDSL-parsed answer.
-4. **Does it move anything?** Recompute under his code, his printed formula, and renormalised
-   over all five options; check whether foundation means or his 6-model ranking shift.
+## B4 — next pod session (~2 h, ~$2)
 
-**Hard stop at one hour.** Insurance, not the deliverable.
+Restart pod → `bash /workspace/bootstrap.sh && source /workspace/env.sh`.
+**Check the Connect panel — RunPod reassigns IP and port on restart.**
 
-### C. Step 5 — the integration step. Pod on, ~2 h, ~$2.
+Cheapest kill-shot first:
 
-Restart pod → `bash /workspace/bootstrap.sh && source /workspace/env.sh` (offline rebuild from
-the volume's wheel cache, a few minutes).
-
-**Order matters — do the cheap kill-shot first:**
-
-1. **60-second QSTN smoke test** before writing anything: import qstn, build a one-item
-   questionnaire, run one prompt through `batch_generation`. This answers unverified-item #1.
-   If it fails, stop and pick (a)/(b)/(c) above.
-2. Dump QSTN's rendered prompt; diff against the probe's hand-built string (unverified #2).
+1. **60-second QSTN end-to-end test.** `StructuredOutputsParams` and `prompt_logprobs` are
+   confirmed present in vLLM 0.26.0, so this should pass — but it has never actually been run.
+   If it fails: pin an older vLLM, patch the two or three call sites, or drop QSTN for raw vLLM
+   (~half a day; the project survives).
+2. Dump QSTN's rendered prompt and diff it against the probe's hand-built string. The probe
+   substituted the placeholder itself, so QSTN's rendering is unverified.
 3. Wire the four conditions on `Qwen2.5-1.5B-Instruct`, 10 items including Sanctity.
-4. Write string scoring by hand — vLLM `prompt_logprobs`, five continuations per item.
-   **Decide length normalisation explicitly and record it in `config/prompt.yaml`.**
-5. **The critical check:** render all four conditions' full chat-templated prompts and confirm
-   they are byte-identical. If they aren't, Decision 2 in `config/prompt.yaml` didn't apply and
-   nothing downstream is interpretable.
+4. Write string scoring by hand: `SamplingParams(max_tokens=1, prompt_logprobs=0)` over five
+   concatenated prompts, full-sequence log-likelihood. **Decide length normalisation explicitly**
+   and record it in `config/prompt.yaml`.
+5. **The critical check:** render all four conditions' chat-templated prompts and confirm they
+   are **byte-identical**. If not, nothing downstream is interpretable.
 6. Confirm label and string both return continuous expectations on 0–4, not argmax.
 
-### D. Step 6 — core eight. Pod on, ~3 h, ~$10.
+## B5 — confirmatory run (~3 h, ~$12 at N≈20)
 
-Re-run the tokenization probe per new tokenizer family first (unverified #4). Checkpoint per
-model to `/workspace`. Log refusal and parse rates per model × foundation × method and **read
-those tables before looking at any result** — differential Sanctity refusal in the
-free-generation arms masquerades as the headline estimand.
+Re-run `scripts/probe_tokenization.py` per new tokenizer family — the findings are Qwen-specific
+and chat templates differ. Checkpoint per model. Save raw unparsed outputs alongside parsed
+scores. Log refusal, parse-failure, and logprob-mass integrity per model × foundation × method,
+and **read those tables before looking at any result.**
 
-### E. Step 7 — extension. Possibly free now.
-
-The 32 GB card may hold Qwen2.5-14B (~28 GB bf16) directly, so the separate L40S pod the plan
-budgeted may be unnecessary. Short sequences favour us. Try it; don't assume it.
-
-### F. Step 8 — analysis. Local, $0, ~3 h.
-
-Variance ratio with **method-specific residual variances** (mandatory), rank agreement
-descriptive only, permutation null, positive control against Clifford's means. Cutoff is
-preregistered and closed: **R < 0.25 robust / 0.25–1.0 degraded / R > 1.0 not interpretable.**
+Weights need not be held simultaneously: download → run four conditions (minutes) → delete →
+next. The 200 GB volume is not the binding constraint at N=20.
 
 ---
 
-## Part 3 — pod cheat-sheet
+## Pod cheat-sheet
 
 ```bash
-ssh -i ~/.ssh/id_ed25519_runpod -p 38177 root@213.173.102.27     # port/IP change on restart!
-bash /workspace/bootstrap.sh && source /workspace/env.sh          # after every pod stop
+ssh -i ~/.ssh/id_ed25519_runpod -p <PORT> root@<IP>    # both change on restart
+bash /workspace/bootstrap.sh && source /workspace/env.sh
 ```
 
-**Check the Connect panel after restarting — RunPod usually reassigns the IP and port.**
-
-| path | survives stop? |
+| path | survives pod stop? |
 |---|---|
 | `/workspace/mft/`, `hf-cache/`, `pip-cache/`, `env.sh`, `bootstrap.sh` | yes |
-| `/root/venv`, `/root/.cache/pip` | **no** — rebuild with `bootstrap.sh` |
+| `/root/venv`, `/root/.cache/pip` | **no** — `bootstrap.sh` rebuilds offline from the volume |
 
 Required env (already in `env.sh`): `HF_HOME=/workspace/hf-cache`,
-**`VLLM_USE_FLASHINFER_SAMPLER=0`** (vLLM will not start on sm_120 without it),
-`PATH=/root/venv/bin:$PATH`.
+**`VLLM_USE_FLASHINFER_SAMPLER=0`** — vLLM will not start on sm_120 without it.
 
-Never put a venv on `/workspace` — FUSE is 1.0 GB/s bulk but collapses on many small files.
+Never put a venv on `/workspace`: FUSE gives 1.0 GB/s bulk but collapses on many small files.
 Venv on container disk, weights on the volume.
 
-**Budget so far: well under $5.** GPU ~$0.72/hr, volume ~$0.47/day. Projected total under $15
-against the $100 ceiling. Money is not the binding constraint — **the two-day time budget is.**
+**Verified environment:** `runpod/pytorch:1.0.2-cu1281-torch280-ubuntu2404`, RTX PRO 4500
+Blackwell 32 GB (sm_120), Python 3.12.3, vLLM 0.26.0, transformers 5.14.1.
+
+**Budget: under $5 spent. Projected total under $25 at N=20 against a $100 ceiling. Time, not
+money, is the binding constraint.**

@@ -263,6 +263,35 @@ The decision rule is evaluated against the posterior credible interval on R_f, n
 estimate. An interval straddling a band boundary is reported as straddling it, not rounded
 to the nearer verdict.
 
+**AMENDMENT 2026-08-07, after the B2 design simulation and BEFORE any confirmatory data.**
+Full results: `results/derived/design_simulation.md`, reproducible via
+`scripts/design_simulation.py`, calibrated to Kirgis's own observed variance components.
+
+1. **A fourth verdict is added: `indeterminate`.** If the 95% credible interval on R_f
+   straddles a band boundary, that is the reported outcome. The simulation shows no feasible
+   N resolves an R sitting near 0.25 or 1.0 — this is inherent to a hard-threshold rule, not
+   a power problem, so forcing a three-way call would manufacture false precision.
+2. **Target roster size raised from 13 to N ≈ 20.** Interior-band classification accuracy at
+   the worst simulated value: N=8 → 0.64, N=13 → 0.76, N=20 → 0.86, N=30 → 0.94. N=13
+   misclassifies a genuinely "degraded" R ≈ 0.5 about once in four. Models are all ≤14B and
+   weights need not be held simultaneously (download → run four conditions in minutes →
+   delete), so the 200 GB volume is not the binding constraint; the cost is GPU-hours.
+   **If time forces a cut, N=13 remains usable only with interval widths reported honestly
+   and the indeterminate verdict used. N=8 must not carry the primary claim.**
+3. **Correction to an earlier claim of mine.** I estimated analytically that the 95% interval
+   would span about ×/÷2.5 at N=13. The simulation gives a multiplicative width of **~12×**
+   at N=13, R=0.5. The back-of-envelope was optimistic and must not be quoted.
+4. **Bayesian estimation is now required, not preferred.** The moment estimator returns
+   σ̂²_model ≤ 0 — leaving R undefined — on up to 7.4% of replicates at N=8. A constrained
+   posterior cannot do that.
+5. **Multiplicity across the 7 foundations is resolved:** report all seven intervals; the
+   headline claim is stated at the foundation level, not aggregated into a single verdict.
+   No correction is applied because no null-hypothesis test is being performed — but the
+   seven verdicts are reported together, never selectively.
+
+Calibration values used (medians across foundations of Kirgis's data): σ²_model = 0.070
+(SD 0.264), σ²_item = 0.426, σ²_resid = 0.150.
+
 ### Secondary — rank agreement, descriptive only
 
 Spearman rho of the model ordering under each pair of scoring methods, within each
