@@ -140,6 +140,74 @@ primary:
     gated: false
     note: distinct family, 01.AI
 
+  # ---- Phase-2 additions, pinned 2026-08-08 BEFORE any of their data was
+  # collected (no cherry-picking after results). Selection rationale in
+  # METHODOLOGY_REVIEW.md F3/F4. 70B-class entries exceed every card below a
+  # B200; plan_memory() skips them automatically on smaller GPUs.
+  - id: mistralai/Mistral-Small-24B-Instruct-2501
+    family: mistral
+    params_b: 23.6
+    revision: 9527884be6e5616bdd54de542f9ae13384489724
+    gated: false
+    note: size gradient, 96GB card
+  - id: google/gemma-2-27b-it
+    family: gemma
+    params_b: 27.2
+    revision: aaf20e6b9f4c0fcf043f6fb2a2068419086d77b0
+    gated: true
+    note: size gradient (gated), 96GB card
+  - id: Qwen/Qwen2.5-32B-Instruct
+    family: qwen
+    params_b: 32.8
+    revision: 5ede1c97bbab6ce5cda5812749b4c0bdf79b18dd
+    gated: false
+    note: Qwen ladder point, 96GB card
+  - id: allenai/OLMo-2-0325-32B-Instruct
+    family: olmo
+    params_b: 32.2
+    revision: b96024342a77a69aa0dda815c3454a671f477463
+    gated: false
+    note: fully open at scale, 96GB card
+  - id: meta-llama/Llama-3.1-70B-Instruct
+    family: llama
+    params_b: 70.6
+    revision: 1605565b47bb9346c5515c34102e054115b4f98b
+    gated: true
+    note: SCALE LADDER (gated); B200-class card
+  - id: Qwen/Qwen2.5-72B-Instruct
+    family: qwen
+    params_b: 72.7
+    revision: 495f39366efef23836d0cfae4fbe635880d2be31
+    gated: false
+    note: SCALE LADDER; B200-class card
+
+  # ---- promoted from open_fallback to primary 2026-08-08: these are roster
+  # members now (N -> 30 per the B2 power analysis), not gate-risk contingency.
+  - id: Qwen/Qwen2-7B-Instruct
+    family: qwen
+    params_b: 7.6
+    revision: f2826a00ceef68f0f2b946d945ecc0477ce4450c
+    gated: false
+    note: earlier Qwen generation
+  - id: microsoft/Phi-3.5-mini-instruct
+    family: phi
+    params_b: 3.8
+    revision: 2fe192450127e6a83f7441aef6e3ca586c338b77
+    gated: false
+    note: open
+  - id: HuggingFaceH4/zephyr-7b-beta
+    family: zephyr
+    params_b: 7.2
+    revision: 892b3d7a7b1cf10c7a701c60881cd93df615734c
+    gated: false
+    note: distinct post-training (DPO)
+  - id: tiiuae/Falcon3-7B-Instruct
+    family: falcon
+    params_b: 7.0
+    revision: 1e57a0ecd176c7c139f289c60a74e57f887c3dfb
+    gated: false
+    note: distinct family, TII
+
 # Swap in for the 5 gated models if approvals fail; keeps N at 19 with zero gate risk.
 open_fallback:
   - id: Qwen/Qwen2-7B-Instruct
