@@ -425,6 +425,53 @@ batched runs is not guaranteed. Every condition here ran as a single consistent 
 pod is restarted for any other reason, re-run greedy for two or three models and diff the
 output (~5 min). Until then this is stated as an assumption in the limitations.
 
+### Registered predictions for Phase 2 — FIXED 2026-08-08, BEFORE any Phase-2 data exists
+
+Phase 1 is collected and analysed. Phase 2 changes the harness (v2) and expands the roster to
+N=30 with size ladders to 72B. Both could be accused of being tuned to produce a result, so
+the predictions are written down first. Verifiable in git: this commit precedes any Phase-2
+run manifest.
+
+**Harness v2 (measurement validity)**
+
+- **P1.** Scoring the **full option line** (`"3: Very wrong"`) rather than the bare phrase will
+  raise string-scoring retained mass substantially above the Phase-1 value of 0.22.
+- **P2.** With P1, string scoring's **model-ranking** agreement with label scoring will rise
+  markedly from the Phase-1 ρ = 0.332. *If it does not*, the Phase-1 divergence is a genuine
+  construct difference rather than a surface-form artifact — and that is the more interesting
+  outcome, which is exactly why this is registered rather than decided afterwards.
+- **P3.** Computing p_k **exactly** (forced continuation + `prompt_logprobs`) rather than from
+  a top-20 list will change label scores little for high-mass models (Qwen, OLMo, granite) and
+  materially for low-mass ones (Mistral-7B, Llama-3.2-1B, Ministral).
+- **P4.** The **true-cloze** arm (options hidden from the prompt) will retain more mass than
+  Phase-1 string scoring and will rank models *more* like the bare-phrase variant than like
+  label scoring.
+
+**Scale (Kirgis's claims 2 and 4)**
+
+- **P5.** The individualizing-minus-binding **gap will increase with log parameter count**
+  within the Qwen (0.5→72.7B) and Llama (1→70.6B) ladders. Basis: Tier-0 found the gap ≈ 0 on
+  ≤14B open models while Kirgis reports it clearly at frontier scale, so the pattern is
+  hypothesised to be a *capability* phenomenon. **Pre-committed falsifier:** a flat or
+  negative slope on both ladders means his claim 2 does not generalise to open-weight models
+  at any scale we can reach, and the "emerges with scale" story is dead.
+- **P6.** The **per-model method spread** (max−min condition mean) will *decrease* with log
+  parameter count. Basis: arXiv:2403.00998 reports method sensitivity is larger for weaker
+  models. If true, R is partly a small-model artifact and should shrink on the Phase-2 roster
+  — which would qualify our own headline, not just Kirgis's.
+
+**Power**
+
+- **P7.** At N=30 the credible intervals on R_f will narrow enough that at least two
+  foundations escape `indeterminate`. Basis: B2 puts interior-band accuracy at 0.94 for N=30
+  versus 0.86 at N=20. *If everything stays indeterminate at N=30*, the honest conclusion is
+  that this estimand is not resolvable at any N a student project can reach, and the
+  contribution becomes the design analysis itself.
+
+Any prediction that fails is reported as failed. The Phase-1 record already contains one
+wrong directional prediction of ours (pooled residuals were argued to inflate R; they deflate
+it), which is the standard being kept.
+
 ### Secondary — rank agreement, descriptive only
 
 Spearman rho of the model ordering under each pair of scoring methods, within each
