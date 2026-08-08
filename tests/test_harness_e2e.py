@@ -35,7 +35,7 @@ def fake_vllm_module(qwen_tok, monkeypatch):
     def _responder(prompt, sp, tok):
         nonlocal ids
         if ids is None:
-            ids = {k: tok.encode(str(k), add_special_tokens=False)[0] for k in range(5)}
+            ids = {k: tok.encode(str(k), add_special_tokens=False)[-1] for k in range(5)}
         return {
             "text": "2\nSomewhat wrong because it disregards others.",
             "token_ids": [ids[2]],
@@ -64,7 +64,7 @@ def args_ns():
 
     return argparse.Namespace(
         limit_items=0, k=3, max_model_len=1024, gpu_util=0.85, eager=True,
-        purge_weights=False, force=False,
+        purge_weights=False, force=False, conditions=None, suffix="",
     )
 
 
@@ -90,7 +90,7 @@ def test_every_key_produced_by_a_runner_is_in_FIELDS(qwen_tok, prompt_cfg, items
     ps = [C.render_prompt(qwen_tok, prompt_cfg, q, i) for i, q in items[:2]]
     ids = C.option_token_ids(qwen_tok, prompt_cfg["options"])
     llm = fake_vllm.FakeLLM(qwen_tok, lambda p, sp, t: {
-        "text": "2", "token_ids": [ids[2]], "first_logprobs": {ids[2]: -0.1}})
+        "text": "2", "token_ids": [ids[2][0]], "first_logprobs": {ids[2][0]: -0.1}})
 
     produced: set[str] = set()
     for rows in (
@@ -204,7 +204,7 @@ def test_manifest_records_everything_needed_to_reproduce(harness, prompt_cfg, it
                 "vllm_args", "seeds", "k_samples", "conditions"):
         assert key in m, f"manifest missing {key!r}"
     assert m["revision"] == PINNED_REV, "pinned revision must be recorded"
-    assert m["conditions"] == ["label", "string", "greedy", "sampled"]
+    assert set(m["conditions"]) == {"label", "string", "greedy", "sampled"}
     assert len(m["option_label_token_ids"]) == 5
     # Integrity counters the analysis depends on
     for key in ("n_rows", "parse_failed", "refusals", "scan_parsed"):

@@ -27,3 +27,6 @@ Thumbs.db
 *.pem
 *_token*
 !scripts/*token*
+
+# Personal Claude Code permission grants — machine-specific, not part of the project
+.claude/settings.local.json

@@ -48,6 +48,7 @@ class Prompt:
     """One rendered prompt, plus everything needed to prove it didn't drift."""
     text: str
     item_id: int
+    style: str = "system_role"      # or "system_merged_into_user" — see render_prompt
     sha256: str = field(init=False)
 
     def __post_init__(self) -> None:
@@ -55,16 +56,33 @@ class Prompt:
 
 
 def render_prompt(tokenizer, cfg: dict, question: str, item_id: int) -> Prompt:
-    """The ONLY place a prompt is built. All four conditions call this."""
+    """The ONLY place a prompt is built. All four conditions call this.
+
+    Some chat templates reject a system role outright — Gemma-2 raises
+    "System role not supported". For those, the system text is prepended to the user turn
+    instead. This preserves the invariant that MATTERS (byte-identical across the four
+    conditions within a model); prompts already differ ACROSS models because chat templates
+    differ, so this is one more instance of a difference the design already accommodates.
+    The fallback is recorded per model in the manifest so the write-up can name which models
+    used it.
+    """
     user = cfg["user_template"].replace("{{QUESTION_CONTENT_PLACEHOLDER}}", question)
-    messages = [
-        {"role": "system", "content": cfg["system"]},
-        {"role": "user", "content": user},
-    ]
-    text = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
-    return Prompt(text=text, item_id=item_id)
+    system = cfg["system"]
+    try:
+        text = tokenizer.apply_chat_template(
+            [{"role": "system", "content": system}, {"role": "user", "content": user}],
+            tokenize=False, add_generation_prompt=True,
+        )
+        style = "system_role"
+    except Exception:
+        text = tokenizer.apply_chat_template(
+            [{"role": "user", "content": f"{system}\n\n{user}"}],
+            tokenize=False, add_generation_prompt=True,
+        )
+        style = "system_merged_into_user"
+    p = Prompt(text=text, item_id=item_id)
+    p.style = style
+    return p
 
 
 # ---------------------------------------------------------------------------------------
@@ -72,20 +90,35 @@ def render_prompt(tokenizer, cfg: dict, question: str, item_id: int) -> Prompt:
 # ---------------------------------------------------------------------------------------
 
 
-def option_token_ids(tokenizer, options: dict) -> dict[int, int]:
-    """Map option label -> the single token id the model will actually emit.
+def option_token_ids(tokenizer, options: dict) -> dict[int, list[int]]:
+    """Map option label -> ALL plausible token ids the model might emit for it.
 
-    The probe (scripts/probe_tokenization.py) established that on Qwen the BARE digit is a
-    single token and the space-prefixed form is two, and that the model emits the bare form
-    because the chat template ends with a newline. That is tokenizer-specific: re-run the
-    probe per family. Here we take the bare form when it is a single token, and record a
-    problem otherwise rather than guessing.
+    The first version of this took the bare digit only when it was a single token, and gave
+    up otherwise. On the real roster that silently produced an EMPTY candidate set for every
+    SentencePiece tokenizer (Mistral, Phi-3, Yi), because there `"0"` encodes to two tokens:
+    a metaspace marker plus the digit. Label scoring then scored nothing at all and returned
+    a renormalised expectation over an empty set — mass 0.0000, no error raised.
+
+    So: gather candidates from both the bare and the space-prefixed form, and in each case
+    take the LAST token, which is the digit itself once any metaspace prefix is stripped.
+    Duplicates collapse. Returning a list rather than a single id is the point — which form
+    the model actually emits is an empirical question, resolved at scoring time.
     """
-    out: dict[int, int] = {}
+    out: dict[int, list[int]] = {}
     for k in options:
-        ids = tokenizer.encode(str(k), add_special_tokens=False)
-        if len(ids) == 1:
-            out[k] = ids[0]
+        cands: list[int] = []
+        for form in (str(k), f" {k}"):
+            ids = tokenizer.encode(form, add_special_tokens=False)
+            if ids:
+                if len(ids) == 1:
+                    cands.append(ids[0])
+                else:
+                    cands.append(ids[-1])   # drop the SentencePiece metaspace prefix
+        seen: list[int] = []
+        for c in cands:
+            if c not in seen:
+                seen.append(c)
+        out[k] = seen
     return out
 
 
@@ -154,20 +187,52 @@ def is_refusal(text: str) -> bool:
 # ---------------------------------------------------------------------------------------
 
 
-def run_label(llm, sampling_params_cls, prompts: list[Prompt], tok_ids: dict[int, int],
-              top_logprobs: int = 20) -> list[dict]:
-    sp = sampling_params_cls(temperature=0.0, max_tokens=1, logprobs=top_logprobs)
+def run_label(llm, sampling_params_cls, prompts: list[Prompt],
+              tok_ids: dict[int, list[int]], top_logprobs: int = 20,
+              scan_positions: int = 4) -> list[dict]:
+    """Score the option label, at the first position where the model is actually answering.
+
+    Reading position 0 unconditionally is what the literature describes, and on this roster
+    it is wrong for a third of models: Mistral emits '\\n' first, Phi-3 emits a bare
+    metaspace token, Llama-3.2-1B starts prose ('I'), Ministral emits '</s>' immediately.
+    Scoring position 0 there measures the probability of a newline, not of an answer.
+
+    So we generate a few tokens and take the FIRST position whose top-k actually contains an
+    option token. `label_position` records which one was used, per row, so the write-up can
+    report how often position 0 was not the answer — that rate is itself a result about how
+    fragile first-token label scoring is.
+
+    If no position in the scan window contains an option token, the row is flagged
+    parse_failed rather than assigned a fabricated score.
+    """
+    sp = sampling_params_cls(temperature=0.0, max_tokens=scan_positions,
+                             logprobs=top_logprobs)
     outs = llm.generate([p.text for p in prompts], sp)
     rows = []
     for p, o in zip(prompts, outs):
         co = o.outputs[0]
-        pos = co.logprobs[0] if co.logprobs else {}
-        found = {k: pos[tid].logprob for k, tid in tok_ids.items() if tid in pos}
+        lps = co.logprobs or []
+        found: dict[int, float] = {}
+        used = -1
+        for pos_i, pos in enumerate(lps[:scan_positions]):
+            hit = {}
+            for k, cands in tok_ids.items():
+                best = None
+                for tid in cands:
+                    if tid in pos:
+                        lp = pos[tid].logprob
+                        best = lp if best is None else max(best, lp)
+                if best is not None:
+                    hit[k] = best
+            if hit:
+                found, used = hit, pos_i
+                break
         e, mass = expectation(found)
         rows.append({
             "item_id": p.item_id, "condition": "label", "replicate": 0,
             "prompt_sha": p.sha256, "score": e, "logprob_mass": mass,
             "n_options_found": len(found),
+            "label_position": used,
             "raw_output": co.text,
             "emitted_token_id": co.token_ids[0] if co.token_ids else None,
             "refusal": False, "parse_failed": len(found) == 0,

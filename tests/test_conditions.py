@@ -82,7 +82,22 @@ def test_bare_and_spaced_digits_differ_on_qwen(qwen_tok):
 def test_option_token_ids_finds_all_five(qwen_tok, prompt_cfg):
     ids = C.option_token_ids(qwen_tok, prompt_cfg["options"])
     assert set(ids) == set(prompt_cfg["options"]), f"only found {sorted(ids)}"
-    assert len(set(ids.values())) == 5, "option labels must map to distinct token ids"
+    assert all(v for v in ids.values()), f"some options have no candidate token: {ids}"
+    firsts = [v[0] for v in ids.values()]
+    assert len(set(firsts)) == 5, "option labels must map to distinct token ids"
+
+
+def test_option_token_ids_handles_sentencepiece_tokenizers(any_tok, prompt_cfg):
+    """The bug that broke label scoring on 6/16 models: SentencePiece encodes "0" as TWO
+    tokens (metaspace marker + digit), the old code demanded a single token, found none,
+    and scored an empty set — mass 0.0000 with no error. Every tokenizer in the roster must
+    now yield a candidate for all five options."""
+    name, tok = any_tok
+    ids = C.option_token_ids(tok, prompt_cfg["options"])
+    missing = [k for k, v in ids.items() if not v]
+    assert not missing, f"{name}: no candidate token for options {missing}"
+    firsts = [v[0] for v in ids.values()]
+    assert len(set(firsts)) == 5, f"{name}: candidates not distinct: {ids}"
 
 
 def test_first_token_collision_between_options_0_and_1(any_tok, prompt_cfg):
@@ -242,8 +257,8 @@ def test_run_label_produces_one_row_per_item(qwen_tok, prompt_cfg, items):
     ps = _prompts(qwen_tok, prompt_cfg, items)
     ids = C.option_token_ids(qwen_tok, prompt_cfg["options"])
     llm = FakeLLM(qwen_tok, lambda p, sp, t: {
-        "text": "2", "token_ids": [ids[2]],
-        "first_logprobs": {ids[k]: math.log(v) for k, v in
+        "text": "2", "token_ids": [ids[2][0]],
+        "first_logprobs": {ids[k][0]: math.log(v) for k, v in
                            {0: .05, 1: .10, 2: .50, 3: .30, 4: .05}.items()},
     })
     rows = C.run_label(llm, SamplingParams, ps, ids)
@@ -258,11 +273,11 @@ def test_run_label_requests_logprobs_and_one_token(qwen_tok, prompt_cfg, items):
     """A wrong max_tokens or missing logprobs silently yields nothing to score."""
     ps = _prompts(qwen_tok, prompt_cfg, items, 1)
     ids = C.option_token_ids(qwen_tok, prompt_cfg["options"])
-    llm = FakeLLM(qwen_tok, lambda p, sp, t: {"text": "2", "token_ids": [ids[2]],
-                                              "first_logprobs": {ids[2]: -0.1}})
+    llm = FakeLLM(qwen_tok, lambda p, sp, t: {"text": "2", "token_ids": [ids[2][0]],
+                                              "first_logprobs": {ids[2][0]: -0.1}})
     C.run_label(llm, SamplingParams, ps, ids)
     _, sp = llm.calls[0]
-    assert sp.max_tokens == 1
+    assert sp.max_tokens >= 1
     assert sp.logprobs and sp.logprobs >= 5
     assert sp.temperature == 0.0
 
@@ -377,7 +392,7 @@ def test_all_conditions_agree_on_prompt_hash(qwen_tok, prompt_cfg, items):
     ps = _prompts(qwen_tok, prompt_cfg, items, 2)
     ids = C.option_token_ids(qwen_tok, prompt_cfg["options"])
     llm = FakeLLM(qwen_tok, lambda p, sp, t: {
-        "text": "2", "token_ids": [ids[2]], "first_logprobs": {ids[2]: -0.1}})
+        "text": "2", "token_ids": [ids[2][0]], "first_logprobs": {ids[2][0]: -0.1}})
     rows = (C.run_label(llm, SamplingParams, ps, ids)
             + C.run_string(llm, SamplingParams, qwen_tok, ps, prompt_cfg["options"])
             + C.run_free(llm, SamplingParams, ps, greedy=True)

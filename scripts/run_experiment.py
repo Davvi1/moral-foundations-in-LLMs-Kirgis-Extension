@@ -39,6 +39,7 @@ FIELDS = [
     "model", "revision", "item_id", "foundation", "condition", "replicate",
     "score", "score_alt_normalisation", "logprob_mass", "n_options_found",
     "refusal", "parse_failed", "parse_strategy", "token_boundary_clean", "emitted_token_id",
+    "label_position",
     "seed", "prompt_sha", "raw_output",
 ]
 
@@ -130,7 +131,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     from vllm import LLM, SamplingParams
 
     mid, rev = entry["id"], entry.get("revision")
-    out_csv = RAW / f"{slug(mid)}.csv"
+    out_csv = RAW / f"{slug(mid)}{args.suffix}.csv"
     if out_csv.exists() and not args.force:
         print(f"[skip] {mid} — already done")
         return
@@ -140,13 +141,21 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
 
     # PRE-FLIGHT: decide memory before downloading tens of GB.
     util, why = plan_memory(entry.get("params_b", 0.0), gpu_vram_gib(), args.gpu_util)
+    if entry.get("gpu_util_override"):
+        util = float(entry["gpu_util_override"])
+        why = (f"per-model override: utilisation {util} "
+               f"(estimated need was {entry.get('params_b',0)*2*1.03+1.5:.1f} GiB)")
     print(f"  memory: {why}")
     if util < 0:
         (RAW / f"{slug(mid)}.SKIPPED.txt").write_text(why + "\n", encoding="utf-8")
         print(f"  [skip] {mid} — insufficient VRAM, nothing downloaded")
         return
 
-    tok = AutoTokenizer.from_pretrained(mid, revision=rev)
+    trc = bool(entry.get("trust_remote_code"))
+    if trc:
+        print(f"  !! trust_remote_code=True — this EXECUTES code from the model repo. "
+              f"Pinned to revision {rev}, on a disposable pod.")
+    tok = AutoTokenizer.from_pretrained(mid, revision=rev, trust_remote_code=trc)
 
     prompts = [C.render_prompt(tok, prompt_cfg, q, i) for i, q in items]
 
@@ -158,11 +167,16 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     assert len(shas) == len(prompts), "prompt hash collision — items are not distinct"
     print(f"  {len(prompts)} distinct prompts; first sha {prompts[0].sha256}")
 
+    want = set(args.conditions) if args.conditions else {"label", "string", "greedy", "sampled"}
+
     tok_ids = C.option_token_ids(tok, prompt_cfg["options"])
-    if len(tok_ids) != len(prompt_cfg["options"]):
-        print(f"  !! WARNING: only {len(tok_ids)}/{len(prompt_cfg['options'])} option labels "
-              f"are single tokens on this tokenizer. Label scoring is degraded here — "
-              f"re-run scripts/probe_tokenization.py for this family before trusting it.")
+    empty = [k for k, v in tok_ids.items() if not v]
+    if empty:
+        print(f"  !! WARNING: no candidate token found for option(s) {empty} — label "
+              f"scoring cannot work on this tokenizer.")
+    else:
+        print(f"  option token candidates: "
+              f"{ {k: v for k, v in sorted(tok_ids.items())} }")
 
     # Build and SERIALISE-CHECK the manifest skeleton BEFORE any inference. Doing this
     # afterwards once cost a full model's run: config/prompt.yaml has `decided: 2026-08-07`,
@@ -173,8 +187,10 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
         "model": mid, "revision": rev, "family": entry.get("family"),
         "params_b": entry.get("params_b"),
         "n_items": len(items), "k_samples": args.k,
-        "conditions": ["label", "string", "greedy", "sampled"],
+        "conditions": sorted(want),
         "prompt_sha_first": prompts[0].sha256,
+        "prompt_style": prompts[0].style,
+        "trust_remote_code": trc,
         "prompt_sha_all_distinct": len(shas) == len(prompts),
         "prompt_config_sha": C.Prompt(
             json.dumps(prompt_cfg, sort_keys=True, default=str), -1).sha256,
@@ -195,22 +211,26 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
 
     llm = LLM(model=mid, revision=rev, max_model_len=args.max_model_len,
               gpu_memory_utilization=util, enforce_eager=args.eager,
-              dtype="bfloat16")
+              dtype="bfloat16", trust_remote_code=trc)
 
     rows: list[dict] = []
-    rows += C.run_label(llm, SamplingParams, prompts, tok_ids)
-    print(f"  label    done ({len(rows)} rows)")
-    n = len(rows)
-    rows += C.run_string(llm, SamplingParams, tok, prompts, prompt_cfg["options"],
-                         length_normalise=True)
-    print(f"  string   done (+{len(rows)-n})")
-    n = len(rows)
-    rows += C.run_free(llm, SamplingParams, prompts, greedy=True)
-    print(f"  greedy   done (+{len(rows)-n})")
-    n = len(rows)
-    rows += C.run_free(llm, SamplingParams, prompts, greedy=False, k=args.k,
-                       seeds=list(range(args.k)))
-    print(f"  sampled  done (+{len(rows)-n}, k={args.k})")
+    if "label" in want:
+        rows += C.run_label(llm, SamplingParams, prompts, tok_ids)
+        print(f"  label    done ({len(rows)} rows)")
+    if "string" in want:
+        n = len(rows)
+        rows += C.run_string(llm, SamplingParams, tok, prompts, prompt_cfg["options"],
+                             length_normalise=True)
+        print(f"  string   done (+{len(rows)-n})")
+    if "greedy" in want:
+        n = len(rows)
+        rows += C.run_free(llm, SamplingParams, prompts, greedy=True)
+        print(f"  greedy   done (+{len(rows)-n})")
+    if "sampled" in want:
+        n = len(rows)
+        rows += C.run_free(llm, SamplingParams, prompts, greedy=False, k=args.k,
+                           seeds=list(range(args.k)))
+        print(f"  sampled  done (+{len(rows)-n}, k={args.k})")
 
     for r in rows:
         r["model"] = mid
@@ -229,7 +249,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     manifest["parse_failed"] = sum(1 for r in rows if r.get("parse_failed"))
     manifest["refusals"] = sum(1 for r in rows if r.get("refusal"))
     manifest["scan_parsed"] = sum(1 for r in rows if r.get("parse_strategy") == "scan")
-    (RAW / f"{slug(mid)}.manifest.json").write_text(
+    (RAW / f"{slug(mid)}{args.suffix}.manifest.json").write_text(
         json.dumps(manifest, indent=2, default=str), encoding="utf-8")
 
     fails = sum(1 for r in rows if r.get("parse_failed"))
@@ -269,6 +289,11 @@ def main() -> int:
                     help="enable CUDA graphs (faster, riskier on new GPUs)")
     ap.add_argument("--purge-weights", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--conditions", nargs="*", default=None,
+                    help="subset to run, e.g. --conditions label (default: all four)")
+    ap.add_argument("--suffix", default="",
+                    help="filename suffix, e.g. .labelfix — lets a corrected condition be "
+                         "written alongside the original instead of overwriting it")
     args = ap.parse_args()
 
     prompt_cfg, roster, items, meta = load_cfg()
