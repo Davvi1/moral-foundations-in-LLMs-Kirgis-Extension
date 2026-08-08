@@ -131,12 +131,21 @@ def main() -> int:
                          "one, i.e. to drop models that are currently pinned")
     args = ap.parse_args()
 
+    # Count the existing roster WITHOUT importing yaml. This script is stdlib-only by design
+    # (it runs on the pod before the analysis environment exists), and an earlier version of
+    # this guard called yaml.safe_load inside a try/except — which raised NameError, was
+    # swallowed, and silently reported "0 primary models", disabling the shrink refusal
+    # entirely. A guard that fails open is worse than no guard, because it looks like one.
     existing_n = 0
     if OUT.exists():
-        try:
-            existing_n = len(yaml.safe_load(OUT.read_text(encoding="utf-8"))["primary"])
-        except Exception:
-            existing_n = 0
+        in_primary = False
+        for line in OUT.read_text(encoding="utf-8").splitlines():
+            if line.startswith("primary:"):
+                in_primary = True
+            elif line and not line[0].isspace() and not line.startswith("#"):
+                in_primary = False
+            elif in_primary and line.startswith("  - id:"):
+                existing_n += 1
 
     if not args.write:
         print(f"DRY RUN — nothing written. config/models.yaml currently has "
