@@ -112,7 +112,8 @@ def main() -> int:
             f"    params_b: {params}",
             f"    revision: {sha}",
             f"    gated: {str(gated).lower()}",
-            f"    note: {note}",
+            f"    note: {json.dumps(note)}",   # quoted: a colon in a bare
+                                              # YAML scalar is a parse error
         ]
     block = "\n".join(lines) + "\n"
 

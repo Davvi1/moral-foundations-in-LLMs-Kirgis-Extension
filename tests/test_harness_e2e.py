@@ -74,7 +74,7 @@ def args_ns(request):
     import argparse
 
     return argparse.Namespace(
-        harness=request.param, cloze=False,
+        harness=request.param, cloze=False, tensor_parallel_size=1,
         limit_items=0, k=3, max_model_len=1024, gpu_util=0.85, eager=True,
         purge_weights=False, force=False, conditions=None, suffix="",
     )
@@ -360,7 +360,7 @@ def test_roster_is_well_formed(repo):
 
     _, roster, _, _ = R.load_cfg()
     prim = roster["primary"]
-    assert len(prim) == 30, "roster is N=30 after the Phase-2 expansion"
+    assert len(prim) == 32, "roster is N=32 after the Phase-2 and Phase-3 expansions"
     ids = [m["id"] for m in prim]
     assert len(set(ids)) == len(ids), "duplicate model in roster"
     for m in prim:
@@ -376,7 +376,11 @@ def test_roster_is_well_formed(repo):
     def ladder(fam):
         return sorted(m["params_b"] for m in prim if m["family"] == fam)
 
-    qwen, llama = ladder("qwen"), ladder("llama")
+    qwen, llama, mistral = ladder("qwen"), ladder("llama"), ladder("mistral")
+    # Phase 3 made mistral a third real ladder (7.2 -> 122.6B). P5/P6 are within-family
+    # slopes, so the number of families with genuine scale span is what those predictions
+    # actually rest on — more than total N.
+    assert mistral[-1] / mistral[0] >= 15, mistral
     assert len(qwen) >= 7 and qwen[0] <= 0.5 and qwen[-1] >= 70, qwen
     assert len(llama) >= 4 and llama[0] <= 1.0 and llama[-1] >= 70, llama
     # Two decades of scale on each ladder, or a log-parameter slope is fitted on nothing.

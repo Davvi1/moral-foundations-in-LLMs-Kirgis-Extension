@@ -37,7 +37,11 @@ def test_14b_is_refused_before_download():
     util, why = R.plan_memory(14.0, PRO_4500, 0.85)
     assert util < 0, "14B must be refused on a 32 GiB card, not attempted"
     assert "WILL NOT FIT" in why
-    assert "RTX PRO 6000" in why, "the message must say what to do instead"
+    # The message must say what to do instead. It now names a concrete tensor-parallel size
+    # rather than a specific card, since the roster spans 0.5B to 122.6B and "get a bigger
+    # card" stopped being sufficient advice at the top of that range.
+    assert "--tensor-parallel-size" in why, why
+    assert "quantising" in why, "must still rule out the fp8 escape hatch and say why"
 
 
 def test_14b_fits_on_the_larger_card():
@@ -52,12 +56,12 @@ def test_no_gpu_falls_back_to_default_without_crashing():
     assert "no GPU" in why
 
 
-def _split(card):
-    """Partition the roster into (comfortable, tight, refused) on one card."""
+def _split(card, n_gpus=1):
+    """Partition the roster into (comfortable, tight, refused) on a card, or a TP group."""
     _, roster, _, _ = R.load_cfg()
     refused, tight, ok = [], [], []
     for m in roster["primary"]:
-        util, _ = R.plan_memory(m["params_b"], card, 0.85)
+        util, _ = R.plan_memory(m["params_b"], card, 0.85, n_gpus=n_gpus)
         (refused if util < 0 else tight if util == 0.95 else ok).append(m["id"])
     return ok, tight, refused
 
@@ -71,11 +75,11 @@ def test_roster_split_on_the_small_card_is_as_documented():
     so when the plan moves, the assertion moves with it and stays a real check.
     """
     ok, tight, refused = _split(PRO_4500)
-    assert len(ok) + len(tight) + len(refused) == 30, "roster is not N=30"
+    assert len(ok) + len(tight) + len(refused) == 32, "roster is not N=32"
     assert tight == ["allenai/OLMo-2-1124-13B-Instruct"], tight
-    assert len(refused) == 7, refused
-    assert all(any(s in r for s in ("14B", "24B", "27b", "32B", "70B", "72B"))
-               for r in refused), refused
+    assert len(refused) == 9, refused
+    assert all(any(s in r for s in ("14B", "phi-4", "24B", "27b", "32B", "70B", "72B",
+                                    "Large")) for r in refused), refused
 
 
 def test_the_big_card_takes_everything_except_the_70B_pair():
@@ -88,11 +92,11 @@ def test_the_big_card_takes_everything_except_the_70B_pair():
     keeps it visible.
     """
     ok, tight, refused = _split(PRO_6000)
-    assert len(refused) == 2, refused
     assert sorted(refused) == ["Qwen/Qwen2.5-72B-Instruct",
-                               "meta-llama/Llama-3.1-70B-Instruct"], refused
+                               "meta-llama/Llama-3.1-70B-Instruct",
+                               "mistralai/Mistral-Large-Instruct-2407"], refused
     assert not tight, tight
-    assert len(ok) == 28
+    assert len(ok) == 29
 
 
 def test_the_70B_pair_is_refused_with_an_actionable_message():
@@ -104,9 +108,33 @@ def test_the_70B_pair_is_refused_with_an_actionable_message():
         assert "GiB" in why, "the message must quantify the shortfall"
 
 
-def test_a_b200_class_card_takes_the_whole_roster():
-    """The documented route for the 70B pair. If this fails, the scale ladders are unrunnable
-    and P5/P6 cannot be evaluated at all — which would be a design problem, not a test bug."""
+def test_a_single_b200_takes_everything_except_mistral_large():
+    """One 180 GiB card covers the roster up to the 70B pair. Mistral-Large (122.6B, ~253 GiB
+    of bf16 weights) is the one model that needs tensor parallelism on any card we can rent."""
     ok, tight, refused = _split(180.0)
-    assert not refused, refused
-    assert len(ok) + len(tight) == 30
+    assert refused == ["mistralai/Mistral-Large-Instruct-2407"], refused
+    assert len(ok) + len(tight) == 31
+
+
+def test_tensor_parallelism_makes_the_whole_roster_runnable():
+    """Every model must be runnable on SOME configuration we can actually rent, or it should
+    not be in the roster. Mistral-Large needs 2x180 GiB or 4x96 GiB."""
+    for card, n in ((180.0, 2), (96.0, 4)):
+        ok, tight, refused = _split(card, n_gpus=n)
+        assert not refused, f"{n}x{card:.0f}GiB still refuses: {refused}"
+        assert len(ok) + len(tight) == 32
+
+
+def test_tp_group_size_is_clamped_to_a_power_of_two():
+    """vLLM shards attention heads across the TP group, so an odd group size fails at load —
+    after the weights are already downloaded."""
+    assert [R.usable_tp_size(n) for n in (1, 2, 3, 4, 5, 6, 7, 8)] == [1, 2, 2, 4, 4, 4, 4, 8]
+
+
+def test_multi_gpu_planning_divides_weights_but_not_headroom():
+    """Weights shard across ranks; KV cache and workspace do not. Getting this backwards would
+    over-promise capacity and OOM after the download."""
+    single, _ = R.plan_memory(122.6, 96.0, 0.85, n_gpus=1)
+    quad, why = R.plan_memory(122.6, 96.0, 0.85, n_gpus=4)
+    assert single < 0 and quad > 0, why
+    assert "4 GPUs" in why

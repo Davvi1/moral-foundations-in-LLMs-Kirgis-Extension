@@ -111,8 +111,40 @@ def gpu_vram_gib() -> float | None:
     return None
 
 
+def gpu_count() -> int:
+    """How many GPUs nvidia-smi can see. 1 if it cannot tell.
+
+    `gpu_vram_gib()` deliberately returns only the FIRST card's memory, because vLLM's
+    `gpu_memory_utilization` is a PER-GPU fraction. Capacity therefore has two components and
+    conflating them is how a 245 GB model gets planned against one 96 GB card.
+    """
+    try:
+        r = subprocess.run(
+            ["nvidia-smi", "--query-gpu=memory.total", "--format=csv,noheader,nounits"],
+            capture_output=True, text=True, timeout=10)
+        if r.returncode == 0 and r.stdout.strip():
+            return len(r.stdout.strip().splitlines())
+    except Exception:
+        pass
+    return 1
+
+
+def usable_tp_size(n_gpus: int) -> int:
+    """Largest power of two <= n_gpus.
+
+    vLLM shards attention heads across the tensor-parallel group, so the group size must
+    divide the head count. Head counts are powers of two on every model in this roster, and
+    an odd tensor_parallel_size (a 3-GPU pod, say) fails at load time after the weights are
+    already on disk. Clamping is cheaper than that error.
+    """
+    tp = 1
+    while tp * 2 <= max(1, n_gpus):
+        tp *= 2
+    return tp
+
+
 def plan_memory(params_b: float, vram_gib: float | None,
-                default_util: float) -> tuple[float, str]:
+                default_util: float, n_gpus: int = 1) -> tuple[float, str]:
     """Decide gpu_memory_utilization, or refuse before anything is downloaded.
 
     Qwen2.5-14B is ~28.8 GiB in bf16 and does NOT fit a 32 GiB card; OLMo-2-13B at
@@ -123,21 +155,34 @@ def plan_memory(params_b: float, vram_gib: float | None,
     fp8 is deliberately NOT used as an escape hatch. Quantising only the two largest models
     would make numerics differ by model, which is a confound in a study whose entire subject
     is measurement artifacts.
+
+    Tensor parallelism shards the WEIGHTS across the group but the KV cache and activation
+    workspace are needed on every rank, so the per-GPU requirement is weights/n + headroom,
+    not total/n. `vram_gib` is per-GPU throughout, because that is what vLLM's
+    `gpu_memory_utilization` is a fraction of.
     """
     weights = params_b * 2 * 1.03      # bf16 + embedding/lm_head overhead
     kv_headroom = 1.5                  # short prompts, small batch
     if vram_gib is None:
         return default_util, "no GPU detected — using default utilisation"
-    need = weights + kv_headroom
+    n_gpus = max(1, int(n_gpus))
+    need = weights / n_gpus + kv_headroom
+    across = f" across {n_gpus} GPUs" if n_gpus > 1 else ""
     if need < vram_gib * default_util:
-        return default_util, "fits comfortably"
+        return default_util, f"fits comfortably{across}"
     if need < vram_gib * 0.95:
-        return 0.95, f"tight ({need:.1f} of {vram_gib:.1f} GiB) — raising utilisation to 0.95"
+        return 0.95, (f"tight ({need:.1f} of {vram_gib:.1f} GiB per GPU{across}) — "
+                      f"raising utilisation to 0.95")
+    # How many GPUs of this size WOULD do it? Actionable beats "does not fit".
+    want = 1
+    while want < 64 and (weights / want + kv_headroom) >= vram_gib * 0.95:
+        want *= 2
     return -1.0, (
-        f"WILL NOT FIT: needs ~{need:.1f} GiB, card has {vram_gib:.1f} GiB. "
-        f"Run this model on a larger GPU (attach the same network volume to an "
-        f"RTX PRO 6000 pod) rather than quantising it — quantising only the largest "
-        f"models would make numerics differ by model, a confound in this study.")
+        f"WILL NOT FIT: needs ~{need:.1f} GiB per GPU{across}, card has {vram_gib:.1f} GiB. "
+        f"~{weights:.0f} GiB of bf16 weights needs {want}x this card "
+        f"(--tensor-parallel-size {want}). Use more or larger GPUs rather than quantising — "
+        f"quantising only the largest models would make numerics differ by model, a confound "
+        f"in this study.")
 
 
 def _gpu_name() -> str:
@@ -175,7 +220,10 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     t0 = time.time()
 
     # PRE-FLIGHT: decide memory before downloading tens of GB.
-    util, why = plan_memory(entry.get("params_b", 0.0), gpu_vram_gib(), args.gpu_util)
+    n_gpus = usable_tp_size(gpu_count())
+    tp = args.tensor_parallel_size or n_gpus
+    util, why = plan_memory(entry.get("params_b", 0.0), gpu_vram_gib(), args.gpu_util,
+                            n_gpus=tp)
     if entry.get("gpu_util_override"):
         util = float(entry["gpu_util_override"])
         why = (f"per-model override: utilisation {util} "
@@ -257,14 +305,16 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
                 ("VLLM_USE_FLASHINFER_SAMPLER", "HF_HOME")},
         "vllm_args": {"max_model_len": args.max_model_len,
                       "gpu_memory_utilization": util,
-                      "enforce_eager": args.eager, "dtype": "bfloat16"},
+                      "enforce_eager": args.eager, "dtype": "bfloat16",
+                      "tensor_parallel_size": tp},
+        "n_gpus_visible": gpu_count(),
         "seeds": list(range(args.k)),
     }
     json.dumps(manifest_static, default=str)  # fail fast, before the GPU work
 
     llm = LLM(model=mid, revision=rev, max_model_len=args.max_model_len,
               gpu_memory_utilization=util, enforce_eager=args.eager,
-              dtype="bfloat16", trust_remote_code=trc)
+              dtype="bfloat16", trust_remote_code=trc, tensor_parallel_size=tp)
 
     tokdiag = tokenization_probe(llm, SamplingParams, tok, prompts[0])
 
@@ -371,6 +421,10 @@ def main() -> int:
                     help="enable CUDA graphs (faster, riskier on new GPUs)")
     ap.add_argument("--purge-weights", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--tensor-parallel-size", type=int, default=0,
+                    help="shard each model across this many GPUs (0 = auto: the largest "
+                         "power of two that nvidia-smi can see). Needed for models whose "
+                         "bf16 weights exceed one card, e.g. Mistral-Large at ~245 GiB.")
     ap.add_argument("--harness", choices=["v1", "v2"], default="v2",
                     help="v2 (default) scores every option by forced continuation: exact p_k, "
                          "no top-k truncation, no position scan, boundary measured not assumed. "

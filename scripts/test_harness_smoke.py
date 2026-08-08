@@ -114,6 +114,7 @@ def run_one(R, prompt_cfg, models_cfg, items, meta, model_id) -> bool:
         R.RAW = Path(td)
         args = argparse.Namespace(
             harness="v2", cloze=True, conditions=None, k=3, max_model_len=1024,
+            tensor_parallel_size=1,
             gpu_util=0.85, eager=True, purge_weights=False, force=True, suffix="",
         )
         # Real pinned revision from config/models.yaml: run_model resolves it against the
