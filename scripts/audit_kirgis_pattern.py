@@ -194,6 +194,56 @@ def main() -> int:
         p(f"| {famname} | {cells} |")
     p("")
 
+    # ---- 6b. the confound that makes a raw gap of zero NON-neutral ------------------
+    p("## 6b. Why a raw gap of ~0 is *not* neutral evidence\n")
+    hum = df.groupby("foundation")["clifford_wrong_mean"].mean()
+    hA, hB = hum[GROUP_A].mean(), hum[GROUP_B].mean()
+    p("The human baseline has its own foundation structure:\n")
+    p("| foundation | human mean |")
+    p("|---|---|")
+    for f, v in hum.sort_values(ascending=False).items():
+        p(f"| {f} | {v:.3f} |")
+    p("")
+    p(f"Humans rate group A ({', '.join(GROUP_A)}) at **{hA:.3f}** and group B "
+      f"({', '.join(GROUP_B)}) at **{hB:.3f}** — a difference of **{hA-hB:+.3f}**.\n")
+    p("Now combine that with the compression in §7. Compression pulls every rating toward "
+      "mid-scale, so the *higher* human ratings (group A) are pulled DOWN more and the "
+      "*lower* ones (group B) are pushed UP more. **Pure compression therefore predicts a "
+      "NEGATIVE raw gap, with no moral content whatsoever.**\n")
+    p("So 'raw gap ≈ 0' does not mean 'no pattern'. It means the observed data sit between "
+      "the compression prediction (negative) and Kirgis's prediction (positive). The raw gap "
+      "cannot adjudicate; the compression-adjusted gap in §7 is the statistic that can.\n")
+
+    # ---- 6c. grouping robustness ----------------------------------------------------
+    p("## 6c. Does the verdict depend on where Liberty is placed?\n")
+    p("Kirgis groups Liberty with the individualizing foundations; canonical MFT treats "
+      "Care+Fairness as individualizing and leaves Liberty separate. Raw mean gaps under "
+      "three groupings:\n")
+    p("| grouping | label | string | greedy | sampled |")
+    p("|---|---|---|---|---|")
+    for name, GA, GB in [("Kirgis (A = Care/Fair/Liberty)", GROUP_A, GROUP_B),
+                         ("canonical (A = Care/Fair)", ["Care", "Fairness"], GROUP_B),
+                         ("Liberty with binding", ["Care", "Fairness"],
+                          GROUP_B + ["Liberty"])]:
+        e = (df.groupby(["model_short", "condition", "foundation"])["error"]
+               .mean().reset_index())
+        vals = {}
+        for c, g in e.groupby("condition"):
+            gg = []
+            for m, gm in g.groupby("model_short"):
+                f2e = dict(zip(gm.foundation, gm.error))
+                a = [f2e[f] for f in GA if f in f2e]
+                b = [f2e[f] for f in GB if f in f2e]
+                if len(a) >= 2 and len(b) >= 2:
+                    gg.append(np.mean(a) - np.mean(b))
+            if gg:
+                vals[c] = float(np.mean(gg))
+        cells = " | ".join(f"{vals[m]:+.3f}" if m in vals else "—" for m in METHODS)
+        p(f"| {name} | {cells} |")
+    p("")
+    p("The conclusion is grouping-robust — and note that **Kirgis's own grouping is the most "
+      "favourable to his claim**; the canonical one is more negative still.\n")
+
     # ---- 7. severity compression — the likely mechanism -----------------------------
     p("## 7. Severity compression: is the error structure about foundations at all?\n")
     p("Model errors may simply track how *mild* the human rating is — compression toward "
@@ -240,22 +290,27 @@ def main() -> int:
             pair_rhos.append(spearman(sub[a_], sub[b_]))
     agree = float(np.nanmean(pair_rhos))
 
-    if all(v > 0.65 for v in share.values()) and all(v > 0 for v in means.values()):
-        p("**Kirgis's substantive pattern is present and method-stable** — the second "
-          "fair-to-Kirgis result. Effect sizes remain method-dependent (§2–3).")
-    elif agree > 0.6 and all(v < 0.65 for v in share.values()):
-        p("**The pattern is ABSENT under every method — and the methods agree.** Mean gaps "
-          f"are ≈ 0 (range {min(means.values()):+.2f} to {max(means.values()):+.2f}); the "
-          f"share of models showing the pattern never exceeds "
-          f"{max(share.values()):.0%}; yet per-model gaps correlate strongly across methods "
-          f"(mean ρ = {agree:.2f}). **This is a replication failure on this sample, not a "
-          "method-instability result** — the four estimators concur that ≤14B open-weight "
-          "models do not show the individualizing-over-binding overweight Kirgis reported "
-          "for frontier models. Do not conflate the two readings: his *pattern* did not "
-          "appear here; his *methods* would have agreed with each other if it had.")
-    else:
-        p(f"**The pattern is method-contingent** (cross-method agreement ρ = {agree:.2f}; "
-          f"shares {share}). Scoring method changes the substantive conclusion.")
+    adj_means = {m: float(gaps_adj[gaps_adj.method == m]["gap"].mean())
+                 for m in METHODS if not gaps_adj[gaps_adj.method == m].empty}
+    adj_share = {m: float((gaps_adj[gaps_adj.method == m]["gap"] > 0).mean())
+                 for m in adj_means}
+
+    p("**The raw gap cannot adjudicate this claim, and the adjusted gap is weakly in "
+      "Kirgis's favour.**\n")
+    p(f"Raw mean gaps are ≈ 0 ({min(means.values()):+.2f} to {max(means.values()):+.2f}) "
+      f"— but §6b shows *pure compression predicts a negative gap*, because the human "
+      f"baseline itself rates group A above group B and compression pulls high ratings down "
+      f"more than low ones. So 'raw ≈ 0' sits between the compression prediction and "
+      f"Kirgis's, and settles nothing.\n")
+    p(f"Removing the item-severity effect (§7), the adjusted gap turns **positive under "
+      f"every method** ({min(adj_means.values()):+.3f} to {max(adj_means.values()):+.3f}, "
+      f"{min(adj_share.values()):.0%}–{max(adj_share.values()):.0%} of models). That is "
+      f"weak evidence *in Kirgis's direction*, not against him — but it is small, only about "
+      f"half of models show it, and we have no interval on it. **SUGGESTIVE, not "
+      f"established, in either direction.**\n")
+    p(f"What *is* established: the four methods agree with each other (mean per-model gap "
+      f"correlation ρ = {agree:.2f}), so whatever the answer is, **it is not an artifact of "
+      f"scoring method.** Kirgis's confound does not threaten this particular claim.\n")
     p("")
     p("Family heterogeneity is large and method-stable (§6): gemma, granite and yi show the "
       "pattern under every method; qwen, mistral, smollm and phi show its reverse under "

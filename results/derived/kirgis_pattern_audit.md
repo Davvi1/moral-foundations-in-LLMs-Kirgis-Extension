@@ -74,6 +74,38 @@ Complete-case set: 17 models, 110–116 items per model.
 | smollm | -0.30 | -0.31 | -0.26 | -0.24 |
 | yi | +0.27 | +0.15 | +0.38 | +0.28 |
 
+## 6b. Why a raw gap of ~0 is *not* neutral evidence
+
+The human baseline has its own foundation structure:
+
+| foundation | human mean |
+|---|---|
+| Sanctity | 2.805 |
+| Fairness | 2.800 |
+| Care | 2.612 |
+| Liberty | 2.570 |
+| Authority | 2.341 |
+| Loyalty | 1.994 |
+| Social Norms | 0.188 |
+
+Humans rate group A (Care, Fairness, Liberty) at **2.661** and group B (Loyalty, Authority, Sanctity) at **2.380** — a difference of **+0.281**.
+
+Now combine that with the compression in §7. Compression pulls every rating toward mid-scale, so the *higher* human ratings (group A) are pulled DOWN more and the *lower* ones (group B) are pushed UP more. **Pure compression therefore predicts a NEGATIVE raw gap, with no moral content whatsoever.**
+
+So 'raw gap ≈ 0' does not mean 'no pattern'. It means the observed data sit between the compression prediction (negative) and Kirgis's prediction (positive). The raw gap cannot adjudicate; the compression-adjusted gap in §7 is the statistic that can.
+
+## 6c. Does the verdict depend on where Liberty is placed?
+
+Kirgis groups Liberty with the individualizing foundations; canonical MFT treats Care+Fairness as individualizing and leaves Liberty separate. Raw mean gaps under three groupings:
+
+| grouping | label | string | greedy | sampled |
+|---|---|---|---|---|
+| Kirgis (A = Care/Fair/Liberty) | -0.033 | -0.128 | +0.029 | -0.013 |
+| canonical (A = Care/Fair) | -0.105 | -0.189 | -0.045 | -0.084 |
+| Liberty with binding | -0.133 | -0.188 | -0.089 | -0.111 |
+
+The conclusion is grouping-robust — and note that **Kirgis's own grouping is the most favourable to his claim**; the canonical one is more negative still.
+
 ## 7. Severity compression: is the error structure about foundations at all?
 
 Model errors may simply track how *mild* the human rating is — compression toward mid-scale over-rates mild items and under-rates severe ones, regardless of foundation. Per method, an OLS of item-level error on the human item mean:
@@ -98,7 +130,14 @@ If raw and adjusted gaps agree, foundation content adds little beyond item sever
 
 ## Verdict
 
-**The pattern is ABSENT under every method — and the methods agree.** Mean gaps are ≈ 0 (range -0.13 to +0.03); the share of models showing the pattern never exceeds 50%; yet per-model gaps correlate strongly across methods (mean ρ = 0.84). **This is a replication failure on this sample, not a method-instability result** — the four estimators concur that ≤14B open-weight models do not show the individualizing-over-binding overweight Kirgis reported for frontier models. Do not conflate the two readings: his *pattern* did not appear here; his *methods* would have agreed with each other if it had.
+**The raw gap cannot adjudicate this claim, and the adjusted gap is weakly in Kirgis's favour.**
+
+Raw mean gaps are ≈ 0 (-0.13 to +0.03) — but §6b shows *pure compression predicts a negative gap*, because the human baseline itself rates group A above group B and compression pulls high ratings down more than low ones. So 'raw ≈ 0' sits between the compression prediction and Kirgis's, and settles nothing.
+
+Removing the item-severity effect (§7), the adjusted gap turns **positive under every method** (+0.070 to +0.106, 44%–58% of models). That is weak evidence *in Kirgis's direction*, not against him — but it is small, only about half of models show it, and we have no interval on it. **SUGGESTIVE, not established, in either direction.**
+
+What *is* established: the four methods agree with each other (mean per-model gap correlation ρ = 0.84), so whatever the answer is, **it is not an artifact of scoring method.** Kirgis's confound does not threaten this particular claim.
+
 
 Family heterogeneity is large and method-stable (§6): gemma, granite and yi show the pattern under every method; qwen, mistral, smollm and phi show its reverse under every method. **For this claim, which models you sample matters far more than how you score them.** Kirgis sampled frontier-scale closed models; we sampled ≤14B open ones — the Tier-3 size ladders (Qwen 0.5→72B, Llama 1→70B) now directly test whether his pattern *emerges with scale*, which would connect his claims 2 and 4.
 

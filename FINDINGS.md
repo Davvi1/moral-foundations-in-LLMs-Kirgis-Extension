@@ -97,7 +97,7 @@ dishonest.
 | Kirgis's claim | our bearing | strength |
 |---|---|---|
 | 1. MFT has explanatory power for LLM moral judgment | untouched — we did not test this | — |
-| 2. Models diverge from the human baseline | **split verdict (Tier-0 audit, 2026-08-08).** *Divergence*: yes, under every method — severity compression (slopes −0.27 to −0.71) plus over-moralisation of Social-Norms items (+0.8 to +1.1 error under all four methods). *His directional pattern* (overweight Care/Fairness/Liberty, underweight Loyalty/Authority/Sanctity): **absent under every method on this sample** — mean gaps ≈ 0, no method shows it for a majority of models, while methods agree with each other at mean ρ = 0.84. A replication failure on ≤14B open models, not a method artifact. Family-dependent (gemma/granite/yi show it; qwen/mistral/phi/smollm show the reverse — under every method). Baseline caveat stands. Full audit: `results/derived/kirgis_pattern_audit.md` | ESTABLISHED (as stated) |
+| 2. Models diverge from the human baseline | **split verdict (Tier-0 audit, 2026-08-08, corrected after a double-check).** *Divergence*: yes, under every method — severity compression (slopes −0.27 to −0.71) plus over-moralisation of Social-Norms items (+0.8 to +1.1). *His directional pattern*: **the raw gap cannot adjudicate it, and the compression-adjusted gap is weakly in his favour** — see 4b. Methods agree with each other (ρ = 0.84), so whatever the answer, it is not a scoring artifact | divergence ESTABLISHED; his pattern SUGGESTIVE |
 | 3. Providers differ systematically | **the most exposed claim, but less than feared.** Method perturbation is comparable to between-model variance (R ≈ 0.5–1.0), and his method is collinear with provider for five of six providers. However his particular method pair agrees at ρ = 0.88, so the ranking is unlikely to be an artifact of *that* confound | SUGGESTIVE |
 | 4. Divergence grows with capability | untested here. Our roster is capped at 14B and does not span his capability range | NOT SHOWN |
 
@@ -109,19 +109,22 @@ choice of methods the risk is modest.
 
 Three points, each method-stable and therefore *not* attributable to his scoring confound:
 
-1. **The individualizing-over-binding pattern does not appear in ≤14B open models.** All
-   four methods agree (per-model gap correlations 0.67–0.98) and all four put the mean gap
-   at ≈ 0. His pattern, if real, is a property of his sample — frontier-scale, heavily
-   post-trained models — not of language models per se. **The Tier-3 size ladders (Qwen
-   0.5→72B, Llama 1→70B) now directly test whether the pattern emerges with scale**, which
-   would unify his claims 2 and 4 into "the moral-profile divergence is a capability
-   phenomenon". Registered predictions P5/P6 cover this before any large-model data exists.
-2. **Severity compression explains most of the error structure.** Errors track how *mild*
-   the human rating is (OLS slopes −0.27 to −0.71): models over-rate mild items and
-   under-rate severe ones, whatever the foundation. After removing compression, a weak
-   residual in Kirgis's direction appears (+0.07 to +0.11, roughly half of models) —
-   suggestive at best. Much of any Figure-2-style pattern is arithmetic about item severity
-   profiles per foundation, not moral content.
+1. **The raw gap is not the right statistic, and my first reading of it was wrong.** Raw
+   mean gaps are ≈ 0 (−0.13 to +0.03) and it is tempting to call that a replication failure.
+   It is not. **The human baseline has its own structure** — humans rate Kirgis's group A at
+   2.661 and group B at 2.380, a +0.281 difference — and models compress toward mid-scale
+   (§2 below). Compression pulls the *higher* human ratings down more than the lower ones, so
+   **pure compression predicts a NEGATIVE raw gap with no moral content at all.** A raw gap of
+   ≈ 0 therefore sits *between* the compression prediction and Kirgis's, and adjudicates
+   nothing. Grouping-robust: the result holds whether Liberty is placed with individualizing
+   (his choice, the most favourable to him), left out, or moved to binding.
+2. **Compression-adjusted, the evidence is weakly in Kirgis's favour.** Errors track how
+   *mild* the human rating is (OLS slopes −0.27 to −0.71): models over-rate mild items and
+   under-rate severe ones whatever the foundation. Removing that item-severity effect turns
+   the gap **positive under all four methods** (+0.070 to +0.106, 44–58% of models). Small,
+   no interval, about half the models — **SUGGESTIVE, not established, in either direction.**
+   The Tier-3 size ladders (Qwen 0.5→72B, Llama 1→70B) test whether it strengthens with
+   scale; registered as P5 before any large-model data exists.
 3. **For his claim 2, sampling dominates scoring.** Which model families you include moves
    the observed pattern far more than which of the four methods you use. That reframes the
    original audit question: the scoring confound was the visible flaw, but the model sample
