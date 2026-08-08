@@ -100,6 +100,58 @@ def emit(fh, title, items):
 
 
 def main() -> int:
+    """Regenerate config/models.yaml from ROSTER. DESTRUCTIVE — requires --write.
+
+    THIS GUARD EXISTS BECAUSE THE ABSENCE OF IT CAUSED REAL DAMAGE (2026-08-08).
+
+    `tests/test_scripts_are_valid.py::test_shows_help_without_a_gpu` runs every script in
+    `scripts/` with `--help` to prove it can print usage on a machine with no GPU. This
+    script had no argparse, so `--help` was simply an ignored argv entry and the script RAN,
+    regenerating the roster from the hard-coded N=20 ROSTER list. Alphabetical order meant
+    `add_phase2_models.py` added the Phase-2 models moments earlier and this overwrote them,
+    so every `pytest` invocation silently reverted the roster from N=30 to N=20.
+
+    That is worse than it sounds. `rows()` fetches the CURRENT sha from the Hub, so an
+    accidental regeneration also re-pins every revision. If any upstream repo had moved, the
+    pinned SHAs backing the committed Phase-1 manifests would have changed underneath us and
+    the archived results would have stopped being reproducible — silently, with a green test
+    suite. The file's own header says "do not regenerate after confirmatory data exists"; the
+    test suite was doing exactly that on every run.
+
+    So: an explicit flag, plus a refusal to shrink the roster without --force.
+    """
+    import argparse
+
+    ap = argparse.ArgumentParser(description=__doc__.split("\n")[0] if __doc__ else None)
+    ap.add_argument("--write", action="store_true",
+                    help="actually overwrite config/models.yaml (required; this is "
+                         "destructive and re-pins every revision SHA from the Hub)")
+    ap.add_argument("--force", action="store_true",
+                    help="also allow the regenerated roster to be SMALLER than the existing "
+                         "one, i.e. to drop models that are currently pinned")
+    args = ap.parse_args()
+
+    existing_n = 0
+    if OUT.exists():
+        try:
+            existing_n = len(yaml.safe_load(OUT.read_text(encoding="utf-8"))["primary"])
+        except Exception:
+            existing_n = 0
+
+    if not args.write:
+        print(f"DRY RUN — nothing written. config/models.yaml currently has "
+              f"{existing_n} primary models; this script would write {len(ROSTER)}.")
+        print("Pass --write to regenerate. Note that doing so re-pins every revision SHA "
+              "from the Hub and will invalidate existing run manifests if any SHA moved.")
+        return 0
+
+    if existing_n > len(ROSTER) and not args.force:
+        print(f"REFUSING: config/models.yaml has {existing_n} primary models and this would "
+              f"write {len(ROSTER)}, dropping {existing_n - len(ROSTER)}.\n"
+              f"Models added by scripts/add_phase2_models.py are not in this script's "
+              f"hard-coded ROSTER list and would be lost. Pass --force if that is intended.")
+        return 1
+
     print("primary roster:")
     primary = rows(ROSTER)
     print("open fallback:")

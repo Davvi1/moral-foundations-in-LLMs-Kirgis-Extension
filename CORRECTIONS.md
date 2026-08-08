@@ -1,0 +1,241 @@
+# Corrections log
+
+Every claim this project made and then had to withdraw or reverse, with how it was caught.
+One place, in date order, so the write-up's limitations section and any facilitator question
+of the form *"what did you get wrong?"* can be answered from a record rather than from memory.
+
+**Why keep this at all.** Two reasons, and the second is the real one.
+
+1. The corrections are scattered across commit messages, `FINDINGS.md`, `METHODOLOGY_REVIEW.md`
+   and `state.md`. Scattered is the same as lost.
+2. **This project's whole thesis is that a plausible-looking number can be an artifact of how
+   it was measured.** A version of that project which quietly fixed its own measurement
+   artifacts would be making the reviewer's argument for them. The corrections below are not
+   an embarrassment to be minimised in the write-up; several are direct evidence for the
+   thesis, produced by the method the thesis recommends.
+
+Format: what was claimed → what is true → how it was caught → what it changes.
+
+---
+
+## C1 — Hand-rolled Gibbs sampler for the variance components
+**Date:** Phase 1 · **Severity:** caught before it touched any result
+
+**Claimed:** a hand-written Gibbs sampler could estimate the variance components without the
+PyMC/PyTensor stack (which needs a compiler the Windows dev machine lacks).
+
+**True:** it failed its own validation — returned `R = 2.8e10` on synthetic data generated at
+`R = 1.0`.
+
+**Caught by:** the validation-on-synthetic-data step, which existed because the design
+simulation had already established what the right answer was.
+
+**Changes:** sampler deleted; PyMC on the Linux pod used instead. David had asked "why are we
+not just using the GPU for this analysis?" before I wrote it — that was the correct call and
+should have been taken first. **Write-up value:** an argument for validating an estimator
+against a known-answer simulation before pointing it at real data.
+
+---
+
+## C2 — Direction of the pooled-residual prediction
+**Date:** Phase 1 · **Severity:** wrong prediction, reported as wrong
+
+**Claimed:** `ANALYSIS_PLAN.md` argued that pooling the residual variance across methods would
+**inflate** R, so method-specific residuals were mandatory.
+
+**True:** pooling **deflates** R, consistently, by 4–16%.
+
+**Caught by:** running the pre-specified sensitivity analysis both ways.
+
+**Changes:** the pre-specified correction stands and still matters — but not for the reason
+given. Reported as-is in `FINDINGS.md §2` rather than quietly re-derived. **This is the
+standard the other predictions are held to.**
+
+---
+
+## C3 — "Kirgis's pattern is absent, so it fails to replicate"
+**Date:** 2026-08-08 · **Severity:** high — this was briefly the project's headline
+
+**Claimed:** the individualizing-over-binding pattern is **absent** in ≤14B open models; raw
+mean gaps ≈ 0 (−0.13 to +0.03) under every method, so it does not replicate.
+
+**True:** **the raw gap cannot adjudicate the claim at all.** The human baseline has its own
+foundation structure — humans rate his group A at 2.661 and group B at 2.380, a **+0.281**
+difference — and models compress toward mid-scale (slopes −0.27 to −0.71). Compression pulls
+higher human ratings down *more* than lower ones, so **pure compression predicts a NEGATIVE
+raw gap with no moral content whatsoever.** A raw gap of ≈ 0 therefore sits *between* the
+compression prediction and Kirgis's, and settles nothing. Compression-adjusted, the gap is
+**+0.070 to +0.106** — weakly *in his favour*.
+
+**Caught by:** David asking for a double-check before moving on. It would not have been caught
+otherwise; nothing in the automated output flagged it.
+
+**Changes:** verdict became **SUGGESTIVE, not established, in either direction**. Also checked
+grouping-robustness, which produced a point worth keeping: **Kirgis's own grouping (Liberty
+with individualizing) is the most favourable to his claim**, and the canonical Care+Fairness
+grouping is more negative still — so he did not gerrymander beyond what the data supports.
+The method-agreement finding (ρ = 0.84) is untouched.
+
+---
+
+## C4 — F6's first automated verdict conflated two different failures
+**Date:** 2026-08-08 · **Severity:** medium, caught within the same session
+
+**Claimed:** the audit script printed *"the pattern is NOT uniformly method-stable... the
+confound bites his conclusion."*
+
+**True:** the four methods **agreed with each other** at ρ = 0.84. *Pattern absent* and
+*pattern method-unstable* are different findings and the verdict logic had merged them.
+
+**Caught by:** reading the numbers under the verdict instead of the verdict.
+
+**Changes:** verdict logic rewritten to state the two readings separately. **Write-up value:**
+a concrete instance of an automated summary being confidently wrong about its own data.
+
+---
+
+## C5 — F7's first verdict was a null by design
+**Date:** 2026-08-08 · **Severity:** medium
+
+**Claimed:** ρ = −0.17, "no clear leakage" from refusal into label-scoring mass.
+
+**True:** the aggregate was dominated by Llama-3.2-1B, a **uniform refuser** — a model that
+declines everything has uniformly low mass and therefore **zero within-model deficit by
+construction**. The test had no power where it was being applied. Run between models instead:
+**ρ = −0.60, n = 20.**
+
+**Caught by:** asking why a strongly predicted effect was absent, rather than accepting the
+null.
+
+**Changes:** the audit now runs at two levels. Tempered again on a second pass after
+Mistral-7B turned up with 0% non-answer but mass 0.078 — a format mismatch, not refusal — so
+**mass flags problems without identifying which one**.
+
+---
+
+## C6 — "String scoring retains 0.22 mass against label's 0.81"
+**Date:** 2026-08-08 · **Severity:** high — **withdrawn**, was half of F1's evidence
+
+**Claimed:** v1 string scoring was mismeasuring, partly because it retained far less
+probability mass than label scoring.
+
+**True:** **the two numbers are not the same quantity.** v1 ran `length_normalise=True`, and
+`expectation()` computes mass from whatever scores it is handed — here per-token *mean*
+logprobs. So v1's string "mass" is `sum_k exp(mean logprob)`: a sum of five **geometric
+means**, with no probabilistic reading. Label's mass came from raw logprobs and genuinely
+*is* a probability. A value near 0.2 is the **expected magnitude** for a sum of five geometric
+means and implies nothing about misalignment.
+
+**Caught by:** writing known-answer tests for the v2 scorer. Not by analysis — the number had
+already been through three documents.
+
+**Changes:** comparison **withdrawn** from `METHODOLOGY_REVIEW.md`, `FINDINGS.md`,
+`METHODS_EXPLAINER.md`. F1's other leg is independent and untouched — models write
+`3: Very wrong` when asked — so F1 now rests on one argument instead of two, and it is the
+stronger of the pair. **P1 and P4 both used the withdrawn quantity as a baseline and were
+amended** (see C8). v2 fixes the underlying issue: its primary is the logsumexp of raw
+sequence logprobs, so mass is a real probability and label/string masses become comparable
+for the first time.
+
+---
+
+## C7 — "internlm's string arm failed because its tokenizer merges across the join"
+**Date:** 2026-08-08 · **Severity:** medium — **falsified**
+
+**Claimed:** internlm2_5-7b-chat lost all 116 string rows because appending the option text
+caused the tokenizer to re-merge the final prompt token, breaking v1's boundary assumption.
+
+**True:** **internlm's tokenizer is concatenative on this prompt** — longest-common-prefix
+shift is 0 for all three surface forms, verified locally. So no merge occurred. Its rows show
+`n_options_found = 0` and `logprob_mass` exactly `0.0`, which is the signature of v1's
+`len(ids) <= n_base` guard firing, i.e. vLLM's tokenization was **shorter** than the local
+one. **The exact cause remains unverified** and needs the pod; the `tokenization_probe` added
+to `run_experiment.py` will settle it on the next run.
+
+**Caught by:** the real-tokenizer arm of `test_conditions_v2.py --online`.
+
+**Changes:** stated as unverified rather than asserted. v2 does not depend on the answer — it
+measures the boundary between two id sequences vLLM itself produced, so the entire
+local-vs-engine class of mismatch is gone rather than diagnosed. **Related, and separately
+verified:** 12 of 30 roster models have a chat template that emits BOS *and* a tokenizer that
+adds another, so v1's locally-computed boundary was off by one on those — and under length
+normalisation that off-by-one does **not** cancel.
+
+---
+
+## C8 — Two registered predictions rested on a withdrawn quantity
+**Date:** 2026-08-08 · **Severity:** procedural, and the handling is the point
+
+**Claimed:** P1 (full option line raises string mass above the Phase-1 value of 0.22) and P4
+(cloze retains more mass than Phase-1 string scoring).
+
+**True:** both baselines are the quantity withdrawn in C6, so **neither is evaluable as
+written**. Worse, both would have been **trivially satisfiable** — v2's mass is a genuine
+probability, so "greater than 0.22" could be achieved by the change of estimator alone,
+independent of whether the new probe is better aimed.
+
+**Caught by:** checking, after C6, which downstream claims depended on the withdrawn number.
+
+**Changes:** both **amended, not reworded**. Original text left intact with a dated amendment
+block — a registered prediction that gets quietly edited is not registered. Replacements are
+strict **within-v2** contrasts where identical machinery runs on both sides, each with an
+explicit falsifier:
+
+- **P1′** `string_line` mass > `string_bare` mass for a majority of models.
+- **P4′** `cloze` mass > `string_bare` mass for a majority of models.
+
+**P2 needed no amendment and remains the prediction that matters** — it concerns model
+*ranking* (ρ), never mass. Same for P4's ranking half.
+
+---
+
+## C9 — The test suite was silently reverting the model roster
+**Date:** 2026-08-08 · **Severity:** high — a live reproducibility threat, caught by accident
+
+**Claimed:** implicitly, throughout — that the roster was N=30 after the Phase-2 expansion,
+and that running the test suite was a read-only act.
+
+**True:** **every `pytest` invocation reverted `config/models.yaml` from 30 models to 20.**
+`test_shows_help_without_a_gpu` runs every script in `scripts/` with `--help` to prove it can
+print usage without a GPU. Two scripts had no argparse, so `--help` was an ignored argv entry
+and the scripts simply **ran**. `add_phase2_models.py` re-added the Phase-2 models;
+`build_model_roster.py`, alphabetically later, regenerated the roster from a hard-coded N=20
+list and wiped them.
+
+**The worse half.** `build_model_roster.py` re-pins every revision SHA by fetching the
+*current* one from the Hub. Had any upstream repo moved, the pins backing the committed
+Phase-1 manifests would have silently changed — destroying reproducibility of the archived
+results, with a green test suite and no error. The file's own header says *"do not regenerate
+after confirmatory data exists (it would invalidate the run manifests)"*, and the test suite
+was doing precisely that on every run.
+
+**Caught by:** a test failing for what looked like an unrelated reason. `pytest -q` passed,
+then the same suite failed moments later — the roster had shrunk between runs. The first
+instinct was to blame OneDrive sync; watching the idle file for 45 seconds ruled that out and
+pointed at the test run itself.
+
+**Changes:** both scripts now take argparse and refuse to act without `--write`;
+`build_model_roster.py` additionally refuses to *shrink* the roster without `--force`, since
+that is the specific way the additions were being lost. Added
+`test_help_sweep_does_not_modify_any_tracked_file`, which closes the **class** rather than the
+instance — it asserts the `--help` sweep leaves the working tree untouched, so any future
+script that forgets argparse fails there regardless of what it does.
+
+**Write-up value:** the most concrete cautionary detail the project has. A verification step —
+running the tests — was itself corrupting the artefact being verified, and it was invisible
+because the corruption restored a *plausible* earlier state rather than producing garbage.
+That is the same failure shape as the measurement artifacts the project studies.
+
+---
+
+## Standing note for the write-up
+
+Six of these nine were found by a check that was **built in advance** — a validation
+simulation (C1), a pre-specified sensitivity analysis (C2), known-answer unit tests (C6, C7),
+or a registered falsifier (C8). One (C3) was found only because the author asked for a
+double-check. **C9 was found by luck** — a test failing for what looked like an unrelated
+reason — which is exactly the point: nothing was watching for it. **None were found by looking at a result and feeling that it seemed wrong.**
+
+That asymmetry is worth a sentence in the discussion, because it is the project's own thesis
+turned on itself: measurement artifacts do not announce themselves, and the only reliable
+defence is a check specified before the number exists.

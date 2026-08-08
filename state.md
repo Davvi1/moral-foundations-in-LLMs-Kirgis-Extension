@@ -464,6 +464,19 @@ run manifest.
   Phase-1 string scoring and will rank models *more* like the bare-phrase variant than like
   label scoring.
 
+  > **AMENDMENT 2026-08-08, same defect as P1, same treatment — original text left intact.**
+  > The **mass half is not evaluable as written**, for exactly the reason given under P1: its
+  > baseline is Phase-1 string mass, which is a sum of geometric means rather than a
+  > probability. **Replacement:** within v2, cloze mass will exceed `string_bare` mass for a
+  > majority of models — same machinery both sides, so the estimator cannot manufacture it.
+  > **Falsifier:** cloze mass ≤ `string_bare` mass for half or more of the roster.
+  >
+  > The **ranking half needs no amendment and is the substantive claim**: cloze will correlate
+  > more strongly with `string_bare` than with `label` across models. If instead cloze tracks
+  > `label`, then displaying the options was never what made our string arm behave unlike
+  > textbook cloze, and the `config/prompt.yaml` limitation we have been disclosing is not the
+  > operative one.
+
 **Scale (Kirgis's claims 2 and 4)**
 
 - **P5.** The individualizing-minus-binding **gap will increase with log parameter count**

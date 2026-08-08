@@ -53,7 +53,28 @@ def fetch(mid: str) -> dict:
 
 
 def main() -> int:
+    """Append the Phase-2 additions. MUTATES config/models.yaml — requires --write.
+
+    Same guard, same reason as `build_model_roster.py`: the `--help` sweep in
+    `tests/test_scripts_are_valid.py` executed every argparse-less script in `scripts/`, so
+    this one ran on every `pytest` invocation. It is additive and idempotent, so on its own it
+    did no harm — but it ran alphabetically *before* `build_model_roster.py`, which then
+    regenerated the file from a hard-coded N=20 list and destroyed the additions. Making both
+    explicit removes the interaction entirely.
+    """
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Append Phase-2 models to config/models.yaml.")
+    ap.add_argument("--write", action="store_true",
+                    help="actually modify config/models.yaml (required)")
+    args = ap.parse_args()
+
     text = YAML.read_text(encoding="utf-8")
+    if not args.write:
+        present = sum(1 for _, mid, _, _ in ADDITIONS if f"id: {mid}\n" in text)
+        print(f"DRY RUN — nothing written. {present}/{len(ADDITIONS)} Phase-2 models are "
+              f"already in the roster. Pass --write to add the rest.")
+        return 0
     rows = []
     print("verifying and pinning:")
     for family, mid, params, note in ADDITIONS:

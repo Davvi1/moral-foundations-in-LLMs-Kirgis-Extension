@@ -58,11 +58,23 @@ def harness(fake_vllm_module, tmp_path, monkeypatch):
     return R
 
 
-@pytest.fixture
-def args_ns():
+# Both harnesses are live code and both must stay correct. v2 is what new collection uses;
+# v1 still backs every committed Phase-1 CSV and its manifests pin those code paths, so a
+# regression there would make the archived results unreproducible. Parametrising means every
+# end-to-end guarantee below is asserted twice, once per harness, rather than the older one
+# quietly rotting once it stopped being the default.
+EXPECTED_CONDITIONS = {
+    "v1": {"label", "string", "greedy", "sampled"},
+    "v2": {"label", "string_line", "string_bare", "greedy", "sampled"},
+}
+
+
+@pytest.fixture(params=["v1", "v2"])
+def args_ns(request):
     import argparse
 
     return argparse.Namespace(
+        harness=request.param, cloze=False,
         limit_items=0, k=3, max_model_len=1024, gpu_util=0.85, eager=True,
         purge_weights=False, force=False, conditions=None, suffix="",
     )
@@ -120,12 +132,14 @@ def test_run_model_writes_expected_row_count(harness, prompt_cfg, items, args_ns
     assert out.exists()
     rows = list(csv.DictReader(out.open(encoding="utf-8")))
     n, k = len(use), args_ns.k
-    # label n + string n + greedy n + sampled n*k
-    assert len(rows) == n + n + n + n * k
+    # every condition contributes n rows except `sampled`, which contributes n*k
+    n_single = len(EXPECTED_CONDITIONS[args_ns.harness]) - 1
+    assert len(rows) == n * n_single + n * k, (
+        f"harness {args_ns.harness}: expected {n * n_single + n * k}, got {len(rows)}")
 
 
-def test_all_four_conditions_present_for_every_item(harness, prompt_cfg, items, args_ns,
-                                                    tmp_path):
+def test_every_condition_present_for_every_item(harness, prompt_cfg, items, args_ns,
+                                                tmp_path):
     meta = {i: "Care" for i, _ in items}
     use = items[:5]
     harness.run_model(ENTRY, prompt_cfg, use, meta, args_ns)
@@ -136,7 +150,7 @@ def test_all_four_conditions_present_for_every_item(harness, prompt_cfg, items, 
         by_item.setdefault(r["item_id"], set()).add(r["condition"])
     assert len(by_item) == len(use)
     for item, conds in by_item.items():
-        assert conds == {"label", "string", "greedy", "sampled"}, f"item {item}: {conds}"
+        assert conds == EXPECTED_CONDITIONS[args_ns.harness], f"item {item}: {conds}"
 
 
 def test_prompt_hash_identical_across_conditions_in_output(harness, prompt_cfg, items,
@@ -159,13 +173,26 @@ def test_no_column_is_entirely_empty(harness, prompt_cfg, items, args_ns, tmp_pa
     harness.run_model(ENTRY, prompt_cfg, items[:5], meta, args_ns)
     rows = list(csv.DictReader(
         (tmp_path / "Qwen__Qwen2.5-0.5B-Instruct.csv").open(encoding="utf-8")))
-    # seed is legitimately empty for non-sampled rows; raw_output for string scoring.
-    exempt = {"seed", "raw_output", "score_alt_normalisation", "token_boundary_clean",
-              "emitted_token_id"}
+    # Each exemption needs a REASON. A blanket exemption list would let this test pass while
+    # a real column silently stopped being written, which is the failure it exists to catch.
+    exempt = {
+        "seed",                     # only sampled rows carry one
+        "raw_output",               # probability readouts generate no text
+        "score_alt_normalisation",  # string arms only
+        "token_boundary_clean",
+        "emitted_token_id",
+        "degenerate_options",       # populated ONLY on failure — empty is the healthy state
+    }
+    # Harness-specific columns. FIELDS is shared, so each harness leaves the other's
+    # diagnostics blank; that is correct, and stating it here keeps the guard sharp for
+    # every remaining column.
+    exempt |= {"v1": {"surface_form", "boundary_shift"},   # v2-only diagnostics
+               "v2": {"label_position"}}[args_ns.harness]  # v1 scanned positions; v2 does not
     for col in rows[0]:
         if col in exempt:
             continue
-        assert any(r[col] not in ("", None) for r in rows), f"column {col!r} is always empty"
+        assert any(r[col] not in ("", None) for r in rows), (
+            f"harness {args_ns.harness}: column {col!r} is always empty")
 
 
 def test_foundation_is_joined_onto_every_row(harness, prompt_cfg, items, args_ns, tmp_path):
@@ -204,7 +231,11 @@ def test_manifest_records_everything_needed_to_reproduce(harness, prompt_cfg, it
                 "vllm_args", "seeds", "k_samples", "conditions"):
         assert key in m, f"manifest missing {key!r}"
     assert m["revision"] == PINNED_REV, "pinned revision must be recorded"
-    assert set(m["conditions"]) == {"label", "string", "greedy", "sampled"}
+    assert set(m["conditions"]) == EXPECTED_CONDITIONS[args_ns.harness]
+    assert m["harness"] == args_ns.harness
+    # D1 guard: the harness must record how the ENGINE tokenized the prompt, not just how the
+    # local tokenizer did. v1 conflated the two and silently mis-placed the option boundary.
+    assert "tokenization" in m and "engine_n_tokens" in m["tokenization"]
     assert len(m["option_label_token_ids"]) == 5
     # Integrity counters the analysis depends on
     for key in ("n_rows", "parse_failed", "refusals", "scan_parsed"):
@@ -328,15 +359,29 @@ def test_roster_is_well_formed(repo):
     import run_experiment as R
 
     _, roster, _, _ = R.load_cfg()
-    assert len(roster["primary"]) == 20
-    ids = [m["id"] for m in roster["primary"]]
-    assert len(set(ids)) == 20, "duplicate model in roster"
-    for m in roster["primary"]:
+    prim = roster["primary"]
+    assert len(prim) == 30, "roster is N=30 after the Phase-2 expansion"
+    ids = [m["id"] for m in prim]
+    assert len(set(ids)) == len(ids), "duplicate model in roster"
+    for m in prim:
         assert m["revision"] and len(m["revision"]) == 40, f"{m['id']} revision not pinned"
-        assert m["params_b"] <= 14.0, f"{m['id']} exceeds the 14B cap"
         assert m["family"]
-    fams = {m["family"] for m in roster["primary"]}
-    assert len(fams) >= 10, f"only {len(fams)} families — diversity argument weakens"
+    fams = {m["family"] for m in prim}
+    assert len(fams) >= 12, f"only {len(fams)} families — diversity argument weakens"
+
+    # The 14B cap was lifted DELIBERATELY in Phase 2: P5/P6 need within-family scale
+    # variation, and a cap of 14B makes Kirgis's capability claim untestable. The cap is
+    # replaced by the structure that replaced it — assert the ladders exist, since they are
+    # what those predictions rest on.
+    def ladder(fam):
+        return sorted(m["params_b"] for m in prim if m["family"] == fam)
+
+    qwen, llama = ladder("qwen"), ladder("llama")
+    assert len(qwen) >= 7 and qwen[0] <= 0.5 and qwen[-1] >= 70, qwen
+    assert len(llama) >= 4 and llama[0] <= 1.0 and llama[-1] >= 70, llama
+    # Two decades of scale on each ladder, or a log-parameter slope is fitted on nothing.
+    for name, l in (("qwen", qwen), ("llama", llama)):
+        assert l[-1] / l[0] >= 50, f"{name} ladder spans too little scale: {l}"
 
 
 def test_foundation_counts_match_the_prespecified_instrument(repo):

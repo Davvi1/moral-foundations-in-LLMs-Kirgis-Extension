@@ -8469,7 +8469,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,29,Fairness,string,1.928932110105331,,1,2.7,0.5449841203619424,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,30,Fairness,greedy,,,0,2.5,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,30,Fairness,label,2.8089851532771526,,1,2.5,0.35489100936305945,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,30,Fairness,sampled,3.2,0.58309518948453,5,2.5,nan,,none,,ok,0.5294,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,30,Fairness,sampled,3.2,0.58309518948453,5,2.5,nan,,none,,empty_output,0.5294,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,30,Fairness,string,2.2591885843419903,,1,2.5,0.5556602029927267,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,31,Fairness,greedy,,,0,3.8,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,31,Fairness,label,2.755883646077457,,1,3.8,0.33593002403865996,0,,,ok,1.0,False,
@@ -8481,7 +8481,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,32,Fairness,string,2.0343374189491623,,1,2.4,0.5466283940964849,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,33,Fairness,greedy,,,0,2.2,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,33,Fairness,label,2.532841072407714,,1,2.2,0.35002775752056425,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,33,Fairness,sampled,1.8,0.7999999999999999,5,2.2,nan,,anchored,,ok,0.5294,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,33,Fairness,sampled,1.8,0.7999999999999999,5,2.2,nan,,anchored,,empty_output,0.5294,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,33,Fairness,string,2.1942644350924407,,1,2.2,0.5424121000463458,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,34,Loyalty,greedy,,,0,2.0,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,34,Loyalty,label,2.3852421517247664,,1,2.0,0.3799821588779331,0,,,ok,1.0,False,
@@ -8489,7 +8489,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,34,Loyalty,string,2.0658137286186866,,1,2.0,0.5541252891918287,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,35,Loyalty,greedy,,,0,1.8,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,35,Loyalty,label,2.1539989632278806,,1,1.8,0.35657206151657517,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,35,Loyalty,sampled,1.8,0.7999999999999999,5,1.8,nan,,anchored,,ok,0.425,True,cell parse rate 0.42 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,35,Loyalty,sampled,1.8,0.7999999999999999,5,1.8,nan,,anchored,,empty_output,0.425,True,cell parse rate 0.42 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,35,Loyalty,string,1.8525757544003243,,1,1.8,0.5439583700058536,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,36,Loyalty,greedy,,,0,2.5,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,36,Loyalty,label,2.447967617817494,,1,2.5,0.3373872777782169,0,,,ok,1.0,False,
@@ -8533,7 +8533,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,45,Loyalty,string,2.184308738075375,,1,1.9,0.5504607613609099,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,46,Loyalty,greedy,,,0,2.7,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,46,Loyalty,label,2.5675701564743867,,1,2.7,0.3306113214209331,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,46,Loyalty,sampled,1.8,0.7999999999999999,5,2.7,nan,,anchored,,ok,0.425,True,cell parse rate 0.42 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,46,Loyalty,sampled,1.8,0.7999999999999999,5,2.7,nan,,anchored,,empty_output,0.425,True,cell parse rate 0.42 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,46,Loyalty,string,2.155954600450293,,1,2.7,0.5310249215938274,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,47,Loyalty,greedy,,,0,1.5,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,47,Loyalty,label,2.232979710443482,,1,1.5,0.29046428426742266,0,,,ok,1.0,False,
@@ -8569,7 +8569,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,54,Authority,string,1.934592068259252,,1,1.9,0.5410869853884388,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,55,Authority,greedy,,,0,2.1,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,55,Authority,label,2.1656096997661827,,1,2.1,0.33045555262603715,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,55,Authority,sampled,1.8,0.7999999999999999,5,2.1,nan,,anchored,,ok,0.5059,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,55,Authority,sampled,1.8,0.7999999999999999,5,2.1,nan,,anchored,,empty_output,0.5059,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,55,Authority,string,1.8826987259098065,,1,2.1,0.5499785973581506,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,56,Authority,greedy,,,0,2.8,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,56,Authority,label,2.519109370770679,,1,2.8,0.38301467783690907,0,,,ok,1.0,False,
@@ -8593,7 +8593,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,60,Authority,string,2.0132546296334732,,1,2.5,0.5497315460563684,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,61,Authority,greedy,,,0,2.8,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,61,Authority,label,2.039305171070864,,1,2.8,0.2705056959031582,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,61,Authority,sampled,1.0,0.6324555320336759,5,2.8,nan,,anchored,,ok,0.5059,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,61,Authority,sampled,1.0,0.6324555320336759,5,2.8,nan,,anchored,,empty_output,0.5059,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,61,Authority,string,1.7581748545155513,,1,2.8,0.5236414647694683,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,62,Authority,greedy,,,0,2.1,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,62,Authority,label,2.4644734915418987,,1,2.1,0.3822564879982402,0,,,ok,1.0,False,
@@ -8605,11 +8605,11 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,63,Authority,string,2.2506264169129975,,1,2.1,0.5520367472083413,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,64,Authority,greedy,,,0,1.8,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,64,Authority,label,2.396819898932301,,1,1.8,0.3163577711837787,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,64,Authority,sampled,1.8,0.7999999999999999,5,1.8,nan,,anchored,,ok,0.5059,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,64,Authority,sampled,1.8,0.7999999999999999,5,1.8,nan,,anchored,,empty_output,0.5059,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,64,Authority,string,2.037587696136772,,1,1.8,0.5324635109551348,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,65,Authority,greedy,,,0,2.1,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,65,Authority,label,2.1838458139164953,,1,2.1,0.2886584578983362,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,65,Authority,sampled,1.8,0.7999999999999999,5,2.1,nan,,anchored,,ok,0.5059,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,65,Authority,sampled,1.8,0.7999999999999999,5,2.1,nan,,anchored,,empty_output,0.5059,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,65,Authority,string,1.8813212257641974,,1,2.1,0.5166957436534887,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,66,Authority,greedy,,,0,2.0,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,66,Authority,label,2.416445105449733,,1,2.0,0.35291640948599534,0,,,ok,1.0,False,
@@ -8625,7 +8625,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,68,Sanctity,string,2.099797374255918,,1,3.0,0.5115979110606238,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,69,Sanctity,greedy,,,0,3.2,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,69,Sanctity,label,3.3602014159013027,,1,3.2,0.36251437061202174,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,69,Sanctity,sampled,4.0,0.0,5,3.2,nan,,none,,ok,0.4647,True,cell parse rate 0.46 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,69,Sanctity,sampled,4.0,0.0,5,3.2,nan,,none,,empty_output,0.4647,True,cell parse rate 0.46 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,69,Sanctity,string,2.371252344828426,,1,3.2,0.5361719670805477,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,70,Sanctity,greedy,,,0,3.4,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,70,Sanctity,label,3.3576737733841844,,1,3.4,0.37448872919611964,0,,,ok,1.0,False,
@@ -8633,19 +8633,19 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,70,Sanctity,string,2.417477700084177,,1,3.4,0.5071277529132868,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,71,Sanctity,greedy,,,0,3.4,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,71,Sanctity,label,2.523056409272495,,1,3.4,0.32245387262839265,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,71,Sanctity,sampled,1.8,0.7999999999999999,5,3.4,nan,,anchored,,ok,0.4647,True,cell parse rate 0.46 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,71,Sanctity,sampled,1.8,0.7999999999999999,5,3.4,nan,,anchored,,empty_output,0.4647,True,cell parse rate 0.46 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,71,Sanctity,string,2.0970811236161944,,1,3.4,0.55391875633313,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,72,Sanctity,greedy,,,0,3.3,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,72,Sanctity,label,3.1926227874225184,,1,3.3,0.335066950675723,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,72,Sanctity,sampled,4.0,0.0,5,3.3,nan,,none,,ok,0.4647,True,cell parse rate 0.46 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,72,Sanctity,sampled,4.0,0.0,5,3.3,nan,,none,,empty_output,0.4647,True,cell parse rate 0.46 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,72,Sanctity,string,2.3266052778325728,,1,3.3,0.5349918620701734,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,73,Sanctity,greedy,,,0,2.6,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,73,Sanctity,label,2.4918511627050095,,1,2.6,0.35399318317240724,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,73,Sanctity,sampled,1.8,0.7999999999999999,5,2.6,nan,,anchored,,ok,0.4647,True,cell parse rate 0.46 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,73,Sanctity,sampled,1.8,0.7999999999999999,5,2.6,nan,,anchored,,empty_output,0.4647,True,cell parse rate 0.46 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,73,Sanctity,string,2.114797528219185,,1,2.6,0.5372906828478693,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,74,Sanctity,greedy,,,0,3.3,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,74,Sanctity,label,2.9361625734388754,,1,3.3,0.30278242545624046,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,74,Sanctity,sampled,2.6,0.7483314773547882,5,3.3,nan,,anchored,,ok,0.4647,True,cell parse rate 0.46 < 0.5
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,74,Sanctity,sampled,2.6,0.7483314773547882,5,3.3,nan,,anchored,,empty_output,0.4647,True,cell parse rate 0.46 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,74,Sanctity,string,2.31483306641875,,1,3.3,0.5345265500654558,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,75,Sanctity,greedy,,,0,2.6,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,75,Sanctity,label,2.6261173817088332,,1,2.6,0.3317290983058872,0,,,ok,1.0,False,
@@ -8729,7 +8729,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,94,Liberty,string,2.131968650930076,,1,2.7,0.559395346588114,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,95,Liberty,greedy,,,0,2.3,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,95,Liberty,label,2.3833532223492244,,1,2.3,0.30258811679632325,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,95,Liberty,sampled,1.8,0.7999999999999999,5,2.3,nan,,anchored,,ok,0.5118,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,95,Liberty,sampled,1.8,0.7999999999999999,5,2.3,nan,,anchored,,empty_output,0.5118,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,95,Liberty,string,2.0989100575777484,,1,2.3,0.5049839219871511,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,96,Liberty,greedy,,,0,1.5,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,96,Liberty,label,2.0821393172856175,,1,1.5,0.29634886684050893,0,,,ok,1.0,False,
@@ -8741,7 +8741,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,97,Liberty,string,2.075044195612116,,1,2.8,0.525655069026747,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,98,Liberty,greedy,,,0,3.0,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,98,Liberty,label,2.934954918467621,,1,3.0,0.37128392556813944,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,98,Liberty,sampled,4.0,0.0,5,3.0,nan,,none,,ok,0.5118,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,98,Liberty,sampled,4.0,0.0,5,3.0,nan,,none,,empty_output,0.5118,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,98,Liberty,string,2.339127716600945,,1,3.0,0.5566956521960702,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,99,Liberty,greedy,,,0,3.2,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,99,Liberty,label,2.459668631807124,,1,3.2,0.32085892193058224,0,,,ok,1.0,False,
@@ -8749,7 +8749,7 @@ mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,99,Liberty,string,2.1296158421440445,,1,3.2,0.5202398819461603,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,100,Liberty,greedy,,,0,2.6,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,100,Liberty,label,2.469241595523404,,1,2.6,0.3341857524138449,0,,,ok,1.0,False,
-mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,100,Liberty,sampled,1.8,0.7999999999999999,5,2.6,nan,,anchored,,ok,0.5118,False,
+mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,100,Liberty,sampled,1.8,0.7999999999999999,5,2.6,nan,,anchored,,empty_output,0.5118,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,100,Liberty,string,2.098789827237377,,1,2.6,0.5013714657170283,,,True,ok,1.0,False,
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,101,Social Norms,greedy,,,0,0.0,nan,,none,,empty_output,0.0,True,cell parse rate 0.00 < 0.5
 mistralai/Ministral-8B-Instruct-2410,mistral,2f494a194c5b980dfb9772cb92d26cbb671fce5a,101,Social Norms,label,1.7695043997999278,,1,0.0,0.32871972246014775,0,,,ok,1.0,False,

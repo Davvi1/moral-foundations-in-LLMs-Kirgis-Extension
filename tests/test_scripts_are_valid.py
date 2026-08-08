@@ -75,6 +75,47 @@ def test_preflight_runs_and_reports_rather_than_crashing():
     assert ("READY" in r.stdout) or ("BLOCKED" in r.stdout)
 
 
+def test_help_sweep_does_not_modify_any_tracked_file():
+    """`--help` must never mutate the repository. REGRESSION TEST — this actually happened.
+
+    On 2026-08-08, `test_shows_help_without_a_gpu` above was found to be *causing* silent
+    data loss. It runs every script in `scripts/` with `--help`; two of them had no argparse,
+    so `--help` was an ignored argv entry and the scripts simply ran. `add_phase2_models.py`
+    added the Phase-2 models and `build_model_roster.py` — alphabetically later — regenerated
+    the roster from a hard-coded N=20 list and wiped them. Every `pytest` run silently
+    reverted `config/models.yaml` from 30 models to 20.
+
+    The worse half: `build_model_roster.py` re-pins every revision SHA by fetching the
+    current one from the Hub. Had any upstream repo moved, the pins backing the committed
+    Phase-1 manifests would have changed underneath us — destroying reproducibility of the
+    archived results, silently, with a green test suite.
+
+    This test closes the class rather than the instance: it does not care WHICH script
+    misbehaves, only that the sweep leaves the working tree untouched. Any future script that
+    forgets argparse and does work at import or main will fail here.
+    """
+    def tracked_state():
+        r = subprocess.run(["git", "status", "--porcelain"],
+                           capture_output=True, text=True, cwd=REPO, timeout=120)
+        return r.stdout
+
+    before = tracked_state()
+    if not before and subprocess.run(["git", "rev-parse", "--git-dir"], cwd=REPO,
+                                     capture_output=True).returncode != 0:
+        pytest.skip("not a git repository")
+
+    for path in CLI_SCRIPTS:
+        subprocess.run([sys.executable, str(path), "--help"],
+                       capture_output=True, text=True, timeout=120, cwd=REPO)
+
+    after = tracked_state()
+    assert after == before, (
+        "running scripts with --help changed the working tree.\n"
+        f"before:\n{before}\nafter:\n{after}\n"
+        "A script without argparse treats --help as an ignored argument and RUNS. "
+        "Give it argparse, and gate any destructive action behind an explicit flag.")
+
+
 def test_run_experiment_help_works():
     r = subprocess.run([sys.executable, str(REPO / "scripts" / "run_experiment.py"), "--help"],
                        capture_output=True, text=True, timeout=120, cwd=REPO)

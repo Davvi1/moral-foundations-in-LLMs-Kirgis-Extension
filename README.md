@@ -85,7 +85,7 @@ rather than emitting a bad questionnaire.
 
 ```bash
 pip install pytest transformers truststore pyyaml
-pytest                      # 124 tests, ~35s, no GPU needed
+pytest                      # 219 tests, ~3 min, no GPU needed
 ```
 
 vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of the vLLM API
@@ -93,12 +93,22 @@ vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of t
 covers the prompt invariant, tokenization claims, all four condition runners, the manifest
 contract, checkpointing, VRAM planning, and sequence-length budget.
 
-Two bugs were caught this way that would each have cost GPU time:
+Plus two laptop-only suites for the v2 scorer, outside pytest:
+
+```bash
+python scripts/test_conditions_v2.py --online   # 41 known-answer + real-tokenizer checks
+python scripts/test_harness_smoke.py            # 50 integration checks, fake vLLM
+```
+
+Three bugs were caught this way that would each have cost GPU time:
 
 - the manifest crashed on `yaml`'s `datetime.date`, *after* all four conditions had run —
   destroying a full model's inference on every model;
 - `Qwen2.5-14B` (28.8 GiB in bf16) does not fit a 32 GiB card and would have OOM'd after a
-  28 GB download.
+  28 GB download;
+- the `--help` sweep itself was silently reverting `config/models.yaml` from 30 models to 20
+  on every run, because two scripts had no argparse and so *ran* instead of printing usage
+  (`CORRECTIONS.md` C9).
 
 ### Pre-flight
 
