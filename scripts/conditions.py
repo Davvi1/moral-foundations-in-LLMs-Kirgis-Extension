@@ -182,6 +182,32 @@ def is_refusal(text: str) -> bool:
     return bool(text) and bool(_REFUSAL_RE.search(text))
 
 
+def failure_type(text: str, parsed: int | None) -> str:
+    """Classify WHY a free-generation row has no usable score. Never pool these.
+
+    A single `parse_failed` flag hides three phenomena that mean entirely different things:
+
+      "ok"           a digit was recovered; not a failure
+      "empty_output" the model emitted nothing at all -- EOS was its argmax first token.
+                     A DECODING artifact. Ministral-8B does this on 116/116 greedy items
+                     while answering ~half the time under sampling, so it is not reticence.
+      "refusal"      the model declined in words. A VALUE-LADEN act, expected to correlate
+                     with foundation, and precisely the confound this design predicted.
+                     Llama-3.2-1B: "I can't answer this question.", 108/116 greedy.
+      "unparseable"  the model wrote something, but no digit could be recovered from it.
+
+    Reporting refusal and empty output as one number would make both uninterpretable, and
+    would let the write-up claim a model "refuses" when it never speaks at all.
+    """
+    if parsed is not None:
+        return "ok"
+    if not text or not text.strip():
+        return "empty_output"
+    if is_refusal(text):
+        return "refusal"
+    return "unparseable"
+
+
 # ---------------------------------------------------------------------------------------
 # condition 1 -- label scoring
 # ---------------------------------------------------------------------------------------
