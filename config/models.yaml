@@ -43,6 +43,7 @@ primary:
     note: size gradient
   - id: Qwen/Qwen2.5-14B-Instruct
     family: qwen
+    gpu_util_override: 0.97
     params_b: 14.0
     revision: cf98f3b3bbb457ad9e2bb7baf9a0125b6b88caa8
     gated: false
@@ -127,6 +128,7 @@ primary:
     note: distinct family, IBM
   - id: internlm/internlm2_5-7b-chat
     family: internlm
+    trust_remote_code: true
     params_b: 7.7
     revision: eb72b541689b0432dade0435feb339b89fdd39ff
     gated: false

@@ -1,0 +1,66 @@
+{
+  "model": "allenai/OLMo-2-1124-13B-Instruct",
+  "revision": "3a5c85baefbb1896a54d56fe2e76c0395627ddf4",
+  "family": "olmo",
+  "params_b": 13.7,
+  "n_items": 116,
+  "k_samples": 10,
+  "conditions": [
+    "label"
+  ],
+  "prompt_sha_first": "de9a2fb2fab09c45",
+  "prompt_sha_all_distinct": true,
+  "prompt_config_sha": "ea78a329ca273245",
+  "items_file_sha": "dae9643999520b16",
+  "option_label_token_ids": {
+    "0": [
+      15
+    ],
+    "1": [
+      16
+    ],
+    "2": [
+      17
+    ],
+    "3": [
+      18
+    ],
+    "4": [
+      19
+    ]
+  },
+  "packages": {
+    "vllm": "0.26.0",
+    "transformers": "5.14.1",
+    "torch": "2.11.0+cu130"
+  },
+  "python": "3.12.3",
+  "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+  "env": {
+    "VLLM_USE_FLASHINFER_SAMPLER": "0",
+    "HF_HOME": "/workspace/hf-cache"
+  },
+  "vllm_args": {
+    "max_model_len": 1024,
+    "gpu_memory_utilization": 0.95,
+    "enforce_eager": true,
+    "dtype": "bfloat16"
+  },
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "elapsed_s": 72.1,
+  "n_rows": 116,
+  "parse_failed": 0,
+  "refusals": 0,
+  "scan_parsed": 0
+}

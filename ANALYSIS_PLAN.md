@@ -177,6 +177,26 @@ at this N the statistic is too blunt to carry one.
 - **Positive control:** all four methods must rank purity violations above social-norm
   violations, in the same direction as Clifford's per-vignette human means.
 
+### Exclusions — AMENDED 2026-08-08, after collection, before any variance ratio
+
+The rules below were fixed once the data existed and the QA pass had run, but **before any
+outcome model was fitted**. Verifiable in git: the tag carrying them precedes the first
+analysis script. This is weaker than fixing them in advance and stronger than choosing them
+once the answer is visible. Describe it exactly that way.
+
+- **Parse-success threshold 0.50** per model × condition × foundation cell, free-generation
+  conditions only. Label and string cannot parse-fail — they read a distribution, not text.
+- Everything reported **with and without** exclusions, plus a table of what was dropped.
+- **internlm2_5-7b-chat string** = structurally missing (116/116 token-boundary failures), not
+  a low score. Model retained on its other three conditions.
+- **`scan`-parsed rows** (digit recovered from prose) reported separately; primary analysis
+  repeated without them.
+- **Achieved N reported with its simulated accuracy**, never the headline N=20.
+- **Three failure types separated, never pooled:** `empty_output` (EOS as argmax — a decoding
+  artifact), `refusal` (declined in words — a value-laden act expected to correlate with
+  foundation), `unparseable` (wrote text, no digit). Merging them would make the
+  foundation × method confound uninterpretable.
+
 ### Exclusions, specified in advance
 
 - Refusal and parse-failure rates logged per model × foundation × method.

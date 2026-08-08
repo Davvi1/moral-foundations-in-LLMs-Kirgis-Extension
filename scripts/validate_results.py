@@ -140,11 +140,16 @@ def main() -> int:
         if len(man.get("revision") or "") != 40:
             fail(f"{name}: revision not a pinned 40-char SHA ({man.get('revision')!r})")
         ids = man.get("option_label_token_ids", {})
-        if len(ids) != 5:
-            warn(f"{name}: only {len(ids)}/5 option labels were single tokens — label "
-                 f"scoring degraded for this tokenizer")
-        elif len(set(ids.values())) != 5:
-            fail(f"{name}: option label token ids are not distinct: {ids}")
+        # dict[label -> list of candidate token ids] since the SentencePiece fix
+        flat = {k: (v if isinstance(v, list) else [v]) for k, v in ids.items()}
+        empty = [k for k, v in flat.items() if not v]
+        if len(flat) != 5 or empty:
+            warn(f"{name}: no candidate token for option(s) {empty or 'ALL'} — label "
+                 f"scoring cannot work on this tokenizer")
+        else:
+            firsts = [v[0] for v in flat.values()]
+            if len(set(firsts)) != 5:
+                fail(f"{name}: option label token ids are not distinct: {flat}")
     vers = {json.dumps(m.get("packages"), sort_keys=True) for _, m in models.values() if m}
     if len(vers) > 1:
         warn(f"package versions differ across models ({len(vers)} distinct) — check the "

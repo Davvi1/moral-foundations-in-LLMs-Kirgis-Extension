@@ -1,0 +1,117 @@
+model,revision,item_id,foundation,condition,replicate,score,score_alt_normalisation,logprob_mass,n_options_found,refusal,parse_failed,parse_strategy,token_boundary_clean,emitted_token_id,seed,prompt_sha,raw_output
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,1,Care,label,0,nan,,0.0,0,False,True,,,81,,50f0980f32dfecc6,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,2,Care,label,0,nan,,0.0,0,False,True,,,59597,,31de0763678abb60,I
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,3,Care,label,0,nan,,0.0,0,False,True,,,81,,a0e507dd7972a02f,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,4,Care,label,0,nan,,0.0,0,False,True,,,79,,c7f61e548590ad13,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,5,Care,label,0,nan,,0.0,0,False,True,,,80,,f577de365bb6dde1,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,6,Care,label,0,nan,,0.0,0,False,True,,,79,,e4259a3efebcd958,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,7,Care,label,0,nan,,0.0,0,False,True,,,80,,478331093e9f857d,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,8,Care,label,0,nan,,0.0,0,False,True,,,81,,8e6447beee725cbf,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,9,Care,label,0,nan,,0.0,0,False,True,,,79,,1e490301497b0263,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,10,Care,label,0,nan,,0.0,0,False,True,,,80,,056ac2225086fa08,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,11,Care,label,0,nan,,0.0,0,False,True,,,81,,10b48908c30ef8cf,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,12,Care,label,0,nan,,0.0,0,False,True,,,81,,53072ee111f31c1c,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,13,Care,label,0,nan,,0.0,0,False,True,,,79,,b568a432696e6aef,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,14,Care,label,0,nan,,0.0,0,False,True,,,79,,2faf09589f194a24,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,15,Care,label,0,nan,,0.0,0,False,True,,,79,,be3f149685ecb30b,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,16,Care,label,0,nan,,0.0,0,False,True,,,81,,f421454c27aaef35,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,17,Fairness,label,0,nan,,0.0,0,False,True,,,81,,f8d408312445c4ea,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,18,Fairness,label,0,nan,,0.0,0,False,True,,,81,,0354bb4211d65ffb,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,19,Fairness,label,0,nan,,0.0,0,False,True,,,81,,d746d3e7457f73c3,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,20,Fairness,label,0,nan,,0.0,0,False,True,,,79,,3995a8db3854469c,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,21,Fairness,label,0,nan,,0.0,0,False,True,,,79,,9ef36e2428f89d9a,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,22,Fairness,label,0,nan,,0.0,0,False,True,,,81,,6235fd19f0b751c3,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,23,Fairness,label,0,nan,,0.0,0,False,True,,,80,,53e9dd6148e88cb2,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,24,Fairness,label,0,nan,,0.0,0,False,True,,,80,,bb3a819db17da465,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,25,Fairness,label,0,nan,,0.0,0,False,True,,,81,,94132ab48cce0455,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,26,Fairness,label,0,nan,,0.0,0,False,True,,,80,,1f2cece8fa09c06e,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,27,Fairness,label,0,nan,,0.0,0,False,True,,,80,,edb9818c9d4b3ff3,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,28,Fairness,label,0,nan,,0.0,0,False,True,,,81,,620d6308b6898a88,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,29,Fairness,label,0,nan,,0.0,0,False,True,,,79,,4d909d6878ea0ff8,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,30,Fairness,label,0,nan,,0.0,0,False,True,,,80,,33521ddca802d090,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,31,Fairness,label,0,nan,,0.0,0,False,True,,,81,,cc519a8e299c5db5,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,32,Fairness,label,0,nan,,0.0,0,False,True,,,79,,689302e41d44c295,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,33,Fairness,label,0,nan,,0.0,0,False,True,,,79,,2e32a6f8dd96ee86,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,34,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,3df4725576c407e2,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,35,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,09f385f6a8477e49,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,36,Loyalty,label,0,nan,,0.0,0,False,True,,,59597,,def5cef00d529f3d,I
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,37,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,59a43b80a804bf23,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,38,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,5db931e690e261a7,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,39,Loyalty,label,0,nan,,0.0,0,False,True,,,80,,9907dec67fdd76c5,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,40,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,824a76d9a429575c,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,41,Loyalty,label,0,nan,,0.0,0,False,True,,,80,,5da581829b4463fb,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,42,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,555e99d384b4205f,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,43,Loyalty,label,0,nan,,0.0,0,False,True,,,80,,a3919491aa27ebb4,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,44,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,f123926278387ae2,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,45,Loyalty,label,0,nan,,0.0,0,False,True,,,80,,0485c78d360cca52,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,46,Loyalty,label,0,nan,,0.0,0,False,True,,,81,,5ec6b93be7483377,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,47,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,5cab526b7b4891c6,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,48,Loyalty,label,0,nan,,0.0,0,False,True,,,78,,e700accf373229c4,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,49,Loyalty,label,0,nan,,0.0,0,False,True,,,79,,5c2917afcf004851,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,50,Authority,label,0,nan,,0.0,0,False,True,,,79,,ec4cde4fce1be062,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,51,Authority,label,0,nan,,0.0,0,False,True,,,79,,ad766229127e3da8,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,52,Authority,label,0,nan,,0.0,0,False,True,,,79,,863ba704465a9558,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,53,Authority,label,0,nan,,0.0,0,False,True,,,81,,f1820263f8ce64ff,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,54,Authority,label,0,nan,,0.0,0,False,True,,,79,,e4a260b3a2a8d849,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,55,Authority,label,0,nan,,0.0,0,False,True,,,79,,12ac860ced03d12d,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,56,Authority,label,0,nan,,0.0,0,False,True,,,79,,b7d5e44179fd649a,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,57,Authority,label,0,nan,,0.0,0,False,True,,,79,,48e137715d575d84,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,58,Authority,label,0,nan,,0.0,0,False,True,,,81,,b3bf3485f3f2597b,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,59,Authority,label,0,nan,,0.0,0,False,True,,,79,,f5faff624024b0d6,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,60,Authority,label,0,nan,,0.0,0,False,True,,,79,,e368c356a0993cf8,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,61,Authority,label,0,nan,,0.0,0,False,True,,,79,,7e0021f469082b3f,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,62,Authority,label,0,nan,,0.0,0,False,True,,,79,,14ab61e9be82abdc,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,63,Authority,label,0,nan,,0.0,0,False,True,,,79,,58dacb6b0c747057,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,64,Authority,label,0,nan,,0.0,0,False,True,,,79,,e15351adda37fc15,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,65,Authority,label,0,nan,,0.0,0,False,True,,,79,,46d63b6632b41e91,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,66,Authority,label,0,nan,,0.0,0,False,True,,,79,,ff490e8f569f0624,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,67,Sanctity,label,0,nan,,0.0,0,False,True,,,81,,175cd5185d31eba4,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,68,Sanctity,label,0,nan,,0.0,0,False,True,,,79,,4d97625f6787b619,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,69,Sanctity,label,0,nan,,0.0,0,False,True,,,80,,6770c57a7424bfef,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,70,Sanctity,label,0,nan,,0.0,0,False,True,,,81,,8164407952b63e7c,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,71,Sanctity,label,0,nan,,0.0,0,False,True,,,80,,cabbac926a7ca1c5,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,72,Sanctity,label,0,nan,,0.0,0,False,True,,,81,,97fe34e6027be5d0,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,73,Sanctity,label,0,nan,,0.0,0,False,True,,,80,,072ee34da2392f49,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,74,Sanctity,label,0,nan,,0.0,0,False,True,,,80,,2241787b25fc10c4,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,75,Sanctity,label,0,nan,,0.0,0,False,True,,,79,,8a70e54b9888677b,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,76,Sanctity,label,0,nan,,0.0,0,False,True,,,81,,cf7d7138d8d53e3a,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,77,Sanctity,label,0,nan,,0.0,0,False,True,,,79,,e7e627f8dc9d3a7f,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,78,Sanctity,label,0,nan,,0.0,0,False,True,,,79,,5e9e3b69f378862b,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,79,Sanctity,label,0,nan,,0.0,0,False,True,,,78,,b7be29877107f8a3,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,80,Sanctity,label,0,nan,,0.0,0,False,True,,,80,,715361cd4f5e56b3,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,81,Sanctity,label,0,nan,,0.0,0,False,True,,,78,,4daafda54edad283,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,82,Sanctity,label,0,nan,,0.0,0,False,True,,,78,,82f2a4b67cb07d06,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,83,Sanctity,label,0,nan,,0.0,0,False,True,,,78,,08e26542bb52ac7d,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,84,Liberty,label,0,nan,,0.0,0,False,True,,,80,,660a95ceaeb13c9b,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,85,Liberty,label,0,nan,,0.0,0,False,True,,,79,,bb536d9e9e620616,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,86,Liberty,label,0,nan,,0.0,0,False,True,,,81,,a5006de2da05fe39,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,87,Liberty,label,0,nan,,0.0,0,False,True,,,81,,71cc2eaca3654695,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,88,Liberty,label,0,nan,,0.0,0,False,True,,,81,,43f348e8f60a351b,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,89,Liberty,label,0,nan,,0.0,0,False,True,,,79,,0b759dcce236b4d5,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,90,Liberty,label,0,nan,,0.0,0,False,True,,,81,,19500695ff8d5dd9,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,91,Liberty,label,0,nan,,0.0,0,False,True,,,81,,0556fa0d6649e9da,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,92,Liberty,label,0,nan,,0.0,0,False,True,,,81,,5ae596ac375962f8,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,93,Liberty,label,0,nan,,0.0,0,False,True,,,79,,d2bab36e6f284ba5,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,94,Liberty,label,0,nan,,0.0,0,False,True,,,59597,,d0b8386bd177ee61,I
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,95,Liberty,label,0,nan,,0.0,0,False,True,,,80,,ed7902c1058f644f,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,96,Liberty,label,0,nan,,0.0,0,False,True,,,79,,3c1b6600b6df7980,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,97,Liberty,label,0,nan,,0.0,0,False,True,,,80,,76290e014a859296,3
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,98,Liberty,label,0,nan,,0.0,0,False,True,,,81,,4c1db86fa4a52649,4
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,99,Liberty,label,0,nan,,0.0,0,False,True,,,79,,8695d8a3b49106f1,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,100,Liberty,label,0,nan,,0.0,0,False,True,,,79,,0cce9a7dca4bd24a,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,101,Social Norms,label,0,nan,,0.0,0,False,True,,,78,,09022fe09cb0742c,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,102,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,46594f9a80c8aa3a,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,103,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,25ef921d465549a7,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,104,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,8f988b66bde8e87b,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,105,Social Norms,label,0,nan,,0.0,0,False,True,,,78,,59f24782f1a42787,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,106,Social Norms,label,0,nan,,0.0,0,False,True,,,78,,0e496ef4de4348b9,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,107,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,8eba8ce9c28d7a0f,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,108,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,8a2c8f67ecbf3312,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,109,Social Norms,label,0,nan,,0.0,0,False,True,,,79,,e7bdaedd79ba8ace,2
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,110,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,9eac113e1392d9e4,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,111,Social Norms,label,0,nan,,0.0,0,False,True,,,78,,65a66f817398ab07,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,112,Social Norms,label,0,nan,,0.0,0,False,True,,,78,,e7416b44c233e63b,1
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,113,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,226693e7be2f2d5e,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,114,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,3141ee04dcef804f,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,115,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,623a3caa23a71dc4,0
+01-ai/Yi-1.5-9B-Chat,1a0fc698cf883c4f5c325f026ca79f0ebd9955a5,116,Social Norms,label,0,nan,,0.0,0,False,True,,,77,,07560f8784b86338,0

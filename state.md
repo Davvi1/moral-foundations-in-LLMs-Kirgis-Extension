@@ -366,6 +366,65 @@ Full results: `results/derived/design_simulation.md`, reproducible via
 Calibration values used (medians across foundations of Kirgis's data): σ²_model = 0.070
 (SD 0.264), σ²_item = 0.426, σ²_resid = 0.150.
 
+### Exclusion rules — FIXED 2026-08-08, after data collection, BEFORE any variance ratio
+
+Data collection finished first, and the QA pass exposed failures that make some cells
+unanalysable. The threshold below was chosen **by David, from a menu of options with their
+consequences shown, at a point where no variance ratio had been computed.** Verifiable in git:
+the tag containing these rules precedes the existence of any analysis script.
+
+**This is not a preregistered threshold** — it was set after seeing parse rates. It is
+materially stronger than choosing one after seeing which value yields a publishable answer,
+and materially weaker than fixing it in advance. Say exactly that; claim nothing more.
+
+1. **Parse-success threshold = 0.50.** A model × condition × foundation cell is excluded from
+   the primary analysis if fewer than half its items produced a usable answer. Applies to the
+   free-generation conditions only — label and string scoring cannot parse-fail, since they
+   read a distribution rather than parsing text.
+2. **Everything is reported with and without the exclusions.** The excluded cells are listed
+   in a table with their rates and reasons.
+3. **internlm2_5-7b-chat's string condition is structurally missing**, not low-scoring:
+   116/116 rows failed the token-boundary alignment check, so those log-likelihoods do not
+   mean anything. The model is retained; its other three conditions are valid.
+4. **`scan`-parsed rows are reported separately** and the primary analysis is repeated without
+   them. A digit recovered from prose is a known error class — it is what mis-scored Kirgis's
+   grok-3 responses — and must not be silently pooled with digits the model emitted as its
+   answer.
+5. **Achieved N is reported alongside its simulated classification accuracy**, not the headline
+   N=20. Exclusions unbalance the design, and `results/derived/design_simulation.csv` says what
+   any given N costs.
+
+### Failure types are separated, not pooled — FIXED 2026-08-08
+
+`parse_failed` conflates three phenomena with different meanings. They are split before
+analysis, using the stored `raw_output`:
+
+| flag | meaning | example |
+|---|---|---|
+| `empty_output` | model emitted nothing; EOS was the argmax token | Ministral-8B greedy: `''`, 116/116 |
+| `refusal` | model declined in words | Llama-3.2-1B greedy: `"I can't answer this question."`, 108/116 |
+| `unparseable` | model wrote text but no digit could be recovered | prose with no rating |
+
+**Refusal is a value-laden act and is expected to correlate with foundation** — it is the
+confound this design predicted. **Empty output is a decoding artifact and is not.** Reporting
+"Ministral refuses everything" would be wrong: it never refuses, it never speaks. Its prompt
+is well-formed by Mistral's own chat template, and it answers roughly half the time under
+sampling — so the greedy silence is about decoding, not morality.
+
+### Trial structure — why three conditions have one observation and one has ten
+
+Label, string and greedy are **deterministic**: repeating them returns identical values, so
+replication adds no information. Label and string read the probability distribution rather
+than sampling from it; greedy takes the argmax at every step. Sampled is the only stochastic
+condition, hence k=10, which also supplies the Monte-Carlo error term the variance model needs.
+This matches Kirgis's structure exactly — one query for the logprob arm, ten for the sampled arm.
+
+**Assumption, not verified:** greedy is deterministic in principle, but GPU floating-point
+reduction order can vary with batch composition, so bit-identical output across differently
+batched runs is not guaranteed. Every condition here ran as a single consistent batch. If a
+pod is restarted for any other reason, re-run greedy for two or three models and diff the
+output (~5 min). Until then this is stated as an assumption in the limitations.
+
 ### Secondary — rank agreement, descriptive only
 
 Spearman rho of the model ordering under each pair of scoring methods, within each
