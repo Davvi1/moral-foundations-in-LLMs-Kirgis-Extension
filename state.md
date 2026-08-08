@@ -436,6 +436,23 @@ run manifest.
 
 - **P1.** Scoring the **full option line** (`"3: Very wrong"`) rather than the bare phrase will
   raise string-scoring retained mass substantially above the Phase-1 value of 0.22.
+
+  > **AMENDMENT 2026-08-08, before any v2 data. The original wording above is left intact
+  > deliberately — a registered prediction that gets quietly reworded is not registered.**
+  > P1 as written is **not evaluable**, because its baseline is not the quantity it appears
+  > to be. v1 ran `length_normalise=True`, so the 0.22 is `sum_k exp(per-token mean logprob)`
+  > — a sum of geometric means — while v2's mass is a genuine probability. Comparing them
+  > would be a category error in the other direction, and "v2 mass ≫ 0.22" would be trivially
+  > satisfiable by the change of estimator alone rather than by the change of probe.
+  >
+  > **Replacement test, fixed now and equally falsifiable:** within v2, where `line` and
+  > `bare` are scored by identical machinery on identical prompts, `line` mass will exceed
+  > `bare` mass for a majority of models. This is a strict within-v2 contrast, so nothing
+  > about the estimator can produce it. **Falsifier:** `line` mass ≤ `bare` mass for half or
+  > more of the roster. Derivation: `results/derived/tokenization_boundary_diagnosis.md`.
+  >
+  > **P2 is unaffected** and remains the prediction that matters — it is about model
+  > *ranking* agreement (ρ), never about mass.
 - **P2.** With P1, string scoring's **model-ranking** agreement with label scoring will rise
   markedly from the Phase-1 ρ = 0.332. *If it does not*, the Phase-1 divergence is a genuine
   construct difference rather than a surface-form artifact — and that is the more interesting

@@ -188,10 +188,17 @@ was therefore not uniform even *within* his logprob arm.
 - **That the design resolved R.** It did not. All seven verdicts are indeterminate.
 - **That method effects generalise beyond this prompt.** We deliberately held one prompt fixed.
   Ministral's silence in particular is likely prompt-sensitive.
-- **That string scoring's disagreement is a method effect rather than an artifact.** It retains
-  little probability mass (0.22 vs 0.81 for label) because our prompt *displays* the options,
-  so it is not textbook cloze. Two readings survive the data and we cannot adjudicate:
-  either method choice destabilises model ranking, or string scoring is simply the degraded arm.
+- **That string scoring's disagreement is a method effect rather than an artifact.** Two
+  readings survive the data and we cannot adjudicate: either method choice destabilises model
+  ranking, or string scoring is simply the degraded arm. **The uncertainty is now larger than
+  we first stated, on two counts found while testing the v2 scorer.** (a) The mass evidence we
+  cited for the "degraded arm" reading is *withdrawn* — v1's string mass was computed from
+  length-normalised scores and is a sum of geometric means, not a probability, so "0.22 vs
+  0.81" compared two different quantities. (b) On 12 of 30 models the option boundary was
+  computed with the local tokenizer and applied to vLLM's ids, an off-by-one that does not
+  cancel under the normalisation v1 used. The ρ = 0.332 stands as measured; what it measures
+  is less certain than §3 implies. v2 re-measures it. Details:
+  `results/derived/tokenization_boundary_diagnosis.md`.
 - **That published logprob-based work is broadly wrong.** We showed one implementation failing
   on one roster. Narrow version only.
 - **Anything about frontier models.** Twenty open models ≤ 14B are not the frontier, and prior

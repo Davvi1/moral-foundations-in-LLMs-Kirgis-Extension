@@ -14,16 +14,32 @@ trivia. Each entry: what is wrong, the evidence, the fix, what it costs.
 ## F1 — String scoring v1 mismeasures where the answer probability lives
 **Severity: high — it may invalidate the single most striking result.**
 
-The v1 string condition scores the bare phrase ("Very wrong") as a continuation. Three pieces
-of evidence say that is the wrong surface form:
+The v1 string condition scores the bare phrase ("Very wrong") as a continuation. Evidence that
+this is the wrong surface form:
 
-1. Retained probability mass: **0.22** for string vs 0.81 for label. The model's probability
-   is not where we are looking.
+1. ~~Retained probability mass: **0.22** for string vs 0.81 for label.~~ **WITHDRAWN
+   2026-08-08 — this comparison was invalid and the error was mine.** v1 ran
+   `length_normalise=True`, and `expectation()` computes mass from whatever it is handed, so
+   v1's string "mass" is `sum_k exp(per-token *mean* logprob)` — a sum of five geometric
+   means, not a probability, and not commensurable with label's mass (computed from raw
+   logprobs, where it genuinely is one). A value near 0.2 is the *expected* magnitude for
+   that quantity and implies nothing about misalignment. Full derivation and worked example:
+   `results/derived/tokenization_boundary_diagnosis.md`.
 2. The models' own greedy outputs show their natural answer format is **`"3: Very wrong"`** —
    digit, colon, phrase. The phrase appears *after* a digit prefix we are not conditioning on.
+   **This is now the sole argument for F1**, and it is the stronger of the original pair: it
+   is an independent observation from generated text rather than an artifact-prone statistic.
 3. The one model where string mass is high (Mistral, 0.87) is the one whose *label* mass is
    broken (0.08) — the two readouts chase the same probability, which sits in different
-   surface forms per model.
+   surface forms per model. (Direction survives the withdrawal, since it is a within-model
+   contrast; its magnitude does not, for the reason in point 1.)
+
+**A second, independent v1 defect found while testing v2 (see F8).** The option boundary was
+computed with the *local* tokenizer and applied to ids returned by *vLLM*. On **12 of 30**
+roster models the chat template already emits BOS and the tokenizer adds another, so the local
+count is one short. Under a plain sum that off-by-one cancels in the softmax; **under length
+normalisation — which is what v1 used — it does not.** So the v1 string arm was exposed on
+those models by a second route entirely.
 
 The headline-looking result — string scoring produces a different model ranking (ρ ≈ 0.33 vs
 0.77–0.93 for every other pair) — is therefore confounded: genuine construct difference and

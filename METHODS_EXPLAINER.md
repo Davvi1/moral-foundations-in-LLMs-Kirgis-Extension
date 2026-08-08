@@ -89,7 +89,11 @@ and model rankings.
 **Where our v1 implementation deviates from what the model actually does, and why v2 changes
 it:** our greedy outputs show the models' natural answer format is `"3: Very wrong"` — digit,
 colon, *then* phrase. v1 scored the bare phrase, a continuation the prompt (which displays the
-options as numbered lines) steers away from — hence retained mass of 0.22 vs label's 0.81.
+options as numbered lines) steers away from. (An earlier draft added "hence retained mass of
+0.22 vs label's 0.81". **That comparison is withdrawn** — v1 computed string mass from
+length-normalised scores, making it a sum of geometric means rather than a probability, so it
+was never commensurable with label's. See `results/derived/tokenization_boundary_diagnosis.md`.
+The greedy-output argument above is independent of it and is what actually motivates the fix.)
 v2 scores the **full option line** `"3: Very wrong"` as the primary string variant, keeps the
 bare phrase as sensitivity, and stores the five per-option scores (v1 stored only the
 expectation, which blocked the sharpest diagnostic). Registered prediction, made before any
