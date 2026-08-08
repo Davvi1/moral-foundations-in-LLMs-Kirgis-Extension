@@ -31,17 +31,52 @@ import yaml
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import conditions as C  # noqa: E402
+import conditions_v2 as C2  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
 RAW = REPO / "results" / "raw"
 
 FIELDS = [
-    "model", "revision", "item_id", "foundation", "condition", "replicate",
+    "model", "revision", "harness", "item_id", "foundation", "condition", "replicate",
     "score", "score_alt_normalisation", "logprob_mass", "n_options_found",
     "refusal", "parse_failed", "parse_strategy", "token_boundary_clean", "emitted_token_id",
     "label_position",
+    "surface_form", "boundary_shift", "degenerate_options",
     "seed", "prompt_sha", "raw_output",
 ]
+
+# v1 kept for reproducibility of the committed Phase-1 data, NOT as a live option: its
+# manifests pin these code paths, and rewriting them in place would make the archived results
+# unreproducible. New collection should use v2. See conditions_v2.py for what changed.
+V1_CONDITIONS = ("label", "string", "greedy", "sampled")
+V2_CONDITIONS = ("label", "string_line", "string_bare", "greedy", "sampled")
+V2_OPTIONAL = ("cloze",)   # prompt-varying; excluded from the primary variance ratio
+
+
+def tokenization_probe(llm, sampling_params_cls, tok, prompt) -> dict:
+    """Ask the ENGINE how it tokenizes the prompt, and compare against the local tokenizer.
+
+    This is the measurement that would have caught v1's D1 defect on the day it happened, and
+    it costs one sequence. v1 computed the option boundary from `local.encode(text,
+    add_special_tokens=False)` and applied that index to ids vLLM returned; on 12 of 30 roster
+    models those differ by one, because the chat template already emits BOS and the tokenizer
+    adds a second. v2 never uses the local count, so this is pure diagnostics — but it is the
+    only thing that will settle WHY internlm2_5-7b-chat lost its entire v1 string arm with
+    `n_options_found = 0`, which the local-only evidence could not explain.
+    """
+    sp = sampling_params_cls(temperature=0.0, max_tokens=1, prompt_logprobs=0)
+    out = llm.generate([prompt.text], sp)[0]
+    engine_n = len(out.prompt_token_ids)
+    local_no = len(tok.encode(prompt.text, add_special_tokens=False))
+    local_yes = len(tok.encode(prompt.text, add_special_tokens=True))
+    d = {"engine_n_tokens": engine_n, "local_n_no_specials": local_no,
+         "local_n_with_specials": local_yes,
+         "engine_minus_local_no_specials": engine_n - local_no,
+         "v1_boundary_was_correct": engine_n == local_no}
+    if not d["v1_boundary_was_correct"]:
+        print(f"  [tokenization] engine={engine_n} vs local(no-specials)={local_no} "
+              f"-> v1's option boundary was off by {engine_n - local_no} on this model")
+    return d
 
 
 def slug(model_id: str) -> str:
@@ -167,7 +202,24 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     assert len(shas) == len(prompts), "prompt hash collision — items are not distinct"
     print(f"  {len(prompts)} distinct prompts; first sha {prompts[0].sha256}")
 
-    want = set(args.conditions) if args.conditions else {"label", "string", "greedy", "sampled"}
+    default_conditions = set(V1_CONDITIONS if args.harness == "v1" else V2_CONDITIONS)
+    if args.harness == "v2" and args.cloze:
+        default_conditions |= set(V2_OPTIONAL)
+    want = set(args.conditions) if args.conditions else default_conditions
+
+    # The cloze arm CANNOT share the prompt — "textbook cloze" means the options are not
+    # displayed, which is a different prompt by definition. It is therefore rendered
+    # separately, recorded with its own prompt_sha so the difference is visible in the data,
+    # and excluded from the primary variance ratio. Putting a prompt effect inside a number
+    # defined as a method effect is the exact error this project audits Kirgis for.
+    prompts_cloze = []
+    if "cloze" in want:
+        if "user_template_cloze" not in prompt_cfg:
+            raise SystemExit("cloze requested but config/prompt.yaml has no user_template_cloze")
+        cloze_cfg = dict(prompt_cfg, user_template=prompt_cfg["user_template_cloze"])
+        prompts_cloze = [C.render_prompt(tok, cloze_cfg, q, i) for i, q in items]
+        assert prompts_cloze[0].sha256 != prompts[0].sha256, \
+            "cloze prompt is identical to the primary prompt — the option list was not removed"
 
     tok_ids = C.option_token_ids(tok, prompt_cfg["options"])
     empty = [k for k, v in tok_ids.items() if not v]
@@ -185,6 +237,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     # after twenty minutes of GPU time.
     manifest_static = {
         "model": mid, "revision": rev, "family": entry.get("family"),
+        "harness": args.harness,
         "params_b": entry.get("params_b"),
         "n_items": len(items), "k_samples": args.k,
         "conditions": sorted(want),
@@ -213,15 +266,38 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
               gpu_memory_utilization=util, enforce_eager=args.eager,
               dtype="bfloat16", trust_remote_code=trc)
 
+    tokdiag = tokenization_probe(llm, SamplingParams, tok, prompts[0])
+
     rows: list[dict] = []
-    if "label" in want:
-        rows += C.run_label(llm, SamplingParams, prompts, tok_ids)
-        print(f"  label    done ({len(rows)} rows)")
-    if "string" in want:
-        n = len(rows)
-        rows += C.run_string(llm, SamplingParams, tok, prompts, prompt_cfg["options"],
-                             length_normalise=True)
-        print(f"  string   done (+{len(rows)-n})")
+    opts = prompt_cfg["options"]
+    if args.harness == "v2":
+        # One mechanism, three probes. `label` keeps its name because it is the same
+        # estimand as v1's — the probability the answer is the digit k — read exactly
+        # instead of from a truncated top-20 list at a scanned position.
+        for cond, fn, ps in (("label",       C2.run_label_exact,  prompts),
+                             ("string_line", C2.run_string_line,  prompts),
+                             ("string_bare", C2.run_string_bare,  prompts),
+                             ("cloze",       C2.run_cloze,        prompts_cloze)):
+            if cond not in want:
+                continue
+            n = len(rows)
+            rows += fn(llm, SamplingParams, ps, opts)
+            new = rows[n:]
+            shifted = sum(1 for r in new if r.get("boundary_shift"))
+            degen = sum(1 for r in new if r.get("degenerate_options"))
+            mass = [r["logprob_mass"] for r in new if r.get("logprob_mass") == r.get("logprob_mass")]
+            print(f"  {cond:<12} done (+{len(new)})  mean mass="
+                  f"{(sum(mass)/len(mass) if mass else float('nan')):.4f}"
+                  f"  boundary_shift={shifted}  degenerate={degen}")
+    else:
+        if "label" in want:
+            rows += C.run_label(llm, SamplingParams, prompts, tok_ids)
+            print(f"  label    done ({len(rows)} rows)")
+        if "string" in want:
+            n = len(rows)
+            rows += C.run_string(llm, SamplingParams, tok, prompts, opts,
+                                 length_normalise=True)
+            print(f"  string   done (+{len(rows)-n})")
     if "greedy" in want:
         n = len(rows)
         rows += C.run_free(llm, SamplingParams, prompts, greedy=True)
@@ -235,6 +311,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     for r in rows:
         r["model"] = mid
         r["revision"] = rev
+        r["harness"] = args.harness
         r["foundation"] = meta.get(r["item_id"], "")
 
     RAW.mkdir(parents=True, exist_ok=True)
@@ -244,6 +321,11 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
         w.writerows(rows)
 
     manifest = dict(manifest_static)
+    manifest["tokenization"] = tokdiag
+    manifest["boundary_shift_rows"] = sum(1 for r in rows if r.get("boundary_shift"))
+    manifest["degenerate_option_rows"] = sum(1 for r in rows if r.get("degenerate_options"))
+    if prompts_cloze:
+        manifest["cloze_prompt_sha_first"] = prompts_cloze[0].sha256
     manifest["elapsed_s"] = round(time.time() - t0, 1)
     manifest["n_rows"] = len(rows)
     manifest["parse_failed"] = sum(1 for r in rows if r.get("parse_failed"))
@@ -289,6 +371,15 @@ def main() -> int:
                     help="enable CUDA graphs (faster, riskier on new GPUs)")
     ap.add_argument("--purge-weights", action="store_true")
     ap.add_argument("--force", action="store_true")
+    ap.add_argument("--harness", choices=["v1", "v2"], default="v2",
+                    help="v2 (default) scores every option by forced continuation: exact p_k, "
+                         "no top-k truncation, no position scan, boundary measured not assumed. "
+                         "v1 reproduces the archived Phase-1 code paths and should be used only "
+                         "to regenerate that data.")
+    ap.add_argument("--cloze", action="store_true",
+                    help="v2 only: add the exploratory cloze arm (options REMOVED from the "
+                         "prompt). Prompt-varying by construction, so it is excluded from the "
+                         "primary variance ratio and reported separately.")
     ap.add_argument("--conditions", nargs="*", default=None,
                     help="subset to run, e.g. --conditions label (default: all four)")
     ap.add_argument("--suffix", default="",

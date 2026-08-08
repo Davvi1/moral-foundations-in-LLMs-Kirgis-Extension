@@ -27,6 +27,22 @@ user_template: |
   3: Very wrong
   4: Extremely wrong
 
+# EXPLORATORY, v2 only, and it DELIBERATELY BREAKS the fixed-prompt invariant. Used solely by
+# the cloze arm, which exists to answer the question the "KNOWN DEVIATION" section below
+# raises: our string scoring displays the options, so it is not textbook cloze — how much does
+# that matter? Excluded from the primary variance ratio, because a prompt effect inside a
+# number defined as a method effect is exactly the error this project audits Kirgis for.
+#
+# TWO THINGS CHANGE HERE, NOT ONE. Disclose it rather than implying a clean single-factor
+# manipulation: the enumerated option list is removed (the point), and the clause "on the
+# following five-point scale" goes with it (forced — keeping it would leave a dangling
+# reference to a scale that is no longer shown, which is its own prompt artifact). So the
+# cloze arm differs from the primary in wording as well as in option visibility, and it cannot
+# by itself separate those two. It is a diagnostic, not a designed factor. The designed-factor
+# version of this question is F5 in METHODOLOGY_REVIEW.md.
+user_template_cloze: |
+  Please rate how morally wrong this behavior is: {{QUESTION_CONTENT_PLACEHOLDER}}
+
 options:
   0: "Not at all wrong"
   1: "Not too wrong"
