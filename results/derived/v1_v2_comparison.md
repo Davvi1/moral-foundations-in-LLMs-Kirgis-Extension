@@ -18,8 +18,129 @@ P1' and P4' are **within-v2** contrasts: identical machinery on both sides, so t
 change of estimator cannot produce them. They replace the original P1/P4 mass tests,
 whose baseline was withdrawn — see `CORRECTIONS.md` C6/C8.
 
-## Status
+## Data
 
-**No v2 data yet.** The plan above is the pre-specification; this file will
-be regenerated with verdicts once `run_experiment.py --harness v2 --cloze
---suffix _v2` has run. Nothing below is filled in, deliberately.
+v1 models: 20 · v2 models: 31
+
+
+## P1' — full option line vs bare phrase (mass)
+
+`string_line` mass exceeds `string_bare` mass on **31/31** models (100%). Means: line 0.6255, bare 0.0032.
+
+Verdict: **SUPPORTED**
+
+
+## P2 — does the line probe recover agreement with label?
+
+| pair | Spearman rho | n models |
+|---|---:|---:|
+| label ~ string_line | 0.974 | 31 |
+| label ~ string_bare | 0.401 | 31 |
+
+Gain +0.573 against a pre-committed requirement of >= 0.20 with rho >= 0.60.
+
+Verdict: **SUPPORTED**
+
+**Read this one carefully rather than as pass/fail.** If P2 is falsified while
+P1' holds — mass recovered, agreement did not — then the Phase-1 rho = 0.332 was
+a *genuine construct difference*, not a badly aimed probe. That is the more
+interesting outcome and it strengthens the Phase-1 headline rather than
+weakening it. It is registered precisely so it cannot be reframed afterwards.
+
+
+## P3 — does exact p_k move low-mass models most?
+
+Spearman rho between v1 label retained mass and |v2 − v1| label score change: **-0.195** (n = 20). Predicted negative.
+
+| model | v1 mass | v1 score | v2 score | abs change |
+|---|---:|---:|---:|---:|
+| Mistral-7B-Instruct-v0.3 | 0.078 | 2.833 | 3.202 | 0.369 |
+| Ministral-8B-Instruct-2410 | 0.337 | 2.471 | 2.522 | 0.051 |
+| Qwen2.5-1.5B-Instruct | 0.997 | 3.508 | 3.523 | 0.016 |
+| Qwen2.5-3B-Instruct | 1.000 | 2.868 | 2.855 | 0.013 |
+| Llama-3.2-1B-Instruct | 0.231 | 2.014 | 2.027 | 0.013 |
+
+Verdict: **SUPPORTED**
+
+
+## P4' / P4r — the cloze arm
+
+Mass: cloze > bare on **23/31** models (74%). Verdict: **SUPPORTED**
+
+Ranking: rho(cloze, string_bare) = **0.156** vs rho(cloze, label) = **0.325**. Verdict: **FALSIFIED**
+
+**Reminder that this arm is prompt-varying and excluded from the primary
+variance ratio.** It also changes two things at once (options removed, and the
+'five-point scale' clause removed with them), so it cannot separate
+option-visibility from wording. Diagnostic only — see `config/prompt.yaml`.
+
+
+## Boundary and integrity diagnostics (v2)
+
+- models with a nonzero token-boundary shift: **0**
+- models with indistinguishable options: **0** (any nonzero value here invalidates that model's arm and must be reported, not dropped)
+- max retained mass: **1.0155** — must be <= 1.0, since the five options are mutually exclusive continuations of a shared prefix. A value above 1 means the option token sequences are not pairwise non-prefix and the scorer is double-counting.
+
+
+## Summary
+
+| prediction | verdict |
+|---|---|
+| P1' mass, line > bare | **SUPPORTED** |
+| P2 ranking agreement | **SUPPORTED** |
+| P3 exact p_k moves low-mass models | **SUPPORTED** |
+| P4' mass, cloze > bare | **SUPPORTED** |
+| P4r cloze ranks like bare | **FALSIFIED** |
+
+Predictions that failed are reported as failed. See `CORRECTIONS.md` for the
+standing record of claims this project has had to withdraw.
+
+---
+
+## Interpretation — read this before quoting P2
+
+**P2 passed, but not for the reason the prediction assumed, and the difference matters.**
+
+`string_line` and `label` are very nearly the SAME MEASUREMENT, not two methods that happen
+to agree. At item level across all 31 models: Pearson r = **0.9878**, scores exactly identical
+on **22.1%** of items, and *perfectly* identical (mean |diff| = 0.0000) on the most confident
+models — Qwen2.5-72B, phi-4, Phi-3.5-mini.
+
+The mechanism is arithmetic, not coincidence:
+
+    log P("3: Very wrong" | prompt) = log P("3" | prompt) + log P(": Very wrong" | prompt+"3")
+
+The softmax across the five options is unchanged by the second term whenever that term is
+constant in k. And it *is* near-constant here, because **the prompt displays the mapping**
+("0: Not at all wrong ... 4: Extremely wrong"). Having conditioned on the digit, the model can
+read the phrase straight off the prompt, so P(phrase_k | digit_k) ~ 1 for every k. Full-line
+scoring therefore degenerates to label scoring.
+
+**What this costs the design.** The four conditions were chosen as distinct readouts of the
+same construct. On a prompt that displays numbered options, "string scoring" is not
+independent of label scoring — it is either
+
+  (a) **the same measurement**, if you score the full option line (r = 0.99), or
+  (b) **a probe of a continuation the model almost never writes**, if you score the bare
+      phrase (mean retained mass **0.0032**, i.e. 0.3%).
+
+There is no third option available under a fixed prompt that displays the options, because
+label scoring *requires* the digits to be visible. This is a real limitation of the design and
+belongs in the write-up as one.
+
+**What it does NOT do is rescue the Phase-1 headline.** v1's string arm scored the bare
+phrase; v2's `string_bare` — the same probe on correct machinery — gives rho(label, bare) =
+**0.401**, close to v1's 0.332. So the Phase-1 ranking divergence was *not* an artifact of the
+broken boundary or the truncated top-20. It reproduces. What v2 adds is the explanation: that
+arm was measuring a continuation carrying 0.3% of the probability mass.
+
+**P4r is FALSIFIED and is reported as failed.** Cloze was predicted to track `string_bare`
+more closely than `label`; it does the opposite (rho 0.156 vs 0.325). Both correlations are
+low, so the honest summary is that the cloze arm resembles nothing else closely — consistent
+with it being the one arm whose prompt differs, and a reminder that it changes two things at
+once (options removed, scale clause removed) and cannot separate them.
+
+**P3 passed but is thin.** rho = -0.195 across 20 models is weak, and the effect is carried by
+a single model: Mistral-7B (v1 mass 0.078) moved 0.369, while every high-mass model moved
+~0.013. The direction is as predicted and the mechanism is visible, but one influential point
+is not a robust slope. Report the mechanism, not the correlation.
