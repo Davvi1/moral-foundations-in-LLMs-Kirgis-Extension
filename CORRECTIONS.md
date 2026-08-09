@@ -266,9 +266,45 @@ completely invisible, and the near-miss was only caught by accident.
 
 ---
 
+## C11 — The MCMC seed for the primary estimand was randomised per process
+**Date:** 2026-08-09 · **Severity:** high — `variance_ratio.csv` could not be regenerated
+
+**Claimed:** implicitly by `analyse_variance_ratio.py`'s own docstring — *"Nothing in this
+file decides anything"* — and by committing `results/derived/variance_ratio.csv` as a
+reproducible artifact.
+
+**True:** the MCMC seed was `abs(hash(tag)) % 10000`. CPython randomises string hashing per
+process, so **every run used different seeds**. `verdict()` does decide: it is a banded
+classification of the 95% interval, and per `FINDINGS.md` all seven intervals straddle a band
+boundary — exactly the configuration where a small posterior shift can flip the label. So the
+committed R medians, intervals and verdicts were not a function of `analysis_long.csv` alone.
+
+**Caught by:** auditing the codebase for siblings of C10 immediately after fixing it. Nothing
+noticed on its own — and this one is worse than C10, which touched only a descriptive column.
+
+**Changes:** seed derived with `hashlib.sha256`, matching the hashing already used in
+`conditions.py`. Added `--seed-audit N`, which refits **every foundation under N explicit
+seeds** and reports the spread of `R_median` plus whether `verdict` is constant. The magnitude
+is being **measured, not assumed** — if any verdict flips, the bands are unstable at this draw
+count and the honest response is more draws plus a stated caveat, not a chosen seed.
+
+**Also fixed alongside:** `mcmc_permutation_null.py` wrote rows in `as_completed` order, which
+depends on process scheduling and on `os.cpu_count()`. Values were seed-safe; row order was
+not. Sorted before every write.
+
+**The systemic response, which is the real fix.** `tests/test_determinism.py` now (a) rebuilds
+the analysis dataset under two different `PYTHONHASHSEED` values and asserts byte-identical
+output, for both harnesses; (b) statically rejects builtin `hash()` and `max(set(...))`
+anywhere in `scripts/`; (c) asserts that builtin `hash()` really is unstable on this
+interpreter, so nobody later "simplifies" `stable_seed()` back. **Verified by deliberately
+reintroducing the C10 bug: three tests fail, and pass again on restore.** Two of eleven
+corrections were found by luck; this is the check that would have caught both.
+
+---
+
 ## Standing note for the write-up
 
-Six of these ten were found by a check that was **built in advance** — a validation
+Six of these eleven were found by a check that was **built in advance** — a validation
 simulation (C1), a pre-specified sensitivity analysis (C2), known-answer unit tests (C6, C7),
 or a registered falsifier (C8). One (C3) was found only because the author asked for a
 double-check. **C9 and C10 were found by luck** — a test failing for what looked like an unrelated

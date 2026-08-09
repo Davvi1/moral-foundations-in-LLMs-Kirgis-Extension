@@ -180,7 +180,15 @@ def main() -> int:
             results.append(r)
             done += 1
             # Append after every fit: a 700-fit run that dies at fit 690 must not lose 689.
-            pd.DataFrame(results).to_csv(out_path, index=False)
+            #
+            # SORT BEFORE WRITING. `as_completed` yields in process-completion order, which
+            # depends on scheduling and on `workers` (derived from os.cpu_count()), so the same
+            # run on the same data would emit rows in a different order on a different host.
+            # The VALUES are safe -- every job carries an explicit derived seed -- but an
+            # unsorted CSV is not a reproducible artifact, which is the same class of defect as
+            # C10/C11 in CORRECTIONS.md.
+            pd.DataFrame(results).sort_values(["foundation", "perm"]).to_csv(
+                out_path, index=False)
             if done % 10 == 0 or done == len(jobs):
                 el = time.time() - t0
                 rate = done / el if el else 0
@@ -189,7 +197,7 @@ def main() -> int:
                 print(f"  {done}/{len(jobs)}  ok={ok}  {el/60:.1f} min elapsed, "
                       f"~{eta:.0f} min left")
 
-    res = pd.DataFrame(results)
+    res = pd.DataFrame(results).sort_values(['foundation', 'perm']).reset_index(drop=True)
     ok = res[res["status"] == "ok"] if "status" in res else res
     print(f"\n{len(ok)}/{len(res)} fits succeeded in {(time.time()-t0)/60:.1f} min")
     if len(ok):

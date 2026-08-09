@@ -150,8 +150,15 @@ def main() -> int:
             # The fix breaks ties by severity rather than arbitrarily, which is both
             # deterministic and more honest: a cell that is half unparseable should not be
             # reported as "ok".
+            # `sorted(set(...))` rather than `set(...)`: even with a total-order key the set
+            # form is a trap for the next reader, and tests/test_determinism.py rejects it on
+            # sight. An unrecognised failure type sorts as MOST severe rather than raising,
+            # so a new type added to conditions.failure_type() degrades safely instead of
+            # crashing the build or being quietly summarised as "ok".
             ft = [g["_ftype"] for g in group]
-            dominant = max(set(ft), key=lambda t: (ft.count(t), SEVERITY_ORDER.index(t)))
+            sev = {t: i for i, t in enumerate(SEVERITY_ORDER)}
+            dominant = max(sorted(set(ft)),
+                           key=lambda t: (ft.count(t), sev.get(t, len(sev))))
 
             rows_out.append({
                 "model": g0["model"], "family": man.get("family", ""),

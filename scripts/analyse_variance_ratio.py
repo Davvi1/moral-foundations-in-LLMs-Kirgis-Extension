@@ -25,6 +25,7 @@ one — PyTensor falls back to pure Python and a small fit takes over ten minute
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import warnings
 from pathlib import Path
@@ -43,6 +44,31 @@ OUT = REPO / "results" / "derived"
 # Bands fixed in state.md, with the `indeterminate` verdict added after the B2 simulation
 # showed that no feasible N resolves an R sitting on a boundary.
 BANDS = [(0.0, 0.25, "robust"), (0.25, 1.0, "degraded"), (1.0, np.inf, "not interpretable")]
+
+
+def stable_seed(tag: str) -> int:
+    """Deterministic MCMC seed from a label.
+
+    REPRODUCIBILITY BUG, fixed 2026-08-09. This was:
+
+        seed=abs(hash(tag)) % 10000
+
+    CPython randomises string hashing per process (PYTHONHASHSEED), so the same tag produced a
+    different MCMC seed on every run. `results/derived/variance_ratio.csv` — a COMMITTED
+    artifact — therefore could not be regenerated from `analysis_long.csv`. Every posterior
+    summary in it (R_median, R_q2.5, R_q97.5, max_rhat) moves with the seed, and `verdict()`
+    is a banded classification that can flip when an interval sits near the 0.25 or 1.0
+    boundary, which per FINDINGS.md is the case for all seven foundations.
+
+    This is the same defect as C10 in CORRECTIONS.md, but worse: C10 touched a descriptive
+    column, this one seeds the primary estimand. It was found by auditing for siblings of C10
+    rather than by anything noticing on its own.
+
+    sha256 is deterministic across processes, machines and Python versions, and is already the
+    hashing used elsewhere in the tree (conditions.py). The magnitude of what the old code
+    cost is measured separately by --seed-audit rather than assumed negligible.
+    """
+    return int(hashlib.sha256(tag.encode("utf-8")).hexdigest()[:8], 16) % 10000
 
 
 def verdict(lo: float, hi: float) -> str:
@@ -100,8 +126,86 @@ def extract_R(idata) -> np.ndarray | None:
     return (sd_mr ** 2) / (sd_m ** 2)
 
 
+def seed_audit(df: pd.DataFrame, foundations: list[str], args) -> int:
+    """Refit each foundation under N explicit seeds; report Monte-Carlo sensitivity.
+
+    This exists to MEASURE what the old randomised-hash seed could have cost, rather than
+    asserting it was negligible. The question that matters is not "did the seed change" — it
+    demonstrably did — but "does the seed change anything a reader would act on". Two things
+    are therefore reported per foundation: the spread of R_median across seeds, and whether
+    `verdict` is constant. A verdict that flips means the banded classification is unstable at
+    this draw count, which would be a finding about the analysis rather than about the models.
+
+    Uses the primary specification only (exclusions applied, method-specific residuals), since
+    that is the configuration the headline numbers come from.
+    """
+    rows = []
+    for fdn in foundations:
+        sub = df[(df["foundation"] == fdn) & (~df["excluded"])]
+        sub = sub.rename(columns={"condition": "method", "item_id": "item"})
+        sub = sub[["score", "model", "method", "item"]].dropna()
+        sub["item"] = sub["item"].astype(str)
+        if sub["method"].nunique() < 2 or sub["model"].nunique() < 3:
+            continue
+        for i in range(args.seed_audit):
+            seed = 1000 + i * 7919          # arbitrary but explicit and reproducible
+            try:
+                _, idata = fit_one(sub, True, args.draws, args.tune, args.chains, seed=seed)
+            except Exception as e:
+                print(f"  {fdn} seed {seed}: FAILED {type(e).__name__}")
+                continue
+            R = extract_R(idata)
+            if R is None:
+                continue
+            lo, hi = np.percentile(R, [2.5, 97.5])
+            rows.append({"foundation": fdn, "seed": seed,
+                         "R_median": float(np.median(R)), "R_q2.5": float(lo),
+                         "R_q97.5": float(hi), "verdict": verdict(lo, hi)})
+            print(f"  {fdn:<14} seed={seed:<6} R={np.median(R):.4f} "
+                  f"[{lo:.4f}, {hi:.4f}] {verdict(lo, hi)}")
+
+    res = pd.DataFrame(rows)
+    OUT.mkdir(parents=True, exist_ok=True)
+    out_path = Path(args.out) if args.out else OUT / "variance_ratio_seed_audit.csv"
+    res.to_csv(out_path, index=False)
+
+    print()
+    print(f"{'foundation':<14}{'n':>3}{'R median':>11}{'spread':>10}"
+          f"{'as % of CrI':>13}  verdicts")
+    unstable = []
+    for fdn, g in res.groupby("foundation"):
+        spread = g["R_median"].max() - g["R_median"].min()
+        cri = g["R_q97.5"].mean() - g["R_q2.5"].mean()
+        vs = set(g["verdict"])
+        if len(vs) > 1:
+            unstable.append(fdn)
+        print(f"{fdn:<14}{len(g):>3}{g['R_median'].median():>11.4f}{spread:>10.4f}"
+              f"{100 * spread / cri if cri else float('nan'):>12.1f}%  "
+              f"{'STABLE' if len(vs) == 1 else 'FLIPS: ' + '/'.join(sorted(vs))}")
+    print()
+    if unstable:
+        print(f"!! verdict FLIPS across seeds for: {', '.join(unstable)}")
+        print("   The banded classification is not stable at this draw count. Raise draws and")
+        print("   report the instability -- do not pick a seed.")
+    else:
+        print("All verdicts stable across seeds. Monte-Carlo error moves R_median by the")
+        print("spread shown, which is the figure to report alongside the R table.")
+    print()
+    print(f"wrote {out_path}")
+    return 0
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
+    ap.add_argument("--data", default=None,
+                    help="long-form dataset (default: results/derived/analysis_long.csv). "
+                         "Pass analysis_long_v2.csv for the v2 harness.")
+    ap.add_argument("--out", default=None, help="output CSV (default derived from --data)")
+    ap.add_argument("--seed-audit", type=int, default=0, metavar="N",
+                    help="refit every foundation under N different explicit seeds and write a "
+                         "Monte-Carlo sensitivity table instead of the primary analysis. This "
+                         "measures what the old randomised-hash seed could have cost; see "
+                         "stable_seed().")
     ap.add_argument("--test", action="store_true", help="one foundation, short chains")
     ap.add_argument("--draws", type=int, default=1500)
     ap.add_argument("--tune", type=int, default=1500)
@@ -110,13 +214,17 @@ def main() -> int:
     if args.test:
         args.draws, args.tune, args.chains = 400, 400, 2
 
-    df = pd.read_csv(LONG)
+    data_path = Path(args.data) if args.data else LONG
+    df = pd.read_csv(data_path)
     df = df[df["score"].notna()].copy()
     df["excluded"] = df["excluded"].astype(str) == "True"
 
     foundations = sorted(df["foundation"].unique())
     if args.test:
         foundations = ["Care"]
+
+    if args.seed_audit:
+        return seed_audit(df, foundations, args)
 
     rows = []
     for fdn in foundations:
@@ -136,7 +244,7 @@ def main() -> int:
                        f"resid={'method-specific' if hetero else 'pooled       '}")
                 try:
                     _, idata = fit_one(sub, hetero, args.draws, args.tune,
-                                       args.chains, seed=abs(hash(tag)) % 10000)
+                                       args.chains, seed=stable_seed(tag))
                 except Exception as e:
                     print(f"  {tag}: FIT FAILED {type(e).__name__}: {str(e)[:120]}")
                     continue
