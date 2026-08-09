@@ -13,8 +13,14 @@
 > | F5 | everything conditional on one prompt | **NOT DONE.** The cloze arm varies the prompt but changes two things at once and is excluded from the primary. Prompt-as-designed-factor remains future work. |
 > | F6 | Kirgis's substantive finding never audited | **RESOLVED at both N.** Raw gap cannot adjudicate (compression predicts negative, C3); compression-adjusted gap +0.077 to +0.179 across six readouts, and it grows with scale. |
 > | F7 | refusal contaminates readouts | **RESOLVED and extended.** ρ = −0.54 over 31 models. Plus the MNAR audit: a multi-readout design measures the missing-data bias instead of assuming it. |
-> | F8 | internlm boundary / greedy determinism | **RESOLVED.** LCP boundary computed engine-side; boundary shift 0 on all 31 models. The original diagnosis of *why* internlm failed was falsified (C7) and the true cause remains unverified — v2 does not depend on it. |
+> | F8 | internlm boundary / greedy determinism | **PARTIALLY RESOLVED — this row previously said RESOLVED and overstated.** The *boundary* half is resolved: LCP computed engine-side, shift 0 on all 31 models (the original diagnosis of *why* internlm failed was falsified, C7, and the true cause remains unverified — v2 does not depend on it). The *greedy determinism* half was never checked: line 191 below lists the spot-check as a to-do and it was not done. See `LIMITATIONS.md` §12. |
 > | F9 | permutation-null deviation | **RESOLVED.** 700/700 full-MCMC fits. Null median 0.0006–0.0021 against observed 0.34–1.08. The deviation paragraph can be deleted. |
+>
+> **Outstanding and NOT deliberate — found on the limitations pass 2026-08-09:** the
+> `scan`-parsed sensitivity analysis specified at `ANALYSIS_PLAN.md:192` ("the primary
+> analysis is repeated excluding them") was **never run**. Descriptively it moves the
+> greedy model ranking to ρ = 0.832 against the all-rows ranking, which is the same
+> order as the method effects under study. See `LIMITATIONS.md` §1.
 >
 > **Still outstanding, deliberately:** F5 (prompt as designed factor); the family random effect
 > for F3 (five Qwens are not five independent draws); a scale-augmented variance model that
