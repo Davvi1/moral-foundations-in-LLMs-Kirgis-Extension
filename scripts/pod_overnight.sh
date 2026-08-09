@@ -56,17 +56,57 @@ echo "=== run_experiment exit=$RC ==="
 cat /workspace/v2_summary.txt
 
 # ---------------------------------------------------------------------------------------
-# 3. Stop the pod. Guarded: if RUNPOD_POD_ID cannot be read we must NOT silently keep
-#    running, so say so loudly in the log — that is the case where money leaks.
+# 3. Stop the pod.
+#
+# THIS BLOCK FAILED IN PRODUCTION ON 2026-08-08 AND COST ~1h44m OF IDLE BILLING.
+# The bug is worth stating precisely because it is a general one: the old guard tested
+# `command -v runpodctl` — i.e. DOES THE BINARY EXIST — and then ran the stop command
+# without ever checking whether it WORKED. runpodctl had never been configured with an
+# API key on that pod, so the call failed with "API key not found", the `else` branch
+# never fired because the binary did exist, and the script exited reporting success.
+#
+# A guard that checks a precondition instead of the outcome is not a guard. Check the
+# exit code of the thing you actually care about.
+#
+# The API key is available the same way HF_TOKEN is: RunPod injects it into PID 1's
+# environment, and sshd-spawned shells do not inherit it. See env.sh for the same trick.
 # ---------------------------------------------------------------------------------------
-POD_ID=$(tr '\0' '\n' < /proc/1/environ 2>/dev/null | grep '^RUNPOD_POD_ID=' | cut -d= -f2-)
+POD_ID=$(tr '\0' '\n' < /proc/1/environ 2>/dev/null | grep '^RUNPOD_POD_ID='   | cut -d= -f2-)
+API_KEY=$(tr '\0' '\n' < /proc/1/environ 2>/dev/null | grep '^RUNPOD_API_KEY=' | cut -d= -f2-)
 echo
-if [ -n "${POD_ID:-}" ] && command -v runpodctl >/dev/null 2>&1; then
-  echo "=== stopping pod $POD_ID at $(date -u +%FT%TZ) ==="
-  sync
-  sleep 5
+
+stop_pod() {
+  [ -n "${POD_ID:-}" ] || { echo "no RUNPOD_POD_ID"; return 1; }
+  command -v runpodctl >/dev/null 2>&1 || { echo "runpodctl not installed"; return 1; }
+  # Configure if we have a key. `config` also tries to sync an SSH key to the RunPod cloud
+  # and can print an "Unauthorized" error for that side-quest even when the key is fine —
+  # so its exit code is NOT a reliable signal and is deliberately ignored here. The only
+  # thing that matters is whether `stop pod` succeeds.
+  if [ -n "${API_KEY:-}" ]; then
+    runpodctl config --apiKey "$API_KEY" >/dev/null 2>&1 || true
+  fi
   runpodctl stop pod "$POD_ID"
+}
+
+sync
+sleep 5
+STOPPED=0
+for attempt in 1 2 3; do
+  echo "=== stopping pod ${POD_ID:-<unknown>} (attempt $attempt) at $(date -u +%FT%TZ) ==="
+  if stop_pod; then STOPPED=1; break; fi
+  echo "    attempt $attempt failed; retrying in 20s"
+  sleep 20
+done
+
+if [ "$STOPPED" -eq 1 ]; then
+  echo "=== pod stop command succeeded at $(date -u +%FT%TZ) ==="
 else
-  echo "!!! COULD NOT STOP POD — RUNPOD_POD_ID='${POD_ID:-}' runpodctl=$(command -v runpodctl || echo missing)"
-  echo "!!! THE POD IS STILL BILLING. Stop it from the RunPod console."
+  # Leave a marker OUTSIDE the log too. A failure buried in 200k lines of vLLM progress
+  # bars is a failure nobody sees — which is exactly how the 2026-08-08 leak went unnoticed
+  # until a scheduled check-in happened to look.
+  {
+    echo "POD STOP FAILED at $(date -u +%FT%TZ)"
+    echo "POD_ID='${POD_ID:-}'  api_key_present=$([ -n "${API_KEY:-}" ] && echo yes || echo no)"
+    echo "THE POD IS STILL RUNNING AND BILLING. Stop it from the RunPod console."
+  } | tee /workspace/POD_STOP_FAILED.txt
 fi
