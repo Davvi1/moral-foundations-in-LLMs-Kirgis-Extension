@@ -25,6 +25,8 @@
 
 from __future__ import annotations
 
+import argparse
+
 import math
 from collections import defaultdict
 from pathlib import Path
@@ -35,7 +37,15 @@ import pandas as pd
 REPO = Path(__file__).resolve().parent.parent
 LONG = REPO / "results" / "derived" / "analysis_long.csv"
 OUT = REPO / "results" / "derived" / "controls.md"
-METHODS = ["label", "string", "greedy", "sampled"]
+# Derived from the data at runtime, not hardcoded: v1 has 4 conditions, v2 has 6. A literal
+# list KeyErrors on v2 (or silently analyses a subset). Fixed order for stable report output.
+METHOD_ORDER = ["label", "string", "string_line", "string_bare", "cloze", "greedy", "sampled"]
+METHODS: list = []           # populated in main() from the dataset actually loaded
+
+
+def methods_in(df) -> list:
+    have = set(df.condition.unique())
+    return [m for m in METHOD_ORDER if m in have] + sorted(have - set(METHOD_ORDER))
 
 
 def spearman(x, y):
@@ -101,7 +111,18 @@ def balanced_block(df, fdn):
 
 
 def main() -> int:
-    df = pd.read_csv(LONG)
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--data', default=str(LONG),
+                    help='long-form dataset; pass analysis_long_v2.csv for v2')
+    ap.add_argument('--out', default=None)
+    args = ap.parse_args()
+    # Suffix follows the input so a v2 run cannot overwrite the v1 report (C12).
+    _sfx = '_v2' if '_v2' in Path(args.data).name else ''
+    out_path = Path(args.out) if args.out else (
+        OUT.parent / f'controls{_sfx}.md')
+    df = pd.read_csv(args.data)
+    global METHODS
+    METHODS = methods_in(df)
     df["excluded"] = df["excluded"].astype(str) == "True"
     L: list[str] = []
     p = L.append
@@ -194,9 +215,9 @@ def main() -> int:
         p(f"- **{a} ~ {b}**: {np.mean(v):.3f}  (min {min(v):.3f}, max {max(v):.3f}, n={len(v)})")
     p("")
 
-    OUT.write_text("\n".join(L), encoding="utf-8")
+    out_path.write_text("\n".join(L), encoding="utf-8")
     print("\n".join(L))
-    print(f"\nwrote {OUT}")
+    print(f"\nwrote {out_path}")
     return 0
 
 
