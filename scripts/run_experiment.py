@@ -162,7 +162,31 @@ def plan_memory(params_b: float, vram_gib: float | None,
     `gpu_memory_utilization` is a fraction of.
     """
     weights = params_b * 2 * 1.03      # bf16 + embedding/lm_head overhead
-    kv_headroom = 1.5                  # short prompts, small batch
+
+    # KV-cache allowance MUST scale with model size. The original fixed 1.5 GiB was
+    # calibrated on <=14B models and is meaningless at 70B+: KV bytes per token scale with
+    # layers x kv_heads x head_dim, so a 72B model needs roughly an order of magnitude more
+    # cache than a 7B one for the same batch.
+    #
+    # Concretely, the bug this fixes: Qwen2.5-72B on a 180 GiB B200 has 149.8 GiB of weights.
+    # need = 149.8 + 1.5 = 151.3 < 179.1*0.85 = 152.2, so the old code returned "fits
+    # comfortably" at util 0.85 -- leaving 2.4 GiB for KV cache. vLLM would either refuse to
+    # allocate cache blocks or run one sequence at a time, AFTER downloading 145 GB.
+    #
+    # The scaling applies only to weights ABOVE 30 GiB, and that threshold is empirical, not
+    # aesthetic. A first attempt used a flat 8% of total weights; it refused
+    # OLMo-2-13B-Instruct on the 32 GiB card -- a model that had demonstrably completed all
+    # four conditions on that exact card the night before. A planner that refuses a
+    # configuration already observed to work is producing false negatives, so the formula was
+    # wrong, not the model. Anchoring the scaling above 30 GiB keeps every previously
+    # VALIDATED verdict intact (the 1.5 GiB floor still binds for the whole <=14B tier) while
+    # still forcing the 70B+ tier to util 0.95.
+    #
+    # 10% is a safety margin, not a prediction of actual KV usage -- real usage depends on
+    # kv_heads and GQA grouping, which vary by model. Erring high is cheap here: the cost of
+    # over-reserving is a slightly smaller batch, the cost of under-reserving is an OOM after
+    # a 145 GB download.
+    kv_headroom = max(1.5, 0.10 * max(0.0, weights - 30.0))
     if vram_gib is None:
         return default_util, "no GPU detected — using default utilisation"
     n_gpus = max(1, int(n_gpus))
