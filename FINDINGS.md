@@ -232,6 +232,8 @@ and it drops from rank 4 to 6 of 6. **His code and his paper disagree**, and for
 
 ## 7. What we cannot claim
 
+**Full treatment in `LIMITATIONS.md`** — this is the short list.
+
 - **That the design resolved R.** It did not, at either N. All seven verdicts are indeterminate
   and P7 is falsified.
 - **That method effects generalise beyond this prompt.** We held one prompt fixed by design.

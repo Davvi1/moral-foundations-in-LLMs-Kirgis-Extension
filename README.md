@@ -65,6 +65,9 @@ scripts/build_items.py      derives the two data files from source; self-verifyi
 scripts/probe_tokenization.py   the "0" vs " 0" hazard check, per tokenizer
 results/                    probe logs and derived, analysis-ready outputs
 state.md                    living record — decisions, analysis plan, findings
+FINDINGS.md                 synthesis; claims with strength labels
+LIMITATIONS.md              everything constraining what may be claimed
+CORRECTIONS.md              every claim withdrawn or reversed, and how it was caught
 references.md               every citation verified by fetching the source
 RESUME.md                   operational sequence + pod cheat-sheet
 ```
