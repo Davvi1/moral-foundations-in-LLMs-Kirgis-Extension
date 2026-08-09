@@ -1,11 +1,31 @@
 # Limitations
 
-Everything that constrains what this project may claim. Assembled 2026-08-09 and **substantially
-expanded after a second, deliberately adversarial pass** over `ANALYSIS_PLAN.md`,
-`METHODS_EXPLAINER.md`, `config/prompt.yaml`, `data/source/PROVENANCE.md`, `state.md`,
-`FINDINGS.md`, `METHODOLOGY_REVIEW.md`, the derived reports **and the harness source**. The
-second pass found seven limitations the first missed, including one unexecuted pre-specified
-analysis and one place where I had overstated a fix.
+Everything that constrains what this project may claim.
+
+**Three passes, and the later ones kept finding things — which is itself worth knowing.**
+Pass 1 collected what was already written down across seven files. Pass 2 re-read the source
+documents adversarially and found seven more, including an unexecuted pre-specified analysis.
+Pass 3 verified every claim in this file against the data and audited the harness, the analysis
+scripts and the dataset itself; it found five more (§1b–1e), corrected two citation errors of
+mine, and sourced two claims that had been asserted from memory.
+
+**The honest inference is that a fourth pass would probably find more.** Nothing here should be
+read as a complete enumeration.
+
+### What pass 3 verified rather than found
+
+Recorded because a limitations document that only lists problems gives a false picture of
+where the evidence is weak:
+
+- **37 numeric claims in this file** were re-derived from the committed artifacts. All matched.
+- **The prompt invariant holds exactly**: across 3,596 model × item cells, the five
+  fixed-prompt arms share one prompt hash — **zero violations** — and the cloze arm differs in
+  all 3,596, as designed.
+- **The design is close to balanced**: exclusions remove 2.0% of rows (43 of 1,302 cells), all
+  in greedy and sampled; item counts per foundation are complete across all six conditions; no
+  item is excluded in more than 5% of its rows.
+- **Two claims previously asserted from memory are now sourced** by fetching Clifford et al.
+  (2015) — see `references.md`. Both were correct, and one is now stronger than it was.
 
 Categories, because they should be written up differently:
 
@@ -41,6 +61,93 @@ running prose — so it is the last thing we should have left unchecked.
 
 The full version needs a pod (it is a refit of R). The descriptive version above is local and
 is now on record.
+
+## 1b. R conflates rank reordering with scale differences between methods · EVIDENTIAL
+
+**Found on the second verification pass; nobody had looked for it.**
+
+R = σ²(model:method) / σ²(model). The interaction term captures each model × method cell's
+deviation from that model's main effect — and that is large whenever a method **spreads models
+out more**, even with *zero* rank reordering. The between-model SD is not constant across
+methods:
+
+| condition | between-model SD |
+|---|---:|
+| cloze | 0.560 |
+| string_bare | 0.547 |
+| greedy | 0.398 |
+| label | 0.360 |
+| string_line | 0.353 |
+| sampled | 0.318 |
+
+That is a **1.76× range**. Re-computing the interaction variance after z-scoring each method
+(which removes scale differences while preserving reordering) shows how much of R is the scale
+effect:
+
+| foundation | scale share | | foundation | scale share |
+|---|---:|---|---|---:|
+| Liberty | 26.4% | | Sanctity | 16.1% |
+| Authority | 24.0% | | Loyalty | 15.4% |
+| Care | 17.5% | | Social Norms | 14.7% |
+| Fairness | 14.2% | | | |
+
+**So roughly a sixth to a quarter of R is methods disagreeing about *spread*, not about
+*order*.** This explains an apparent tension in our own results: rank agreement between label
+and greedy is ρ = 0.928 (very little reordering) while R is substantial. Both are true, because
+they measure different things.
+
+**Consequence for the write-up:** R and the Spearman matrix answer different questions and must
+not be used interchangeably. The project's stated estimand is whether *rankings* survive a change
+of method — that is the Spearman result. R is the broader "does the measured profile move",
+which includes a model being uniformly more extreme under one readout. Neither is wrong; running
+them together without distinguishing them would be.
+
+## 1c. Two models do not discriminate between items under greedy · EVIDENTIAL
+
+| model | condition | distinct scores over 116 items | SD |
+|---|---|---:|---:|
+| SmolLM2-1.7B-Instruct | greedy | **1** | 0.000 |
+| Qwen2.5-1.5B-Instruct | greedy | **2** | 0.468 |
+
+SmolLM2 answers **"3" to all 116 items** under greedy decoding. Its greedy "profile" is a single
+constant, so it carries no item-level information at all, and its position in the greedy ranking
+is determined by one number. Qwen2.5-1.5B uses two distinct values.
+
+These cells pass every existing quality gate — they parse cleanly, they are not refusals, the
+cell parse rate is 1.00 — so **no exclusion rule catches them**. They enter the variance model
+as if they were informative. A constancy check belongs in the QA pass and is not there.
+
+## 1d. Greedy is heavily saturated at the ceiling · DESIGN
+
+Share of scores at each end of the 0–4 scale:
+
+| condition | ≤ 0.05 | ≥ 3.95 |
+|---|---:|---:|
+| greedy | 7.4% | **25.1%** |
+| sampled | 3.8% | 9.9% |
+| label | 3.6% | 8.8% |
+| string_line | 3.7% | 9.2% |
+| cloze | 3.9% | 1.4% |
+| string_bare | 1.7% | 4.7% |
+
+**A quarter of all greedy responses are exactly 4**, the scale maximum — nearly three times the
+rate of the probability readouts. Greedy is discretised to integers by construction, so it cannot
+express intermediate confidence, and it piles up at the ceiling. Any comparison between greedy
+and a continuous readout is partly a comparison between a censored and an uncensored measure.
+
+## 1e. The refusal classifier is an unvalidated regex · PROCESS
+
+`conditions.py` distinguishes `refusal` from `unparseable` with **five English regex patterns**
+(`i can't`, `i'm sorry`, `as an ai`, `i don't feel comfortable`, `cannot provide/assist/comply`).
+It is deliberately conservative — the docstring says so — but it has **never been validated
+against hand-coded labels**, and there is no inter-rater check.
+
+This matters because **F7 (ρ = −0.54) and the entire MNAR refusal-bias audit rest on that
+split**. Inspecting the 900 parse-failed rows it does *not* flag turns up clear declines it
+misses, e.g. *"This question requires a subjective ethical judgment, which I, as a language
+model, am not capable of"*. A looser pattern would reclassify a material number of rows — though
+looser patterns also produce obvious false positives, so **the true miss rate is bounded but
+unmeasured**. Hand-coding a few hundred rows would settle it cheaply.
 
 ## 2. The headline estimand was never resolved · EVIDENTIAL
 
@@ -192,8 +299,12 @@ hard to pin down.
 
 Greedy decoding is deterministic in principle, but GPU floating-point reduction order can vary
 with batch composition, so bit-identical output across differently-batched runs is not
-guaranteed. `METHODOLOGY_REVIEW.md:191` lists a spot-check — re-run two models' greedy arm and
-diff — as a to-do. **It was never done.**
+guaranteed. `METHODOLOGY_REVIEW.md:197` lists a spot-check — "re-run two models' greedy arm, diff" —
+as a to-do. **It was never done.** (An earlier draft of this file cited line 191; that was
+wrong, and the error is noted here rather than silently fixed.)
+
+Worse, **`METHODS_EXPLAINER.md:123` asserts this is "one caveat we verify rather than assume"**.
+We did not verify it. That sentence is false and has been corrected.
 
 **Correction to my own summary:** the F8 row of the `METHODOLOGY_REVIEW.md` status table marks
 F8 "RESOLVED", but F8 bundled the internlm boundary *and* greedy determinism. The boundary is

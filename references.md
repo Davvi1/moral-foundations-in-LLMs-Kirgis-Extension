@@ -228,3 +228,31 @@ attached — but it remains corroborating. Territory not occupied.
 - Current per-provider logprob exposure. Changes often; verify at time of writing.
 - Overlap check against arXiv:2403.00998 still outstanding. Not blocking; do it before the
   write-up, not before the run.
+
+### Social Norms is a NON-MORAL control category — verified 2026-08-09 by fetching the paper
+
+Verified against Clifford et al. (2015), author copy at
+`scottaclifford.com/wp-content/uploads/2015/01/CICSA_MoralVignettes_BRM_ND.pdf`, retrieved and
+read 2026-08-09. Not from memory.
+
+- **p.8, design criteria:** the stimulus set was built to "c) contain a subset of social norm
+  (i.e., **non-moral**) violations".
+- **p.9, verbatim:** "Finally, we created a set of social norms violations that were intended to
+  be **unusual but not considered morally wrong** (for example, drinking coffee with a spoon).
+  The social norms will play an important role in serving as a **control stimulus set** in
+  neuroimaging studies of moral judgment by allowing for a comparison between appraisals of
+  scenarios that depict a moral violation and scenarios that depict a **social, but not moral,
+  violation**. Additionally, the social norms violations prevent respondents from expecting a
+  morally loaded transgression in every scenario."
+
+**Consequence for this project.** Social Norms is not a seventh moral foundation; it is a
+designed non-moral control. Two things follow. (1) Including it as a seventh level alongside six
+foundations in the variance-ratio model treats a control condition as a foundation. (2) Our
+"models over-moralise Social Norms" result (model 1.11 vs human 0.19) is better stated as
+**models failing to recognise a deliberately non-moral item as non-moral** — which is a sharper
+and more interesting claim than a foundation-level bias.
+
+- **p.10 corroborates the Care split** used in `PROVENANCE.md`: "For the Care foundation, we
+  focused on three forms of harm... emotional harm to a human, physical harm to a human, and
+  physical harm to a non-human animal." Kirgis retains only the emotional-harm subset, so
+  **Care in this study is emotional harm to humans only.**

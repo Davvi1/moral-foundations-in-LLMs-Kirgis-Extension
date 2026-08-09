@@ -120,7 +120,8 @@ thing to "just ask it" with the randomness removed. (Technical honesty: greedy i
 optimal per step, not the globally most probable sequence; finding that is intractable and
 nobody uses it.)
 
-**Deterministic** in principle. One caveat we verify rather than assume: GPU floating-point
+**Deterministic** in principle. One caveat we FLAGGED but did NOT verify (corrected 2026-08-09 —
+this sentence previously claimed we verified it; see LIMITATIONS.md 12): GPU floating-point
 reduction order can vary with batch composition, so bit-identical output across differently
 batched runs is not guaranteed. Within one run, one batch — stable.
 
