@@ -20,6 +20,7 @@ Outputs: results/derived/refusal_leakage_audit.md
 
 from __future__ import annotations
 
+import argparse
 import sys
 from pathlib import Path
 
@@ -44,7 +45,12 @@ def spearman(x, y):
 
 
 def main() -> int:
-    df = pd.read_csv(LONG)
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--data', default=str(LONG),
+                    help='long-form dataset; pass analysis_long_v2.csv for v2')
+    ap.add_argument('--out', default=str(OUT))
+    args = ap.parse_args()
+    df = pd.read_csv(args.data)
     df["model_short"] = df["model"].str.split("/").str[-1]
 
     # label mass per model x foundation (label rows are never cell-excluded)
@@ -133,15 +139,29 @@ def main() -> int:
     diff_cases = nz[(nz.refusal > 0.10) & nz.model_short.isin(answering_models)]
     frac_pos = float((diff_cases["deficit"] > 0).mean()) if len(diff_cases) else float("nan")
 
+    # The flagship case is DERIVED, not hardcoded. An earlier version of this block wrote
+    # "over 20 models", "0.475 on Sanctity against 0.815", and "35% refusal" as literal text.
+    # Those were the v1 numbers, and on the v2 dataset the prose asserted them anyway — a
+    # generated report stating figures that contradict its own tables. Same family of defect
+    # as C10/C11: a value that looks computed but is not.
+    n_bm = len(model_level)
+    if len(diff_cases):
+        top = diff_cases.loc[diff_cases["deficit"].idxmax()]
+        flagship = (f"the flagship case is exactly the predicted signature: {top.model_short} "
+                    f"craters to mass {top['mass']:.3f} on {top.foundation} against "
+                    f"{top.others_mean:.3f} on its other foundations, at {top.refusal:.0%} "
+                    f"behavioural refusal on precisely that foundation.")
+    else:
+        flagship = ("no differential-refusal case clears the threshold in this sample, so the "
+                    "within-model channel is untested here.")
+
     if rho_bm < -0.5 and (len(diff_cases) == 0 or frac_pos >= 0.5):
         p(f"**Leakage supported.** Between models, non-answering behaviour and label mass "
-          f"are strongly coupled (ρ = {rho_bm:.2f} over 20 models): models that decline or "
+          f"are strongly coupled (ρ = {rho_bm:.2f} over {n_bm} models): models that decline or "
           f"fall silent in generation are largely those whose digit mass collapses in the "
           f"logprob readout. The within-model evidence is thinner — only "
-          f"{len(diff_cases)} differential-refusal case(s) exist in this sample — but the "
-          f"flagship case is exactly the predicted signature: Llama-3.1-8B craters to mass "
-          f"0.475 on Sanctity against 0.815 on its other foundations, at 35% behavioural "
-          f"refusal on precisely that foundation.")
+          f"{len(diff_cases)} differential-refusal case(s) exist in this sample — but "
+          f"{flagship}")
         p("")
         p("**Caveat, from the same table:** low mass has a second cause. Mistral-7B answers "
           "100% of greedy items yet has mass 0.078 — that is the answer-format mismatch "
@@ -166,9 +186,9 @@ def main() -> int:
           f"behavioural non-answering appear decoupled on this sample.")
     p("")
 
-    OUT.write_text("\n".join(L), encoding="utf-8")
+    Path(args.out).write_text("\n".join(L), encoding="utf-8")
     print("\n".join(L))
-    print(f"\nwrote {OUT}")
+    print(f"\nwrote {args.out}")
     return 0
 
 

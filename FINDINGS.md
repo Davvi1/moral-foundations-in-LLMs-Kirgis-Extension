@@ -172,6 +172,37 @@ it never speaks — and the prompt is well-formed by Mistral's own chat template
 is structurally identical to the foundation × method interaction, which is why the three
 failure types are separated and never pooled.
 
+**ESTABLISHED (v2, N=31) — a multi-readout design turns an untestable missing-data
+assumption into a measured one. This is the strongest argument for the design itself.**
+
+Dropping a refusal is only safe if missingness is unrelated to the value we failed to
+observe. Refusal is plainly not random — models refuse graphic Sanctity items and answer mild
+Social-Norms ones — so the free-generation arms are **missing not at random**, and every
+single-readout study has to assume its way past that. **We do not have to, because label
+scoring never requires the model to speak:** for every item a model refused under greedy, we
+still hold that same model's probability-based answer to that same item.
+
+Using it, the natural hypothesis — *a refusal means "extremely wrong"* — is **true for one
+model and false for another**:
+
+| model | refusals | label \| refused | label \| answered | human severity (ref vs not) |
+|---|---:|---:|---:|---|
+| Llama-3.1-8B | 6 | **3.414** | 2.076 | 3.13 vs 2.15 |
+| gemma-2-27b | 19 | 2.667 | 3.082 | 2.01 vs 2.24 |
+| Llama-3.2-1B | 109 | 2.026 | 2.052 | refuses 94% — no signal |
+
+Llama-3.1-8B refuses exactly the items humans rate most severe and privately scores them 1.3
+points higher. gemma-2-27b refuses items it rates *less* severely. So refusal carries moral
+information in some models and not others, and **no single imputation rule is correct across
+the roster.** Imputing the scale maximum would additionally (a) overshoot — even the strongest
+case gives 3.4, not 4.0 — and (b) confound safety training with moral judgement, making
+heavily RLHF'd models look more morally severe.
+
+Magnitude of the choice: imputing 4.0 moves a model's greedy mean by up to **+0.965**. That is
+what dropping decides silently. We keep dropping as primary because it asserts nothing about
+the unobserved value, and publish the sensitivity table. Full audit:
+`results/derived/refusal_bias_audit.md`.
+
 **ESTABLISHED (from Kirgis's own committed data) — provider logprob APIs cannot be assumed
 well-formed.** grok-3-beta returned structurally malformed `top_logprobs` on **51 of 116
 responses (44%)**: two entries instead of three, summing to ~0 probability, while the emitted

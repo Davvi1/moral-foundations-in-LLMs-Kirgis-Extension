@@ -32,6 +32,7 @@ free-gen arms, so a pattern that survives there is not an artifact of this.
 from __future__ import annotations
 
 import math
+import argparse
 import sys
 from collections import defaultdict
 from pathlib import Path
@@ -48,7 +49,17 @@ REPO = Path(__file__).resolve().parent.parent
 LONG = REPO / "results" / "derived" / "analysis_long.csv"
 OUT = REPO / "results" / "derived" / "kirgis_pattern_audit.md"
 
-METHODS = ["label", "string", "greedy", "sampled"]
+# Derived from the data, not hardcoded: v1 has {label, string, greedy, sampled} while v2 has
+# {label, string_line, string_bare, cloze, greedy, sampled}. A hardcoded list silently
+# KeyErrors on v2, or worse, silently analyses a subset if the missing name were tolerated.
+# Order is fixed for stable report output.
+METHOD_ORDER = ["label", "string", "string_line", "string_bare", "cloze", "greedy", "sampled"]
+
+
+def methods_in(df) -> list:
+    """Conditions actually present, in a stable documented order."""
+    have = set(df.condition.unique())
+    return [m for m in METHOD_ORDER if m in have] + sorted(have - set(METHOD_ORDER))
 GROUP_A = ["Care", "Fairness", "Liberty"]          # Kirgis: overweighted
 GROUP_B = ["Loyalty", "Authority", "Sanctity"]     # Kirgis: underweighted
 FOUNDATIONS = GROUP_A + GROUP_B + ["Social Norms"]
@@ -62,8 +73,8 @@ def spearman(x, y):
     return float(np.corrcoef(rx, ry)[0, 1])
 
 
-def load():
-    df = pd.read_csv(LONG)
+def load(path=None):
+    df = pd.read_csv(path or LONG)
     df["excluded"] = df["excluded"].astype(str) == "True"
     df = df[(~df.excluded) & df.score.notna()].copy()
     df["error"] = df["score"] - df["clifford_wrong_mean"]
@@ -88,7 +99,13 @@ def per_model_gaps(df: pd.DataFrame) -> pd.DataFrame:
 
 
 def main() -> int:
-    df = load()
+    ap = argparse.ArgumentParser()
+    ap.add_argument('--data', default=str(LONG),
+                    help='long-form dataset; pass analysis_long_v2.csv for v2')
+    ap.add_argument('--out', default=str(OUT))
+    args = ap.parse_args()
+    df = load(args.data)
+    METHODS = methods_in(df)
     L: list[str] = []
     p = L.append
 
@@ -160,21 +177,32 @@ def main() -> int:
 
     # ---- 5. complete-cases sensitivity ----------------------------------------------
     p("## 5. Sensitivity: complete cases only\n")
-    p("Models with all four methods usable, items scored under all four — method "
+    # "Complete" means every condition PRESENT IN THIS DATASET, not a hardcoded 4. v2 has six
+    # conditions, so the old literal silently produced an empty complete-case set rather than
+    # erroring in an obvious place.
+    n_meth = len(METHODS)
+    p(f"Models with all {n_meth} methods usable, items scored under all of them — method "
       "comparisons on literally identical data.\n")
     counts = df.groupby("model_short")["condition"].nunique()
-    full_models = counts[counts == 4].index
+    full_models = counts[counts == n_meth].index
     cc = df[df.model_short.isin(full_models)]
-    keep = (cc.groupby(["model_short", "item_id"])["condition"].nunique() == 4)
+    keep = (cc.groupby(["model_short", "item_id"])["condition"].nunique() == n_meth)
     keep_idx = set(keep[keep].index)
     cc = cc[cc.set_index(["model_short", "item_id"]).index.isin(keep_idx)]
     gaps_cc = per_model_gaps(cc)
+    if gaps_cc.empty:
+        p("**No complete-case set exists for this dataset.** Every model would need all "
+          f"{n_meth} conditions usable on the same items; with the cloze arm present that is "
+          "not satisfiable, since cloze is prompt-varying and excluded from the primary "
+          "comparison. Skipping this section rather than reporting an empty table.")
+        p("")
+        gaps_cc = None
     p(f"Complete-case set: {cc.model_short.nunique()} models, "
       f"{cc.groupby('model_short')['item_id'].nunique().min()}–"
       f"{cc.groupby('model_short')['item_id'].nunique().max()} items per model.\n")
     p("| method | mean gap | models with gap>0 |")
     p("|---|---|---|")
-    for m in METHODS:
+    for m in (METHODS if gaps_cc is not None else []):
         g = gaps_cc[gaps_cc.method == m]["gap"]
         if g.empty:
             continue
@@ -323,7 +351,7 @@ def main() -> int:
       "*downward* in greedy/sampled for high-refusal models. A pattern surviving there is "
       "therefore conservative.\n")
 
-    OUT.write_text("\n".join(L), encoding="utf-8")
+    Path(args.out).write_text("\n".join(L), encoding="utf-8")
     print("\n".join(L))
     print(f"\nwrote {OUT}")
     return 0

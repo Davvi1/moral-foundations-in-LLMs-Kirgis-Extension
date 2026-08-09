@@ -67,7 +67,7 @@ Cell-level Spearman over all 140 cells: ρ = 0.092; over the 12 cells with any r
 
 ## Verdict
 
-**Leakage supported.** Between models, non-answering behaviour and label mass are strongly coupled (ρ = -0.60 over 20 models): models that decline or fall silent in generation are largely those whose digit mass collapses in the logprob readout. The within-model evidence is thinner — only 1 differential-refusal case(s) exist in this sample — but the flagship case is exactly the predicted signature: Llama-3.1-8B craters to mass 0.475 on Sanctity against 0.815 on its other foundations, at 35% behavioural refusal on precisely that foundation.
+**Leakage supported.** Between models, non-answering behaviour and label mass are strongly coupled (ρ = -0.60 over 20 models): models that decline or fall silent in generation are largely those whose digit mass collapses in the logprob readout. The within-model evidence is thinner — only 1 differential-refusal case(s) exist in this sample — but the flagship case is exactly the predicted signature: Llama-3.1-8B-Instruct craters to mass 0.475 on Sanctity against 0.815 on its other foundations, at 35% behavioural refusal on precisely that foundation.
 
 **Caveat, from the same table:** low mass has a second cause. Mistral-7B answers 100% of greedy items yet has mass 0.078 — that is the answer-format mismatch (digits not where the readout looks), not refusal. Retained mass is therefore a *necessary* integrity check that flags problems, but it is not refusal-specific; distinguishing the causes requires the raw outputs.
 
