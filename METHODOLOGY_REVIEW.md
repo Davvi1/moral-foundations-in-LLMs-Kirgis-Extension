@@ -1,3 +1,31 @@
+# Methodology review — status after the v2 collection
+
+> **STATUS, updated 2026-08-09.** Every flaw below has now been acted on, and the outcomes are
+> recorded here rather than left implied. Primary results moved to the v2 harness at N = 31;
+> see `FINDINGS.md`. Resolution status per item:
+>
+> | # | flaw | status |
+> |---|---|---|
+> | F1 | string scoring mismeasures | **RESOLVED, with a twist.** The full option line does carry the mass (P1′, 31/31 models) — but it turns out to be *the same measurement as label scoring* (ρ = 0.969, item-level r = 0.988), because the prompt displays the digit→phrase mapping. The design has **three independent probability readouts, not four**. Half F1's original evidence was withdrawn as invalid (C6). |
+> | F2 | label position-scan degrees of freedom | **RESOLVED.** Forced continuation gives exact p_k with no top-k truncation and no position rule. Label mass 0.81 → 0.997. |
+> | F3 | underpowered by design | **ACTED ON, PREDICTION FAILED.** N raised 20 → 31. P7 predicted ≥2 foundations would escape `indeterminate`; **none did**. The estimand is not resolvable at feasible N. Family random effect remains unfitted — see "still outstanding". |
+> | F4 | capability claim untested | **RESOLVED, and the strongest positive result.** Ladders to 72.7B. P5 supported on both, LOO-robust, after removing a compression confound that would have manufactured a third of the effect. |
+> | F5 | everything conditional on one prompt | **NOT DONE.** The cloze arm varies the prompt but changes two things at once and is excluded from the primary. Prompt-as-designed-factor remains future work. |
+> | F6 | Kirgis's substantive finding never audited | **RESOLVED at both N.** Raw gap cannot adjudicate (compression predicts negative, C3); compression-adjusted gap +0.077 to +0.179 across six readouts, and it grows with scale. |
+> | F7 | refusal contaminates readouts | **RESOLVED and extended.** ρ = −0.54 over 31 models. Plus the MNAR audit: a multi-readout design measures the missing-data bias instead of assuming it. |
+> | F8 | internlm boundary / greedy determinism | **RESOLVED.** LCP boundary computed engine-side; boundary shift 0 on all 31 models. The original diagnosis of *why* internlm failed was falsified (C7) and the true cause remains unverified — v2 does not depend on it. |
+> | F9 | permutation-null deviation | **RESOLVED.** 700/700 full-MCMC fits. Null median 0.0006–0.0021 against observed 0.34–1.08. The deviation paragraph can be deleted. |
+>
+> **Still outstanding, deliberately:** F5 (prompt as designed factor); the family random effect
+> for F3 (five Qwens are not five independent draws); a scale-augmented variance model that
+> lets σ(model:method) depend on log-parameters — the right version of the P6 follow-up,
+> dropped from the pod batch because a naive small/large split would be underpowered (N≈9)
+> and return `indeterminate` for both halves.
+
+
+<details>
+<summary>Original review, written before the v2 collection</summary>
+
 # Methodology review — flaws, fixes, and the Phase-2 program
 
 Requested 2026-08-08 after the first full results. Scope note, named rather than slid past:
@@ -199,3 +227,5 @@ useful; each later tier strengthens a different claim (measurement validity → 
 generality).
 
 Recommendation: all tiers. Tier 0 starts immediately and is free.
+
+</details>

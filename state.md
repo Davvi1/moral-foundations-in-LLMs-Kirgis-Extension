@@ -7,6 +7,26 @@ here, it didn't happen. Update it when something is settled, not at the end.
 
 ## Status
 
+**Phase: ANALYSIS COMPLETE, 2026-08-09.** All collection and all pod-bound analysis are done.
+What remains is the write-up.
+
+- **v2 harness, N = 31 models** (32 pinned; Mistral-Large deliberately skipped — the
+  pre-committed criterion in the plan was met, so it would not change the conclusion).
+  6 conditions, 21,576 analysis rows. Primary results in `FINDINGS.md`.
+- **All pod work finished.** Variance ratio at N=31, 35-fit seed audit, 700-fit MCMC null.
+  Both pods stopped and verified `EXITED`. Total spend $20.04 of $60 credit ($39.96 remaining).
+- **Prediction scorecard:** P1′ P2 P3 P4′ P5 P6 supported (P2 and P3 with caveats),
+  **P4r and P7 falsified**. See "OUTCOMES" below.
+- **12 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
+  after the fact (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run
+  overwriting a v1 artifact). All now guarded by `tests/test_determinism.py` and
+  `tests/test_artifact_provenance.py`. **300 tests pass.**
+- **Still open, deliberately:** F5 (prompt as a designed factor), the family random effect,
+  and a scale-augmented variance model. All named in `METHODOLOGY_REVIEW.md`.
+
+<details>
+<summary>Historical status from the pre-flight phase (2026-08-07)</summary>
+
 **Phase:** pre-flight. No code written. **Go/no-go check run 2026-08-07 — result: GO.**
 See "Go / no-go findings" below. All three blocking questions answered; the instrument,
 the prompt, the human baseline, and Kirgis's per-item responses are all in hand.
@@ -39,6 +59,8 @@ important item there: **QSTN has never actually been run.** Everything on the po
 raw vLLM. QSTN pins only `vllm>=0.12` and we installed 0.26.0, so its API compatibility is
 untested and is the first thing to check — a 60-second test that decides whether the harness
 plan survives.
+
+</details>
 
 ### Pod, as built (Step 3, 2026-08-07)
 
@@ -424,6 +446,34 @@ reduction order can vary with batch composition, so bit-identical output across 
 batched runs is not guaranteed. Every condition here ran as a single consistent batch. If a
 pod is restarted for any other reason, re-run greedy for two or three models and diff the
 output (~5 min). Until then this is stated as an assumption in the limitations.
+
+### OUTCOMES — resolved 2026-08-09, after the v2 collection
+
+Scored against the predictions as written below. Two failed outright; one passed for a reason
+that undercuts its own interpretation. Nothing here was rewritten to fit the result — the
+originals stand unedited above, with amendments dated where a prediction proved unevaluable.
+
+| # | outcome | evidence |
+|---|---|---|
+| P1′ | **SUPPORTED** | `string_line` mass > `string_bare` on 31/31 models (0.626 vs 0.003) |
+| P2 | **SUPPORTED, but weaker than it looks** | ρ(label, line) 0.969 vs ρ(label, bare) 0.451. **However** line and label are near-identical measurements (item-level r = 0.988) because the prompt displays the digit→phrase mapping — so agreement "recovering" is partly definitional. See FINDINGS §3. |
+| P3 | **SUPPORTED but thin** | ρ = −0.195 (n=20), carried by Mistral-7B (moved 0.369; high-mass models ~0.013). Report the mechanism, not the correlation. |
+| P4′ | **SUPPORTED** | cloze mass > bare on 23/31 models |
+| P4r | **FALSIFIED** | ρ(cloze, bare) 0.269 < ρ(cloze, label) 0.404 — predicted the reverse |
+| P5 | **SUPPORTED** | qwen +0.3243 (LOO 8/8), llama +0.2609 (LOO 4/4), compression-adjusted. Raw slopes were ~⅓ confound: compression `b` runs 0.113→1.059 on the qwen ladder, slope on log-params +0.4346 (p<0.001). |
+| P6 | **SUPPORTED** | all six families negative; both ladders LOO-stable. Implies R is partly a small-model artifact — qualifies our own headline. |
+| P7 | **FALSIFIED** | predicted ≥2 foundations escape `indeterminate` at N≈30. **None did.** All seven still indeterminate at N=31. |
+
+**What P7's failure means, stated rather than buried:** going 20 → 31 models resolved nothing.
+The honest conclusion is the one P7 itself named in advance — this estimand is not resolvable
+at any N a student project can reach, and the contribution becomes the design analysis.
+
+**A Phase-1 finding that did not replicate.** C2 recorded that pooling the residual variance
+*deflates* R by 4–16% at N=20, itself a reversal of the analysis plan's prediction. At N=31 it
+*inflates* R by +0.3% to +6.6% in six of seven foundations. The direction is not stable across
+samples and the magnitude is small either way.
+
+---
 
 ### Registered predictions for Phase 2 — FIXED 2026-08-08, BEFORE any Phase-2 data exists
 
