@@ -268,9 +268,21 @@ def main() -> int:
 
     res = pd.DataFrame(rows)
     OUT.mkdir(parents=True, exist_ok=True)
-    res.to_csv(OUT / ("variance_ratio_test.csv" if args.test else "variance_ratio.csv"),
-               index=False)
-    print(f"\nwrote {OUT / ('variance_ratio_test.csv' if args.test else 'variance_ratio.csv')}")
+
+    # The output name follows the INPUT. Without this, `--data analysis_long_v2.csv` wrote its
+    # 31-model results over the committed 20-model `variance_ratio.csv` — which is exactly
+    # what happened on the pod on 2026-08-09 before this was fixed. The v1 file is a committed
+    # artifact backing FINDINGS.md; silently replacing its contents with a different sample
+    # while keeping its name is the worst kind of data loss, because nothing looks wrong.
+    if args.out:
+        out_path = Path(args.out)
+    else:
+        stem = "variance_ratio_test" if args.test else "variance_ratio"
+        sfx = "_v2" if "_v2" in data_path.name else ""
+        out_path = OUT / f"{stem}{sfx}.csv"
+    res.to_csv(out_path, index=False)
+    print()
+    print(f"wrote {out_path}")
     return 0
 
 

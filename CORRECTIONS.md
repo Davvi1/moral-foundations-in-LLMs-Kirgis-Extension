@@ -302,9 +302,36 @@ corrections were found by luck; this is the check that would have caught both.
 
 ---
 
+## C12 — The primary analysis wrote v2 results over the committed v1 file
+**Date:** 2026-08-09 · **Severity:** medium — caught immediately, no published number affected
+
+**Claimed:** that `analyse_variance_ratio.py --data analysis_long_v2.csv` would write a
+v2-named output, because I said so when adding the `--data` flag.
+
+**True:** the versioned-output patch **never applied**. A heredoc `replace()` failed to match
+and I did not verify it, so the script kept an unconditional
+`OUT / "variance_ratio.csv"`. On the pod the 31-model v2 run therefore **overwrote the
+20-model v1 file** — same filename, completely different sample, nothing visibly wrong.
+
+**Caught by:** the batch's own inventory step reporting `variance_ratio_v2.csv MISSING` while
+the log said the fit had succeeded. Had I not written that inventory, the natural reading of a
+successful log plus an existing `variance_ratio.csv` would have been "it worked".
+
+**Changes:** output name now follows the input name, with a comment recording why. The local
+v1 file was never touched (verified clean against git), so `FINDINGS.md` remains sourced from
+genuine N=20 results, and the fetched v2 results were saved under the correct name.
+
+**The pattern worth noticing.** This is the third defect in two days caused by *an edit I
+believed had applied but never verified* — C10 and C11 were found by auditing, this one by an
+inventory check. The lesson is not "be careful with heredocs"; it is that **a patch is not
+applied until something asserts it applied.** The `--suffix`/`--data` plumbing in
+`build_analysis_data.py` was verified by rebuilding and diffing; this one was not.
+
+---
+
 ## Standing note for the write-up
 
-Six of these eleven were found by a check that was **built in advance** — a validation
+Seven of these twelve were found by a check that was **built in advance** — a validation
 simulation (C1), a pre-specified sensitivity analysis (C2), known-answer unit tests (C6, C7),
 or a registered falsifier (C8). One (C3) was found only because the author asked for a
 double-check. **C9 and C10 were found by luck** — a test failing for what looked like an unrelated
