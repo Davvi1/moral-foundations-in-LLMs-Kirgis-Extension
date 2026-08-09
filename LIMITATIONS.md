@@ -59,8 +59,24 @@ this project exists to measure.** One model moves by 1.12 points on a 0–4 scal
 precisely the error class that mis-scored Kirgis's grok-3 responses — a digit picked out of
 running prose — so it is the last thing we should have left unchecked.
 
-The full version needs a pod (it is a refit of R). The descriptive version above is local and
-is now on record.
+**Resolved for the ranking result, 2026-08-09.** The obvious worry was that our most-quoted
+number — ρ(label, sampled) = 0.842, the Kirgis confound pair — depended on an analysis we never
+ran. It does depend on it, and the dependency runs in the *reassuring* direction:
+
+| pair | all rows | anchored only | change |
+|---|---:|---:|---:|
+| label ~ sampled | 0.846 | **0.879** | +0.032 |
+| label ~ greedy | 0.911 | 0.925 | +0.015 |
+| greedy ~ sampled | 0.790 | **0.959** | **+0.169** |
+| label ~ string_line | 0.969 | 0.969 | 0.000 |
+
+Excluding prose-derived digits, the two arms Kirgis confounded agree **more**, not less
+(0.879, essentially the v1 figure of 0.880). The probability arms are untouched, as they must
+be. And greedy ~ sampled jumps from 0.790 to 0.959 — scan-parsing was adding noise to both
+free-generation arms, and removing it shows they agree far better than we reported.
+
+**So the omission did not flatter our conclusions; correcting it strengthens them.** The R
+refit still needs a pod and remains outstanding.
 
 ## 1b. R conflates rank reordering with scale differences between methods · EVIDENTIAL
 
