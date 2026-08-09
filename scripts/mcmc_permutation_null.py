@@ -145,8 +145,12 @@ def main() -> int:
     n_cpu = os.cpu_count() or 4
     workers = args.workers or max(1, min(n_cpu // 2, 64))
 
+    # Suffix follows the input dataset, so the artifact declares its own provenance.
+    # An unsuffixed name means the v1 harness by convention; leaving a v2-derived file
+    # unsuffixed asserts something false about it. See CORRECTIONS.md C12.
+    _sfx = "_v2" if "_v2" in Path(args.data).name else ""
     out_path = Path(args.out) if args.out else DERIVED / (
-        "mcmc_null_test.csv" if args.test else "mcmc_permutation_null.csv")
+        f"mcmc_null_test{_sfx}.csv" if args.test else f"mcmc_permutation_null{_sfx}.csv")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"data      : {args.data}")

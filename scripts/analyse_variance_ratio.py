@@ -166,7 +166,9 @@ def seed_audit(df: pd.DataFrame, foundations: list[str], args) -> int:
 
     res = pd.DataFrame(rows)
     OUT.mkdir(parents=True, exist_ok=True)
-    out_path = Path(args.out) if args.out else OUT / "variance_ratio_seed_audit.csv"
+    # Suffix follows the input, same rule as the primary path (see C12).
+    _sfx = "_v2" if "_v2" in Path(args.data).name else ""
+    out_path = Path(args.out) if args.out else OUT / f"variance_ratio_seed_audit{_sfx}.csv"
     res.to_csv(out_path, index=False)
 
     print()
