@@ -14,6 +14,7 @@ outcome model was fitted.
 
 from __future__ import annotations
 
+import argparse
 import csv
 import json
 import math
@@ -33,6 +34,10 @@ OUT = REPO / "results" / "derived"
 PARSE_THRESHOLD = 0.50
 FREE_CONDITIONS = {"greedy", "sampled"}
 
+# Ascending severity, used ONLY to break ties deterministically when summarising a sampled
+# cell's failure types. "ok" is least severe so it can never win a tie against a real failure.
+SEVERITY_ORDER = ["ok", "unparseable", "empty_output", "refusal"]
+
 FIELDS = [
     "model", "family", "revision", "item_id", "foundation", "condition",
     "score", "score_se", "n_replicates",
@@ -51,13 +56,31 @@ def f(x):
 
 
 def main() -> int:
+    # --suffix selects WHICH harness's raw files to build from. Without it the glob picks up
+    # v1 and v2 files together and silently interleaves two incompatible condition sets into
+    # one dataset -- the sort of blend that produces a plausible-looking file and a
+    # meaningless analysis. v1 stays the default so the committed Phase-1 outputs regenerate
+    # byte-for-byte.
+    ap = argparse.ArgumentParser(description="Build the long-form analysis dataset.")
+    ap.add_argument("--suffix", default="",
+                    help="raw-file suffix to build from: '' for v1 (default), '_v2' for v2")
+    args = ap.parse_args()
+
     human = {}
     with (REPO / "data" / "mfv_116_meta.csv").open(encoding="utf-8") as fh:
         for r in csv.DictReader(fh):
             human[int(r["questionnaire_item_id"])] = float(r["clifford_wrong_mean"])
 
+    sfx = args.suffix
+    paths = [p for p in sorted(RAW.glob(f"*{sfx}.csv"))
+             if sfx or not p.stem.endswith("_v2")]
+    if not paths:
+        print(f"no raw CSVs matching suffix {sfx!r} in {RAW}")
+        return 1
+    print(f"building from {len(paths)} raw files (suffix {sfx!r})")
+
     rows_out: list[dict] = []
-    for csv_path in sorted(RAW.glob("*.csv")):
+    for csv_path in paths:
         slug = csv_path.stem
         man_path = RAW / f"{slug}.manifest.json"
         man = json.loads(man_path.read_text(encoding="utf-8")) if man_path.exists() else {}
@@ -108,8 +131,27 @@ def main() -> int:
             if cond == "sampled" and len(usable) > 1:
                 se = st.stdev(usable) / math.sqrt(len(usable))
 
+            # DETERMINISM BUG, fixed 2026-08-09. This was:
+            #     dominant = max(set(ft), key=ft.count)
+            # On a TIE, max() returns whichever element it met first while iterating the SET,
+            # and CPython randomises string hashing per process. So the same raw data produced
+            # different failure_type values on different runs: 28 rows of the committed
+            # analysis_long.csv flipped (e.g. ok <-> unparseable) with no code change at all.
+            # Verified directly -- PYTHONHASHSEED=1 gives "ok", =2 gives "unparseable" for the
+            # gemma-2-2b item-43 sampled cell, which is 4 ok / 4 unparseable / 2 refusal.
+            #
+            # Ties are common because k=10 splits evenly all the time, so this was not an edge
+            # case. Only the descriptive failure_type column was affected -- `score`,
+            # `n_replicates` and every exclusion decision are computed from `usable` and
+            # `rate`, never from `dominant` -- so no analysis result moves. But a dataset that
+            # does not reproduce from its own inputs is not a dataset, and the same defect in a
+            # column that DID feed the model would have been invisible.
+            #
+            # The fix breaks ties by severity rather than arbitrarily, which is both
+            # deterministic and more honest: a cell that is half unparseable should not be
+            # reported as "ok".
             ft = [g["_ftype"] for g in group]
-            dominant = max(set(ft), key=ft.count)
+            dominant = max(set(ft), key=lambda t: (ft.count(t), SEVERITY_ORDER.index(t)))
 
             rows_out.append({
                 "model": g0["model"], "family": man.get("family", ""),
@@ -128,7 +170,8 @@ def main() -> int:
 
     rows_out.sort(key=lambda r: (r["model"], r["item_id"], r["condition"]))
     OUT.mkdir(parents=True, exist_ok=True)
-    with (OUT / "analysis_long.csv").open("w", newline="", encoding="utf-8") as fh:
+    out_name = f"analysis_long{sfx}.csv"
+    with (OUT / out_name).open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=FIELDS, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows_out)
@@ -136,7 +179,7 @@ def main() -> int:
     # ---- report -----------------------------------------------------------------------
     n_models = len({r["model"] for r in rows_out})
     exc = [r for r in rows_out if r["excluded"]]
-    print(f"wrote {OUT/'analysis_long.csv'}")
+    print(f"wrote {OUT/out_name}")
     print(f"  {len(rows_out)} rows, {n_models} models, "
           f"{len(rows_out) - len(exc)} usable, {len(exc)} excluded")
 
@@ -173,7 +216,7 @@ def main() -> int:
     print(f"  -> {len(item_level)} item-rows, spread over {len(per_cell)} kept cells")
 
     print("\n=== achieved N per condition (models with >=1 usable cell) ===")
-    for cond in ("label", "string", "greedy", "sampled"):
+    for cond in sorted({r["condition"] for r in rows_out}):
         ms = {r["model"] for r in rows_out if r["condition"] == cond and not r["excluded"]}
         print(f"  {cond:<10}{len(ms)} of {n_models} models")
 

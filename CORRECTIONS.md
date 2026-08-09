@@ -228,12 +228,50 @@ That is the same failure shape as the measurement artifacts the project studies.
 
 ---
 
+## C10 — The analysis dataset did not reproduce from its own inputs
+**Date:** 2026-08-09 · **Severity:** medium — no result moves, but reproducibility was broken
+
+**Claimed:** implicitly, that `results/derived/analysis_long.csv` is a deterministic function
+of the raw CSVs — rebuild it and you get the same file.
+
+**True:** rebuilding it produced **28 differing rows** with no code change. The cause is one
+line in `build_analysis_data.py`:
+
+```python
+dominant = max(set(ft), key=ft.count)      # summarise a sampled cell's failure types
+```
+
+On a **tie**, `max()` returns whichever element it encountered first while iterating the
+**set**, and CPython randomises string hashing per process. Demonstrated directly: for the
+gemma-2-2b item-43 sampled cell (4 `ok` / 4 `unparseable` / 2 `refusal`), `PYTHONHASHSEED=1`
+yields `ok` while `PYTHONHASHSEED=2` yields `unparseable`. Ties are *common*, not exotic —
+k=10 splits evenly all the time.
+
+**Caught by:** parameterising the builder for v2 and noticing the v1 output no longer matched
+the committed file. I had seen a smaller version of this diff earlier in the session and
+**dismissed it as float-formatting noise without checking** — that dismissal was wrong, and
+the second look only happened because the diff reappeared at a different size.
+
+**Changes:** ties now break by an explicit severity order (`ok` < `unparseable` <
+`empty_output` < `refusal`), which is deterministic *and* more honest — a cell that is half
+unparseable should not be summarised as `ok`. Verified: five different `PYTHONHASHSEED`
+values now produce a byte-identical file.
+
+**Scope, stated precisely so this is neither over- nor under-sold.** Only the descriptive
+`failure_type` column was affected. `score`, `n_replicates` and every exclusion decision come
+from `usable` and `rate` and never touch `dominant`, so **no analysis result changes**. What
+was actually broken was the claim that the dataset regenerates from its inputs. The reason it
+still matters: the identical defect in a column that *did* feed the model would have been
+completely invisible, and the near-miss was only caught by accident.
+
+---
+
 ## Standing note for the write-up
 
-Six of these nine were found by a check that was **built in advance** — a validation
+Six of these ten were found by a check that was **built in advance** — a validation
 simulation (C1), a pre-specified sensitivity analysis (C2), known-answer unit tests (C6, C7),
 or a registered falsifier (C8). One (C3) was found only because the author asked for a
-double-check. **C9 was found by luck** — a test failing for what looked like an unrelated
+double-check. **C9 and C10 were found by luck** — a test failing for what looked like an unrelated
 reason — which is exactly the point: nothing was watching for it. **None were found by looking at a result and feeling that it seemed wrong.**
 
 That asymmetry is worth a sentence in the discussion, because it is the project's own thesis
