@@ -477,6 +477,14 @@ samples and the magnitude is small either way.
 
 ### F5 PROMPT-FACTOR PREDICTIONS — FIXED 2026-08-10, BEFORE any P01-P11 data exists
 
+> **DEFERRED 2026-08-10, same day, by decision.** The collection was built and validated but not
+> run. F5 stopped being an extension of this experiment and became a second one the moment the
+> design grew a second instrument — see `THE_NEXT_EXPERIMENT.md`. These predictions stand as
+> registered and carry over unchanged; the git timestamp is what makes them pre-registered, and
+> deferring collection does not weaken that. Two anchors were refined the same day after the
+> full texts (not just the abstracts) were read; both refinements are marked inline below and
+> both make the prediction *harder* to satisfy, not easier.
+
 Twelve prompt variants (P00 base + 11) x 5 conditions x 31 models. Analysis is **rank
 correlation, not variance decomposition** — see `config/prompt.yaml` for why (it is the P7
 mistake, and both comparison papers use rank/consistency metrics).
@@ -487,6 +495,10 @@ just a shrug. Verifiable in git: this commit precedes every `*_f5.csv`.
 - **F5-1 (transfer of the "artifact" claim).** arXiv:2509.01790 finds prompt sensitivity is
   "largely an artifact of heuristic evaluation" — on capability benchmarks, heuristic parsing
   gave mean cross-prompt ranking ρ̄ = 0.30 against 0.95 for LLM-as-judge. Transferred here:
+  *(Anchor refined 2026-08-10 after reading Table 1 rather than the abstract — the abstract
+  contains no numbers. 0.30 is ARC-Challenge, open-source models only. Their heuristic arm spans
+  **ρ̄ = 0.15–0.59** across benchmarks: 0.15 GPQA Diamond, 0.30 ARC-C, 0.42 OpenbookQA, 0.59
+  NarrativeQA. The anchor is that RANGE, not the point.)*
   **the parsing arms (greedy, sampled) will show LOWER mean cross-prompt rank correlation than
   the logprob arms (label, string_line, string_bare).**
   *Falsifier:* logprob arms equal or less prompt-stable than parsing arms. That would mean the
@@ -506,6 +518,14 @@ just a shrug. Verifiable in git: this commit precedes every `*_f5.csv`.
   reports for its most stable readout**, i.e. a values instrument is harder to measure stably
   than a capability benchmark.
   *Falsifier:* MFV cross-prompt stability at or above 0.95.
+  *(Anchor CORRECTED 2026-08-10, and the original was comparing the wrong things. 0.95 is their
+  **LLM-as-a-Judge** arm — a readout we do not have and arguably cannot have, since there is no
+  ground truth for "how wrong is this vignette" for a judge to be right about. It also includes
+  proprietary models; open-source only is 0.92, and their highest anywhere is 0.96 on MATH. The
+  defensible comparison for us is against their **heuristic range, 0.15–0.59**, since that is
+  the arm whose mechanism we share. Restated: **mean cross-prompt rank correlation on the MFV,
+  under the parsing arms, will fall at or below the top of their heuristic range (0.59).** The
+  old 0.95 falsifier is retained only as a weak upper check.)*
 
 - **F5-4 (the headline comparison, and the one the project exists for).** **Cross-PROMPT rank
   correlation, averaged over conditions, will be HIGHER than cross-METHOD rank correlation

@@ -158,6 +158,75 @@ models." Findings of ACL 2024, pp. 7407–7416.** Citation taken verbatim from Q
 reference list. Direct predecessor for the label-scoring vs. free-generation contrast —
 engage it explicitly in the write-up.**
 
+### Added 2026-08-10 — the prompt × scoring-method literature. Verified by fetching.
+
+Found while checking novelty for the deferred F5 design (see `THE_NEXT_EXPERIMENT.md`). Abstracts
+fetched for all; **full text fetched and read** for the three where a number is quoted below.
+This block falsified the F5 novelty claim.
+
+**Shen, Singh, Logeswaran, Lee, Lee & Mihalcea — "Revisiting LLM Value Probing Strategies: Are
+They Robust and Expressive?" arXiv:2507.13490, submitted 17 Jul 2025.** Full text read.
+**THE CLOSEST NEIGHBOUR TO THIS PROJECT, and its absence from this file until now was a real gap
+in the novelty check.** Compares three probing strategies that map almost 1:1 onto our
+conditions: *token logit* (softmax over valid option symbols) = our label scoring; *sequence
+perplexity* (normalised inverse perplexity) = our length-normalised string scoring; *text
+generation* (10 samples at T=1.0, count selections) = our sampled free generation. Instrument:
+WVS Wave 7, 206 questions, 13 topic areas. Seven model families — Bloomz-7B, Falcon-7B,
+Mistral-v0.3-7B, Llama-3.1 8B/70B, Llama-3.2-3B, Qwen2.5 3B/7B/14B/72B — **overlapping our
+roster**. Perturbations: prompt style (default / affirmative starter / one-shot) and selection
+bias (reversed option order, alternative labels 0/1/2/3). Finding: all three methods show large
+variance under input perturbation. **So the readout set is not novel, and neither is crossing it
+with prompt perturbation on a values instrument.**
+*What they do not do — verified against the full text:* metrics are **mismatch rate and
+Jensen-Shannon divergence**, i.e. within-model distributional agreement. **No inter-method
+model-ranking agreement is reported.** Their Table 2 correlations (0.526–0.933; e.g. mismatch vs
+option probabilities r = 0.899) are between *robustness metrics*, not between methods' model
+rankings. The ranking estimand survives — the same gap that survived QSTN.
+
+**Hua, Tang, Gu, Gu, Wong & Qin — "Flaw or Artifact? Rethinking Prompt Sensitivity in Evaluating
+LLMs." arXiv:2509.01790, submitted 1 Sep 2025.** Abstract + §3.2 + Table 1 read.
+7 LLMs × 6 benchmarks × **12 prompt templates**. Argues prompt sensitivity is "largely an artifact
+of evaluation processes" — of "heuristic evaluation methods, including log-likelihood scoring and
+rigid answer matching." Spearman rank correlation of model rankings across prompts, Table 1:
+ARC-Challenge **0.30 heuristic → 0.95 LLM-as-a-Judge** (0.92 open-source only); OpenbookQA
+0.42 → 0.94; GPQA Diamond 0.15 → 0.90; NarrativeQA 0.59 → 0.87; MATH 0.96 and SimpleQA 0.81
+(judge). Verbatim §3.2: *"the average Spearman rank correlation across prompts among open-source
+models increases from 0.30 (heuristics) to 0.92 (LLM-as-a-Judge), and further to 0.95 when
+proprietary models are included."* **Source of our 12-template count**, deliberately, for
+comparability. **Caveat: their best arm is LLM-as-a-Judge, which we cannot have** — there is no
+ground truth for "how wrong is this vignette." Transfers to us only as a contrast *between
+heuristic arms*. Their "log-likelihood" is one category where we have four.
+**NB the abstract contains none of these numbers — they are in the body. Do not cite from the
+abstract.**
+
+**Kamal, Patwary, Marchiafava, Ray Choudhury & Sen — "Prompt Robustness Is Task-Dependent:
+Comparing Objective and Belief-Style Questions in LLM Evaluation." arXiv:2607.05554, v1 6 Jul
+2026, v2 21 Jul 2026.** Abstract + §4.1 + §4.2 + Table 2 read.
+Four instruction-tuned model families × six datasets: objective (MMLU, ARC, CulturalBench) vs
+subjective (Political Compass Test, ValueBench, WVS). Wording, framing, format perturbations;
+binomial GEE. §4.1: mean consistency **0.849 objective vs 0.787 subjective** (instability 0.151 →
+0.213). §4.2: **option order is the worst perturbation, 0.407** overall, splitting **0.485
+objective / 0.328 subjective**. Table 2: paraphrase stays above 0.9. **Occupies the
+objective-vs-subjective prompt-robustness contrast** — do not restate it as our finding.
+*Caution:* the fetched paraphrase decomposition was internally inconsistent (an "overall" above
+both subgroups). Re-read Table 2 directly before quoting any paraphrase figure.
+
+**Song, Choi, Park, Han, Lee & Jo — "Human Psychometric Questionnaires Mischaracterize LLM
+Behavior." arXiv:2509.10078, submitted 12 Sep 2025.** Abstract read.
+Eight open-source LLMs; value/personality profiles from Likert self-report (**PVQ-40/21,
+BFI-44/10**) vs generation probabilities over value-laden responses to everyday queries. The two
+diverge substantially, and within-construct item consistency present in questionnaire responses
+**disappears** in generation probabilities — attributed to explicit lexical cues letting models
+recognise the construct and answer in a socially desirable way. Persona prompts shift
+questionnaire responses but not realistic-query responses. **A deeper challenge than the one we
+run: it questions the questionnaire format itself.** Cite as a limitation; do not sidestep it.
+
+**ValueBench. arXiv:2406.04214, ACL 2024 long paper; `github.com/ValueByte-AI/ValueBench`.**
+44 psychometric inventories, 453 value dimensions. Used as a subjective dataset by
+arXiv:2607.05554. **Author list NOT yet verified — do not cite until it is.** Its native pipeline
+rephrases first-person items into advice-seeking questions and scores via an evaluator LLM, which
+is not compatible with a fixed-prompt logprob design without modification.
+
 ---
 
 ## Instruments
