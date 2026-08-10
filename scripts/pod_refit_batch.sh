@@ -13,7 +13,13 @@
 #   - scan-excluded, pre-specified at ANALYSIS_PLAN.md:192, never executed (LIMITATIONS 1)
 #   - (1|family), because eight Qwens are not eight independent draws (F3)
 #
-# 3 runs x 7 levels x 2 exclusion settings x 2 residual specs = 84 fits.
+# 4 runs x 7 levels x 2 exclusion settings x 2 residual specs = 112 fits.
+#
+# THE PRIMARY NOW EXCLUDES CLOZE (C15). Cloze is scored against a different prompt, so a
+# method-effect estimate containing it is confounded with prompt -- which three documents said
+# and no code enforced. The `withcloze` run reproduces the published (confounded) number so the
+# two can be reported side by side: R roughly doubles when the prompt-varying arm is included,
+# and that gap is the largest researcher degree of freedom in this analysis.
 #
 # DELIBERATELY NOT RE-RUN, so this is a decision and not an oversight:
 #   - SEED AUDIT (35 fits). Measures Monte-Carlo error from the C11 randomised seed. Ran at
@@ -73,13 +79,14 @@ run_job() {
 }
 
 run_job primary                       &
+run_job withcloze --include-cloze     &
 run_job noscan  --exclude-scan        &
 run_job family  --family-effect       &
 wait
-echo "all three jobs finished at $(date -u +%FT%TZ)"
+echo "all four jobs finished at $(date -u +%FT%TZ)"
 echo
 
-for t in primary noscan family; do
+for t in primary withcloze noscan family; do
   echo "--- $t ---"
   grep -vE "$FILTER" "/workspace/${t}.log" | grep -E "R=|FIT FAILED|FATAL|exclude-scan" | tail -32
   echo
@@ -87,7 +94,7 @@ done
 
 {
   echo "=== refit batch summary  ($(date -u +%FT%TZ)) ==="
-  for f in variance_ratio_v2.csv variance_ratio_v2_noscan.csv variance_ratio_v2_family.csv; do
+  for f in variance_ratio_v2.csv variance_ratio_v2_withcloze.csv variance_ratio_v2_noscan.csv variance_ratio_v2_family.csv; do
     p="results/derived/$f"
     if [ -e "$p" ]; then
       echo "  $f  rows=$(( $(wc -l < "$p") - 1 ))  bytes=$(stat -c%s "$p")"
@@ -99,7 +106,7 @@ done
   echo "--- R by foundation, all three runs ---"
   python - <<'PY'
 import pandas as pd, pathlib
-for f in ["variance_ratio_v2.csv","variance_ratio_v2_noscan.csv","variance_ratio_v2_family.csv"]:
+for f in ["variance_ratio_v2.csv","variance_ratio_v2_withcloze.csv","variance_ratio_v2_noscan.csv","variance_ratio_v2_family.csv"]:
     p = pathlib.Path("results/derived")/f
     if not p.exists():
         print(f"{f}: MISSING"); continue
