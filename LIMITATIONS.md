@@ -133,6 +133,20 @@ These cells pass every existing quality gate — they parse cleanly, they are no
 cell parse rate is 1.00 — so **no exclusion rule catches them**. They enter the variance model
 as if they were informative. A constancy check belongs in the QA pass and is not there.
 
+> **RESOLVED 2026-08-10.** The constancy check now exists (`validate_results.py` §10) and
+> SmolLM2 is excluded from both collections by a uniform discrimination threshold. See **§22**
+> for the rule, its measured impact (−0.004 on the headline), and why the exclusion is itself
+> a limitation.
+>
+> **Qwen2.5-1.5B is deliberately NOT excluded, and the asymmetry is worth stating.** Its greedy
+> cell has 2 distinct values but an SD of 0.468 — 0.48× the human baseline, above the 0.25×
+> floor — and its mean across conditions is 0.297. The gate is **SD-based, not
+> distinct-count-based**, because greedy is discretised to integers (§1d) and so can have at
+> most five distinct values by construction. A distinct-count criterion would therefore
+> penalise the free-generation arms for a property of the scale rather than of the model.
+> Two values spread a full point apart carries real information; one value carries none. That
+> is the line, and it is drawn on dispersion rather than on cardinality for that reason.
+
 ## 1d. Greedy is heavily saturated at the ceiling · DESIGN
 
 Share of scores at each end of the 0–4 scale:
@@ -473,3 +487,49 @@ Ranked by leverage, so "future work" is concrete:
 6. **A scale-augmented variance model (§13)** as the proper test of P6.
 7. **Report Social Norms separately (§5)** rather than as a seventh foundation, or model the
    floor explicitly.
+
+---
+
+## 22. A model was excluded on a criterion defined after seeing the data · DESIGN
+
+**This is a researcher degree of freedom of precisely the kind this project audits Kirgis for,
+and it is disclosed here rather than left for a reviewer to find.**
+
+SmolLM2-1.7B-Instruct is dropped from both collections by `build_analysis_data.py
+--min-discrimination`. The rule: exclude any model whose mean between-item SD falls below 0.25×
+the human baseline's between-item SD. The justification is that a model emitting a
+near-constant response is not answering the instrument — a **measurement-validity** claim, not
+an empirical improvement.
+
+**Why it is defensible:**
+
+1. **Uniform threshold, not a named model.** Anything below the cut goes. A rule naming
+   `SmolLM2` would be unfalsifiable.
+2. **The threshold was not tuned to this decision.** It is the one already justified for the QA
+   warn gate: 0.25× human SD, chosen because the *median* model × condition cell sits at 1.02×
+   it. It was fixed before the exclusion was contemplated.
+3. **The result is insensitive to the threshold.** v2: lowest model 0.098, next 0.306 — a 3×
+   gap. v1: 0.119 vs 0.311. Any cut between ~0.15 and ~0.29 selects the same single model in
+   both collections. *The gap is the argument; the exact number does no work.*
+
+**Why it remains a limitation, and this half matters more:**
+
+- The criterion **was defined after seeing the data.** No amount of post-hoc principle changes
+  that. Had SmolLM2 not looked anomalous, this rule would not exist.
+- **It buys nothing empirically.** Dropping the model moves label~sampled by −0.004 and no rank
+  correlation by more than 0.022. It is not correcting a distortion; it is asserting a validity
+  boundary. Anyone who rejects the validity argument should read the N=31 column in
+  `FINDINGS.md` §3, which is retained for exactly that purpose.
+- **It removes a substantive finding from the sample.** That a 1.7B model answers "3" to all 116
+  items is itself evidence about where the instrument stops working — consistent with
+  arXiv:2403.00998's result that method choice matters more for weaker models. Excluding it
+  makes the roster look more uniformly competent than the open-weight landscape is. The
+  write-up should report SmolLM2's behaviour in the text even though it is out of the analysis.
+- **Direction of bias is knowable and is against us**: including it very slightly *inflates*
+  cross-method agreement (0.842 vs 0.838), so the exclusion makes the headline marginally
+  worse, not better. Worth stating, because the usual worry about post-hoc exclusion is that it
+  flatters the result.
+
+**Decision owner: David, 2026-08-10**, having been shown the measured impact and the option of
+keeping it with a sensitivity analysis. Recorded because "who chose this and on what evidence"
+is the question a post hoc exclusion has to answer.

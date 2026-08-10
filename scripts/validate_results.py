@@ -170,8 +170,21 @@ def check_constancy(models, conditions, human_sd: float | None) -> None:
             uniq = len({round(v, 6) for v in vals})
             sd = statistics.pstdev(vals)
             if uniq == 1:
-                fail(f"{name} {cond}: CONSTANT — emitted {vals[0]:.3f} on all {len(vals)} "
-                     f"items. Zero information; rank correlation with this cell is undefined")
+                # WARNING, NOT BLOCKING — demoted 2026-08-10 by David's decision, and the
+                # demotion is evidence-based rather than convenience. My first wording said
+                # "rank correlation is undefined", which overstated it: the MODEL-LEVEL ranking
+                # that carries the headline is fine, because a constant cell still has a
+                # well-defined mean and contributes one ordinary point. Dropping the offending
+                # model moves label~sampled by -0.004 and no pair by more than 0.022. What IS
+                # undefined is any ITEM-LEVEL correlation involving the cell (zero variance,
+                # zero denominator) — arithmetic, not judgement, and handled at point of use.
+                #
+                # Blocking on a 0.004 effect would have trained us to ignore the gate, which is
+                # how a gate dies. Exclusion is handled where exclusions belong, by the uniform
+                # discrimination threshold in build_analysis_data.py --min-discrimination.
+                warn(f"{name} {cond}: CONSTANT — emitted {vals[0]:.3f} on all {len(vals)} "
+                     f"items. Carries no item-level information, and ITEM-level correlations "
+                     f"involving it are undefined (model-level ranking is unaffected)")
                 flagged += 1
             elif floor is not None and sd < floor:
                 warn(f"{name} {cond}: between-item SD {sd:.3f} = {sd/human_sd:.2f}x human "

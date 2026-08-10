@@ -5,7 +5,6 @@ Rank correlation across the 116 items, within each model. Rank correlation is us
 | model | label~string | label~greedy | label~sampled | mean string mass | mean label mass |
 |---|---|---|---|---|---|
 | Yi-1.5-9B-Chat | 0.899 | 0.952 | 0.963 | 0.2526 | 0.8163 |
-| SmolLM2-1.7B-Instruct | 0.557 | 0.160 | 0.365 | 0.4363 | 0.9706 |
 | Qwen2.5-0.5B-Instruct | 0.548 | 0.568 | 0.580 | 0.1615 | 0.9985 |
 | Qwen2.5-1.5B-Instruct | 0.735 | 0.802 | 0.856 | 0.1456 | 0.9973 |
 | Qwen2.5-14B-Instruct | 0.914 | 0.977 | 0.990 | 0.0005 | 0.9995 |
@@ -25,17 +24,17 @@ Rank correlation across the 116 items, within each model. Rank correlation is us
 | Ministral-8B-Instruct-2410 | 0.985 | nan | 0.627 | 0.5459 | 0.3366 |
 | Mistral-7B-Instruct-v0.3 | 0.242 | 0.716 | 0.866 | 0.8664 | 0.0780 |
 
-**Mean label~string rank correlation: 0.770** (min 0.242, max 0.985)
+**Mean label~string rank correlation: 0.782** (min 0.242, max 0.985)
 
-**Mean label~greedy rank correlation: 0.851** — the reference ceiling.
+**Mean label~greedy rank correlation: 0.892** — the reference ceiling.
 
 ## Verdict
 
-String scoring **tracks the same item ordering as label scoring** (mean rho 0.770). The large difference in level is therefore a genuine method effect on a shifted scale, not a sign that the condition is measuring something unrelated. It belongs in the primary variance ratio, and the level shift is part of the result rather than an artifact to explain away.
+String scoring **tracks the same item ordering as label scoring** (mean rho 0.782). The large difference in level is therefore a genuine method effect on a shifted scale, not a sign that the condition is measuring something unrelated. It belongs in the primary variance ratio, and the level shift is part of the result rather than an artifact to explain away.
 
 ## The probability-mass problem
 
-Mean retained mass: **string 0.2171**, label 0.8062.
+Mean retained mass: **string 0.2049**, label 0.7975.
 
 Our prompt DISPLAYS the five options as numbered lines, so the model is being asked how likely it is to emit option text it has effectively been steered away from. That is why string mass is low, and it is the limitation already recorded in `config/prompt.yaml`: this is not textbook cloze, which omits the options from the prompt. The comparison across the five options remains internal and consistent, so the condition is not meaningless — but it is not comparable to published cloze numbers, and the write-up must say so.
 

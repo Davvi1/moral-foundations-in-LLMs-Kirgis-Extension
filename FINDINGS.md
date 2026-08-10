@@ -73,14 +73,23 @@ unstable-in-sign", not "corrects a 4–16% deflation".
 
 ## 3. The ranking result — and the part that is fair to Kirgis
 
+> **UPDATED 2026-08-10 — N is now 30, not 31.** SmolLM2-1.7B-Instruct is excluded by the
+> `--min-discrimination` rule (mean between-item SD 0.095 against a human baseline of 0.970;
+> the next-lowest model is 0.297, a 3× gap). The rule is **post hoc** — see `LIMITATIONS.md`
+> §22 — so both columns are given. The effect is small enough that no verdict changes:
+> label~sampled moves −0.004, and no pair moves by more than 0.022.
+>
+> **`variance_ratio_v2.csv` and `mcmc_permutation_null_v2.csv` were fitted at N=31 and are now
+> stale.** They need refitting on the pod alongside the scan-excluded and family-effect runs.
+
 **ESTABLISHED — mean Spearman ρ over models, averaged across the seven foundations:**
 
-| pair | v2 (N=31) | v1 (N=20) |
-|---|---:|---:|
-| label ~ string_line | **0.969** | — |
-| label ~ greedy | 0.928 | 0.927 |
-| string_line ~ greedy | 0.925 | — |
-| **label ~ sampled** | **0.842** | **0.880** |
+| pair | v2 (N=30) | v2 (N=31, with SmolLM2) | v1 (N=20) |
+|---|---:|---:|---:|
+| label ~ string_line | **0.968** | 0.969 | — |
+| label ~ greedy | 0.926 | 0.928 | 0.927 |
+| string_line ~ greedy | 0.925 | 0.925 | — |
+| **label ~ sampled** | **0.838** | 0.842 | **0.880** |
 | greedy ~ sampled | 0.788 | 0.774 |
 | string_bare ~ sampled | 0.497 | — |
 | label ~ string_bare | 0.451 | 0.332 *(as `string`)* |

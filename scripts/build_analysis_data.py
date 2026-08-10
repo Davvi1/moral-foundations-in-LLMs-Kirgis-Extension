@@ -59,11 +59,22 @@ def main() -> int:
     # --suffix selects WHICH harness's raw files to build from. Without it the glob picks up
     # v1 and v2 files together and silently interleaves two incompatible condition sets into
     # one dataset -- the sort of blend that produces a plausible-looking file and a
-    # meaningless analysis. v1 stays the default so the committed Phase-1 outputs regenerate
-    # byte-for-byte.
+    # meaningless analysis. v1 stays the default.
+    #
+    # NOTE, 2026-08-10: this comment used to end "so the committed Phase-1 outputs regenerate
+    # byte-for-byte." That is NO LONGER TRUE and the sentence has been removed rather than left
+    # to mislead. The --min-discrimination rule added below applies to both collections and
+    # changes 464 rows of the v1 artifact. Applying it to v2 only would have been the easier
+    # path and the wrong one: a validity criterion that holds for one collection and not the
+    # other is the same inconsistency this project audits Kirgis for.
     ap = argparse.ArgumentParser(description="Build the long-form analysis dataset.")
     ap.add_argument("--suffix", default="",
                     help="raw-file suffix to build from: '' for v1 (default), '_v2' for v2")
+    ap.add_argument("--min-discrimination", type=float, default=0.25,
+                    help="exclude a model whose mean between-item SD falls below this "
+                         "multiple of the human baseline's between-item SD. 0 disables. "
+                         "See the block comment before the rule fires — it is a post hoc "
+                         "criterion and the write-up must say so.")
     args = ap.parse_args()
 
     human = {}
@@ -174,6 +185,59 @@ def main() -> int:
                 "cell_parse_rate": round(rate, 4),
                 "excluded": excluded, "exclusion_reason": reason,
             })
+
+    # ---- model-level exclusion: does the model discriminate between items at all? --------
+    #
+    # DECIDED BY DAVID 2026-08-10, AND IT IS A POST HOC RULE. Say so plainly: the criterion was
+    # defined after seeing the data, which is a researcher degree of freedom of exactly the kind
+    # this project audits Kirgis for. Three things keep it defensible, and the write-up must
+    # carry all three rather than just the first:
+    #
+    #   1. It is a UNIFORM THRESHOLD, not a named model. Anything below the cut goes, whatever
+    #      it is. A rule that names `SmolLM2` is unfalsifiable and indefensible.
+    #   2. The threshold is the one already justified for the QA warn gate
+    #      (validate_results.py): 0.25x the human baseline's between-item SD, chosen because the
+    #      MEDIAN model x condition cell sits at 1.02x it. It was not tuned to this decision.
+    #   3. The result is INSENSITIVE to the threshold. On v2 the lowest model scores 0.098 and
+    #      the next lowest 0.306 -- a 3x gap -- so any cut between ~0.15 and ~0.29 selects the
+    #      same single model. That gap is the real argument; the exact number is not doing work.
+    #
+    # And the honest counterweight, which belongs beside it: dropping this model changes the
+    # headline rank correlation by -0.004 (label~sampled 0.842 -> 0.838), and the largest change
+    # to any pair is 0.022. The exclusion is not buying accuracy. It is asserting that a model
+    # emitting a near-constant response is not answering the instrument, which is a
+    # MEASUREMENT-VALIDITY claim, not an empirical improvement. Reported both ways.
+    hv = sorted(human.values())
+    human_sd = st.pstdev(hv) if len(hv) > 1 else None
+    if human_sd and args.min_discrimination > 0:
+        floor = args.min_discrimination * human_sd
+        per_model: dict[str, list[float]] = defaultdict(list)
+        for r in rows_out:
+            if r["excluded"] or r["score"] == "":
+                continue
+            per_model[(r["model"], r["condition"])].append(float(r["score"]))
+        disc: dict[str, float] = {}
+        for model in sorted({m for m, _ in per_model}):
+            sds = [st.pstdev(v) for (m, _), v in sorted(per_model.items())
+                   if m == model and len(v) > 1]
+            if sds:
+                disc[model] = sum(sds) / len(sds)
+        degenerate = sorted(m for m, d in disc.items() if d < floor)
+        for model in degenerate:
+            for r in rows_out:
+                if r["model"] == model:
+                    r["excluded"] = True
+                    r["exclusion_reason"] = (
+                        f"model discrimination {disc[model]:.3f} < {args.min_discrimination:g}"
+                        f"x human between-item SD ({floor:.3f}) — near-constant response, "
+                        f"not answering the instrument")
+        print(f"  discrimination floor {floor:.3f} "
+              f"({args.min_discrimination:g}x human SD {human_sd:.3f})")
+        for model in sorted(disc, key=lambda m: disc[m])[:4]:
+            mark = "  EXCLUDED" if model in degenerate else ""
+            print(f"    {disc[model]:.3f}  {model}{mark}")
+        if not degenerate:
+            print("    no model fell below the floor")
 
     rows_out.sort(key=lambda r: (r["model"], r["item_id"], r["condition"]))
     OUT.mkdir(parents=True, exist_ok=True)
