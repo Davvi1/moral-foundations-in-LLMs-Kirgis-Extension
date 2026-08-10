@@ -482,6 +482,44 @@ control into `robust`. Until a proper MCMC refit is run, **the published R value
 including a prompt-confounded arm.** The fix is in the script (`--include-cloze`, off by
 default); the refit is outstanding.
 
+### Verification, run 2026-08-10 after David asked whether this was really true
+
+Four legs, each checked against the data rather than restated:
+
+**1. The falsification test I had NOT run.** If dropping *any* condition cut R by ~50%, the
+effect would be "five cells instead of six" and blaming cloze would be wrong. Leave-one-out,
+mean across the seven levels:
+
+| dropped | mean change in R |
+|---|---:|
+| label | **+14%** |
+| string_line | **+13%** |
+| greedy | **+16%** |
+| sampled | **+7%** |
+| string_bare | −27% |
+| **cloze** | **−52%** |
+
+Dropping most arms *raises* R. Only two lower it, and cloze is twice the next. **Not a
+cell-count artifact.**
+
+**2. `string_bare` is not the same problem, and the contrast sharpens the point.** It shares the
+fixed prompt — verified per item: `label`, `string_line`, `string_bare`, `greedy` and `sampled`
+all carry one `prompt_sha`, cloze carries another. So string_bare's −27% is a *legitimate*
+method effect from a genuinely different readout. Cloze's −52% is a method effect plus a prompt
+effect. Only one of the two is a design violation.
+
+**3. Cloze's prompt really does differ**, checked in the raw files across models: the cloze
+`prompt_sha` never appears in the fixed-arm set on any item.
+
+**4. Cloze really was in the fits.** `analyse_variance_ratio.py` as shipped for the 2026-08-10
+refit (`41e48c8`) contains the string "cloze" **zero times** — there was no filter — and every
+committed R row records `n_methods = 6`.
+
+**What remains uncertain, stated precisely.** The −52% comes from a moment-estimator
+decomposition, not MCMC. It tracks the MCMC values closely in ordering but underestimates them
+in level (e.g. Authority 0.867 vs 1.157). So the *direction and rough magnitude are established*;
+the exact corrected R values require the refit, which is outstanding.
+
 **The pattern, and it is the worst one in this file.** C15 is not a coding slip. The project's
 central criticism of Kirgis is that he reported a method effect that was confounded with
 something else. We did the same thing, in our own primary estimand, having written down three
