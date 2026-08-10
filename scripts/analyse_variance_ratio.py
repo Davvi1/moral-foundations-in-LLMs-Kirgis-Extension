@@ -232,6 +232,10 @@ def main() -> int:
     ap.add_argument("--family-effect", action="store_true",
                     help="add (1|family) to the model. Eight Qwens are not eight independent "
                          "draws; see fit_one(). Sensitivity, not primary.")
+    ap.add_argument("--include-cloze", action="store_true",
+                    help="INCLUDE the cloze arm in the fit. Off by default, and the default is "
+                         "the design: cloze uses a DIFFERENT PROMPT, so a method-effect "
+                         "estimate containing it is confounded with prompt. See C15.")
     ap.add_argument("--draws", type=int, default=1500)
     ap.add_argument("--tune", type=int, default=1500)
     ap.add_argument("--chains", type=int, default=4)
@@ -243,6 +247,28 @@ def main() -> int:
     df = pd.read_csv(data_path)
     df = df[df["score"].notna()].copy()
     df["excluded"] = df["excluded"].astype(str) == "True"
+
+    # ---- CLOZE IS NOT A FIXED-PROMPT CONDITION (C15) ------------------------------------
+    # R is defined as a METHOD effect: sigma2(model x method) / sigma2(model). The cloze arm
+    # is scored against a DIFFERENT PROMPT -- the option list is removed, which is what makes
+    # it cloze, and the scale clause goes with it. Its contribution to the interaction term is
+    # therefore part method and part prompt, and the two cannot be separated.
+    #
+    # Three documents committed to excluding it, all written before the fits:
+    #   config/prompt.yaml:33     "Excluded from the primary variance ratio, because a prompt
+    #                              effect inside a number defined as a method effect is exactly
+    #                              the error this project audits Kirgis for."
+    #   METHODOLOGY_REVIEW.md:13  "changes two things at once and is excluded from the primary"
+    #   audit_kirgis_pattern.py   excludes it, and says why
+    #
+    # This script did not. Every R published before 2026-08-10 therefore included it, and a
+    # moment-estimator check puts the inflation at roughly +100% -- R was about double what the
+    # design specifies. That is far larger than any sensitivity examined in this project.
+    if not args.include_cloze:
+        before = len(df)
+        df = df[df["condition"].astype(str) != "cloze"].copy()
+        print(f"cloze EXCLUDED from the fit (the design; see C15): dropped "
+              f"{before - len(df)} of {before} rows. Pass --include-cloze to override.")
 
     if args.exclude_scan:
         before = len(df)
@@ -335,7 +361,8 @@ def main() -> int:
         stem = "variance_ratio_test" if args.test else "variance_ratio"
         sfx = "_v2" if "_v2" in data_path.name else ""
         variant = ("_noscan" if args.exclude_scan else "") + \
-                  ("_family" if args.family_effect else "")
+                  ("_family" if args.family_effect else "") + \
+                  ("_withcloze" if args.include_cloze else "")
         out_path = OUT / f"{stem}{sfx}{variant}.csv"
     res.to_csv(out_path, index=False)
     print()

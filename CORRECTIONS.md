@@ -424,3 +424,66 @@ reason — which is exactly the point: nothing was watching for it. **None were 
 That asymmetry is worth a sentence in the discussion, because it is the project's own thesis
 turned on itself: measurement artifacts do not announce themselves, and the only reliable
 defence is a check specified before the number exists.
+
+---
+
+## C15 — the primary R included a condition the design excluded, and it roughly doubled the number
+
+**Claimed.** `FINDINGS.md` §2 reports R — defined as `σ²(model:method) / σ²(model)`, a **method**
+effect — across the six v2 conditions, and the committed artifacts record `n_methods = 6`.
+
+**True.** One of those six is `cloze`, and **cloze is not a fixed-prompt condition.** It is
+defined by removing the option list from the prompt, and the scale clause goes with it. Its
+`prompt_sha` differs from the other five on every item — asserted, not assumed, by
+`validate_results.py` §2, which requires exactly that difference. So cloze's contribution to the
+model × method interaction is part method effect and part **prompt effect**, and nothing in the
+model separates them.
+
+**Three documents committed to excluding it, all written before any fit:**
+
+- `config/prompt.yaml:33` — *"Excluded from the primary variance ratio, because a prompt effect
+  inside a number defined as a method effect is exactly the error this project audits Kirgis
+  for."*
+- `METHODOLOGY_REVIEW.md:13` — *"changes two things at once and is excluded from the primary"*
+- `scripts/audit_kirgis_pattern.py:196` — excludes it, and states the same reason
+
+`analyse_variance_ratio.py` never implemented it. **Every R this project has published included
+cloze.**
+
+**Size of the error.** A moment-estimator decomposition (rough in level, reliable in ratio)
+gives, on the N=30 dataset:
+
+| foundation | with cloze | without | change |
+|---|---:|---:|---:|
+| Authority | 0.867 | 0.386 | **−55%** |
+| Care | 0.573 | 0.249 | −57% |
+| Fairness | 0.949 | 0.521 | −45% |
+| Liberty | 0.680 | 0.381 | −44% |
+| Loyalty | 0.402 | 0.196 | −51% |
+| Sanctity | 0.594 | 0.386 | −35% |
+| *Social Norms (control)* | *0.394* | *0.104* | *−74%* |
+
+**Mean −52%. R is roughly double what the design specifies.** For scale: every sensitivity run
+on the pod the same day moved R by 1–15%. This is an order of magnitude larger than all of them.
+
+**Why cloze inflates it so much** is consistent with everything else we know about that arm: it
+has the *highest* between-model SD of any condition (0.560 against label's 0.360), and the
+*lowest* rank agreement with the others (ρ 0.27–0.50). It behaves least like the rest — which is
+exactly what a condition carrying an extra, uncontrolled factor would do.
+
+**How caught.** Not by any check. By a end-of-session sweep asking what had been claimed versus
+what had been done — the same class of review that found C13. No test covered it, and the
+`n_methods == 6` assertion in `test_artifact_provenance.py` actively **encoded the bug as
+correct**.
+
+**What it changes.** The verdicts may not survive: every interval is currently `indeterminate`,
+and halving R could move the lower foundations wholly inside the `degraded` band, or move the
+control into `robust`. Until a proper MCMC refit is run, **the published R values must be read as
+including a prompt-confounded arm.** The fix is in the script (`--include-cloze`, off by
+default); the refit is outstanding.
+
+**The pattern, and it is the worst one in this file.** C15 is not a coding slip. The project's
+central criticism of Kirgis is that he reported a method effect that was confounded with
+something else. We did the same thing, in our own primary estimand, having written down three
+times that we must not. **Nothing in the codebase enforced a design decision that existed only
+in prose.**

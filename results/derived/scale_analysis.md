@@ -16,7 +16,7 @@ raw gap rises with scale **even if the moral profile never changes**. Reporting
 the raw slope as evidence for the capability story would be measuring the
 disappearance of compression and calling it morality.
 
-Slope of `b` on log-parameters, pooled: **+0.4346** (p = 0.0000, n = 31). That is the confound, measured.
+Slope of `b` on log-parameters, pooled: **+0.4004** (p = 0.0000, n = 30). That is the confound, measured.
 
 
 ### P5 (context only) — RAW gap vs scale
@@ -31,7 +31,7 @@ Predicted direction: **INCREASES (uncorrected — see confound above)**
 | olmo | 3 | 4x | +0.1579 | 0.539 | 0/0 | increases |
 | phi | 4 | 4x | +1.1866 | 0.020 | 3/4 | increases |
 | mistral | 3 | 3x | +0.3482 | 0.252 | 0/0 | increases |
-| *(pooled, context only)* | 31 | 145x | +0.3675 | 0.001 | — | increases |
+| *(pooled, context only)* | 30 | 145x | +0.3575 | 0.002 | — | increases |
 
 The pooled row mixes families and is **not** the test — models are not exchangeable draws, and a between-family slope largely measures which families happen to be large. The within-ladder rows are the prediction.
 
@@ -48,7 +48,7 @@ Predicted direction: **INCREASES with log params**
 | olmo | 3 | 4x | +0.1706 | 0.398 | 0/0 | increases |
 | phi | 4 | 4x | +1.0052 | 0.028 | 3/4 | increases |
 | mistral | 3 | 3x | +0.1254 | 0.461 | 0/0 | increases |
-| *(pooled, context only)* | 31 | 145x | +0.2455 | 0.009 | — | increases |
+| *(pooled, context only)* | 30 | 145x | +0.2450 | 0.013 | — | increases |
 
 The pooled row mixes families and is **not** the test — models are not exchangeable draws, and a between-family slope largely measures which families happen to be large. The within-ladder rows are the prediction.
 
@@ -65,7 +65,7 @@ Predicted direction: **DECREASES with log params**
 | olmo | 3 | 4x | -0.8260 | 0.169 | 0/0 | decreases |
 | phi | 4 | 4x | -1.1058 | 0.214 | 3/4 | decreases |
 | mistral | 3 | 3x | -2.0939 | 0.534 | 0/0 | decreases |
-| *(pooled, context only)* | 31 | 145x | -0.3047 | 0.043 | — | decreases |
+| *(pooled, context only)* | 30 | 145x | -0.3147 | 0.046 | — | decreases |
 
 The pooled row mixes families and is **not** the test — models are not exchangeable draws, and a between-family slope largely measures which families happen to be large. The within-ladder rows are the prediction.
 
