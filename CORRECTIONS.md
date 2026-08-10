@@ -329,6 +329,48 @@ applied until something asserts it applied.** The `--suffix`/`--data` plumbing i
 
 ---
 
+## C13 — the QA gate never passed on the v2 collection, and one of its checks inspected zero rows
+
+**Claimed.** `scripts/validate_results.py` opens with "Methodological QA over the collected
+results. **Run before ANY analysis.** … Exit 0 = data is analysable." The v2 analysis proceeded,
+so the implication is that it passed.
+
+**True.** It never passed on v2, and could not have. `load()` globbed `results/raw/*.csv`, which
+spans **both** collections — the 20 v1 files and the 31 `_v2` files — and pooled them into one
+run of "51 models" checked against the hard-coded v1 condition list
+`["label", "string", "greedy", "sampled"]`. v2 renamed that arm to `string_line` / `string_bare`
+and added `cloze`, so every one of the 31 v2 models failed §1 with
+`conditions absent: ['string']` and the script exited 1 on the whole collection.
+
+Worse than the false negative: **§6, the token-boundary check, filtered `condition == "string"`.
+On v2 rows that matches nothing, so it iterated an empty list and printed its pass line having
+inspected zero rows.** A check that cannot fail is not a check. The same applied to §5's mass
+check, which only ever looked at `label` and `string`, and so never examined `string_bare` or
+`cloze` — the two arms with ~0.3% and ~4% retained mass, i.e. exactly the arms where the
+grok-3-style integrity question is sharpest.
+
+**How caught.** Not by luck this time. While adding the constancy gate (a named debt) I read
+`load()` to find where to hook in, saw the bare glob, and ran the script — which had apparently
+not been run against v2 at any point.
+
+**What it changes.** No published number moves: the analysis path (`build_analysis_data.py`)
+does its own exclusion handling and was fixed separately in C12. What changes is the *evidential
+status* of every v2 number — they were produced from data that the project's own gate had
+rejected, and the write-up cannot claim "QA passed" without this fix. Now fixed:
+`--suffix {"",_v2}` selects one collection (the C12 pattern), conditions/string-arms/mass-arms
+are keyed off it, §6 reports how many rows it actually inspected, and the prompt invariant now
+asserts the *structure* rather than uniformity — the five fixed-prompt conditions must share a
+sha, and **cloze must not**, because a cloze arm that shares the fixed prompt is string scoring
+with a different label.
+
+Running the fixed gate on v2: §1–§9 pass; §10 (new) raises **1 blocking and 14 warnings**.
+
+**The pattern.** Same shape as C12 — a path that silently spanned two collections because it was
+never versioned. C12 was the write side, C13 the read side. Both existed simultaneously; fixing
+one did not surface the other, because nothing cross-checked them.
+
+---
+
 ## Standing note for the write-up
 
 Seven of these twelve were found by a check that was **built in advance** — a validation

@@ -551,6 +551,22 @@ just a shrug. Verifiable in git: this commit precedes every `*_f5.csv`.
   *Falsifier:* systematic drift, which would settle the greedy-determinism question left open
   in `LIMITATIONS.md` §12 — in the unwelcome direction.
 
+  > **AMENDED 2026-08-10, BEFORE collection, because this prediction is ALREADY FALSIFIED by
+  > data that existed when I registered it.** I did not look. The v1 and v2 collections ran
+  > greedy on the same 20 models with a byte-identical prompt, the same GPU model and identical
+  > library versions; `scripts/audit_greedy_determinism.py` shows raw text differs on **10.56%**
+  > of cells and the parsed score on **2.28%** (mean |shift| 1.038). So "identical scores for
+  > the deterministic arms" was wrong for greedy on the day it was written.
+  >
+  > **Amended prediction:** label, string_line and string_bare reproduce exactly (they never
+  > generate); **greedy reproduces on ~97–98% of cells**, consistent with the v1↔v2 rate;
+  > sampled within Monte-Carlo error. *Amended falsifier:* greedy drift materially above the
+  > 2.28% v1↔v2 rate, which would implicate the prompt variant rather than hardware arithmetic.
+  >
+  > Registering an amendment is only honest if the amendment is timestamped before the data,
+  > which it is — and if the reason is stated plainly, which is that the original was a claim
+  > I had not checked against evidence already in the repo.
+
 ---
 
 ### Registered predictions for Phase 2 — FIXED 2026-08-08, BEFORE any Phase-2 data exists

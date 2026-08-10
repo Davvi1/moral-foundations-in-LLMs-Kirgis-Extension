@@ -120,10 +120,31 @@ thing to "just ask it" with the randomness removed. (Technical honesty: greedy i
 optimal per step, not the globally most probable sequence; finding that is intractable and
 nobody uses it.)
 
-**Deterministic** in principle. One caveat we FLAGGED but did NOT verify (corrected 2026-08-09 —
-this sentence previously claimed we verified it; see LIMITATIONS.md 12): GPU floating-point
-reduction order can vary with batch composition, so bit-identical output across differently
-batched runs is not guaranteed. Within one run, one batch — stable.
+**Deterministic in principle — and NOT in practice. VERIFIED 2026-08-10, and the answer is the
+unwelcome one.** This paragraph has now been wrong twice in opposite directions: it first
+claimed we had verified stability (we had not; corrected 2026-08-09), then recorded the caveat
+as untested. It is now tested, for free and with no GPU, by comparing the v1 and v2 collections
+— which independently ran greedy on the same 20 models, on the same GPU model, with identical
+`vllm` / `transformers` / `torch` versions, and a per-item byte-identical prompt asserted rather
+than assumed. What differs is batch composition: v2 runs six conditions where v1 ran four.
+
+Over 2,320 comparable cells (`scripts/audit_greedy_determinism.py`,
+`results/derived/greedy_determinism.md`):
+
+- **raw text differs on 10.56%** of cells
+- **the parsed score differs on 2.28%** of cells, mean |shift| **1.038**, max **2.000** on the
+  0–4 scale
+- 13 of 20 models are affected
+
+Most text drift is cosmetic — the parser recovers the same digit from `"3"` and
+`"3: Very wrong"` — which is why the two rates differ by a factor of five. The score rate is
+the one that reaches the analysis.
+
+So greedy is a **deterministic function evaluated on non-deterministic hardware arithmetic**,
+and §5's "like measuring a ruler twice" does not hold for it. It remains true for the
+probability arms, which never generate. The cause is *not* isolated: v1 and v2 differ in more
+than batching, so floating-point reduction order remains the documented hypothesis rather than
+a demonstrated mechanism — but prompt, GPU model and library versions are ruled out.
 
 **Failure modes observed:** the argmax at step 1 can be the end-of-sequence token (Ministral:
 answers 0/116 — it never *says* anything), or the start of a refusal ("I can't answer this",
@@ -161,8 +182,17 @@ Because randomness lives in exactly one place: the sampling step of method 4.
 
 - Methods 1–2 **evaluate a function**. Re-running returns the identical number, like measuring
   a ruler twice.
-- Method 3 is a deterministic function of the deterministic distributions.
+- ~~Method 3 is a deterministic function of the deterministic distributions.~~ **False in
+  practice — measured 2026-08-10, see §3.** Greedy scores move on 2.28% of cells between two
+  runs of the same model on the same prompt. Method 3 is deterministic in *arithmetic* but not
+  in *floating-point*, and it is the only non-sampled arm that generates text.
 - Method 4 draws from a distribution — so we replicate it, and only it.
+
+**This weakens the section's own argument and the honest version is: replication would have
+been justified for method 3 as well, and we did not do it.** The design gives greedy a single
+observation on the grounds that re-running it is pointless. That reasoning was wrong. The
+practical effect is bounded — 2.28% of cells, and the ranking result is computed over 116-item
+means, which averages most of it away — but it is a design error, not a nuance.
 
 **The deeper version of the "why no trials?" question is right, though.** Re-executing a
 deterministic computation is not what a survey methodologist means by replication. The

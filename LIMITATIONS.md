@@ -311,7 +311,44 @@ hard to pin down.
   order effects are confounded with item identity — though prefix caching and independent
   requests make this less concerning than in human administration.
 
-## 12. Greedy determinism is assumed, not verified · PROCESS
+## 12. Greedy determinism — RESOLVED 2026-08-10, and greedy is NOT reproducible · EVIDENTIAL
+
+> **This section is superseded by a measurement. Read this box before the history below.**
+>
+> The check described below as "never done" has now been done, locally and for free, by
+> comparing the v1 and v2 collections — 20 models run twice, byte-identical prompt asserted
+> per item, same GPU model, identical `vllm`/`transformers`/`torch`. See
+> `scripts/audit_greedy_determinism.py` and `results/derived/greedy_determinism.md`.
+>
+> | over 2,320 comparable cells | count | share |
+> |---|---:|---:|
+> | raw greedy text differs | 245 | **10.56%** |
+> | **parsed greedy score differs** | 53 | **2.28%** |
+>
+> Mean |shift| where the score moved: **1.038**, max **2.000** on a 0–4 scale. 13 of 20 models
+> affected. Text drift is five times the score drift because the parser recovers the same digit
+> from `"3"` and `"3: Very wrong"`.
+>
+> **The upgrade is from PROCESS to EVIDENTIAL.** This is no longer "we didn't check"; it is "we
+> checked and one of the three arms we called deterministic isn't." Consequences:
+>
+> 1. `METHODS_EXPLAINER.md` §5 justified giving greedy a single observation on the grounds that
+>    re-running a deterministic computation adds nothing. **That justification does not hold for
+>    greedy.** Replication was warranted and we did not do it.
+> 2. The effect is bounded and should not be overstated: the ranking results are computed over
+>    116-item means, so 2.28% of items moving by ~1 point perturbs a model mean by roughly
+>    0.02 — small against the between-model SD of ~0.97. It is a design error, not a threat to
+>    the headline.
+> 3. **The mechanism is not established.** v1 and v2 differ in more than batch composition, so
+>    floating-point reduction order remains the documented hypothesis. Prompt, GPU model and
+>    library versions are ruled out; the harness itself is not.
+> 4. Registered prediction F5-6 asserted greedy would reproduce exactly. It was already false
+>    when written, against data sitting in this repo. Amended in `state.md`, before collection,
+>    with the reason stated.
+
+### Original entry, retained — it was accurate when written
+
+**Historical: greedy determinism is assumed, not verified · PROCESS**
 
 Greedy decoding is deterministic in principle, but GPU floating-point reduction order can vary
 with batch composition, so bit-identical output across differently-batched runs is not
