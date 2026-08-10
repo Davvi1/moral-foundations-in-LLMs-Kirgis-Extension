@@ -33,6 +33,9 @@ V2_CONDITIONS = {"label", "string_line", "string_bare", "cloze", "greedy", "samp
 
 V1_MODELS = 20      # Phase-1 roster
 V2_MODELS = 31      # Phase-2/3 roster, 32 pinned minus Mistral-Large (deliberately uncollected)
+V2_MODELS_ANALYSED = 30   # 31 collected minus SmolLM2-1.7B, dropped by the discrimination
+                          # threshold on 2026-08-10. See LIMITATIONS.md 22 -- the criterion is
+                          # post hoc and is documented as such.
 
 
 def _read(name: str):
@@ -78,9 +81,49 @@ def test_v1_variance_ratio_is_v1():
 
 
 def test_v2_variance_ratio_is_v2():
+    """Both roster sizes are expected here, and the reason is not sloppiness.
+
+    UPDATED 2026-08-10, deliberately, as this file's docstring requires. The v2 artifact now
+    reports **two** model counts and both are correct:
+
+      30  the `exclusions=True` rows — the PRIMARY specification. SmolLM2-1.7B is dropped by
+          the discrimination threshold (LIMITATIONS 22).
+      31  the `exclusions=False` rows — the sensitivity arm, which by definition ignores every
+          exclusion rule, so it must still contain the excluded model.
+
+    Asserting a single value would therefore be asserting that the sensitivity arm does not do
+    its job. What must hold is that the PRIMARY arm is 30 and nothing exceeds the collected
+    roster of 31.
+    """
     d = _read("variance_ratio_v2.csv")
-    assert set(d.n_models.unique()) == {V2_MODELS}
+    primary = d[d.exclusions.astype(str).str.lower() == "true"]
+    assert set(primary.n_models.unique()) == {V2_MODELS_ANALYSED}, (
+        f"primary (exclusions=True) rows report n_models="
+        f"{sorted(primary.n_models.unique())}, expected {V2_MODELS_ANALYSED}. FINDINGS.md 2 "
+        f"sources its R table from these rows.")
+    assert set(d.n_models.unique()) <= {V2_MODELS_ANALYSED, V2_MODELS}, (
+        f"unexpected roster size in variance_ratio_v2.csv: {sorted(d.n_models.unique())}")
     assert set(d.n_methods.unique()) == {len(V2_CONDITIONS)}
+    # The control must be labelled, or a downstream consumer can average it in as a foundation.
+    assert "is_control" in d.columns, "is_control column missing — refit with the current script"
+    assert d.is_control.astype(str).str.lower().eq("true").sum() > 0, "no row flagged as control"
+
+
+@pytest.mark.parametrize("name,scan,fam", [
+    ("variance_ratio_v2_noscan.csv", "True", "False"),
+    ("variance_ratio_v2_family.csv", "False", "True"),
+])
+def test_sensitivity_artifacts_declare_their_variant(name, scan, fam):
+    """Each sensitivity refit must be a DISTINCT file that says which variant it is.
+
+    Without this the three runs would resolve to one filename and the last would win silently
+    — C12 again, one layer up.
+    """
+    d = _read(name)
+    assert set(d.scan_excluded.astype(str)) == {scan}, f"{name}: scan_excluded should be {scan}"
+    assert set(d.family_effect.astype(str)) == {fam}, f"{name}: family_effect should be {fam}"
+    primary = d[d.exclusions.astype(str).str.lower() == "true"]
+    assert set(primary.n_models.unique()) == {V2_MODELS_ANALYSED}
 
 
 # =======================================================================================
