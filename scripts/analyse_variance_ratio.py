@@ -41,6 +41,11 @@ REPO = Path(__file__).resolve().parent.parent
 LONG = REPO / "results" / "derived" / "analysis_long.csv"
 OUT = REPO / "results" / "derived"
 
+# Clifford (2015, p.9) designed the Social Norms items as a non-moral CONTROL stimulus set,
+# not a seventh foundation. It is still FITTED -- its R is informative about the readouts --
+# but every output row is labelled so it can never be averaged in as a foundation.
+CONTROL_FOUNDATION = "Social Norms"
+
 # Bands fixed in state.md, with the `indeterminate` verdict added after the B2 simulation
 # showed that no feasible N resolves an R sitting on a boundary.
 BANDS = [(0.0, 0.25, "robust"), (0.25, 1.0, "degraded"), (1.0, np.inf, "not interpretable")]
@@ -89,14 +94,24 @@ def find_sd(idata, contains: str) -> str | None:
 
 
 def fit_one(df: pd.DataFrame, heteroscedastic: bool, draws: int, tune: int,
-            chains: int, seed: int):
+            chains: int, seed: int, family_effect: bool = False):
+    """Fit the variance-components model.
+
+    `family_effect` adds `(1|family)`, which addresses F3: the roster contains **eight Qwen
+    models, four Llama, four Phi, three OLMo, three Gemma and three Mistral**. Treating those
+    as independent draws overstates the effective sample size, because models within a family
+    share pretraining data, tokenizer and post-training recipe. Adding the term partials that
+    shared variance out of `(1|model)`, which is the DENOMINATOR of R -- so it should widen the
+    intervals, and possibly raise R. Reported as a sensitivity, not as the primary: with only
+    12 families and several singletons, the family variance is itself weakly identified.
+    """
+    base = "score ~ 0 + method + (1|model) + (1|model:method) + (1|item)"
+    if family_effect:
+        base += " + (1|family)"
     if heteroscedastic:
-        formula = bmb.Formula(
-            "score ~ 0 + method + (1|model) + (1|model:method) + (1|item)",
-            "sigma ~ 0 + method")
+        formula = bmb.Formula(base, "sigma ~ 0 + method")
     else:
-        formula = bmb.Formula(
-            "score ~ 0 + method + (1|model) + (1|model:method) + (1|item)")
+        formula = bmb.Formula(base)
     model = bmb.Model(formula, df)
     idata = model.fit(draws=draws, tune=tune, chains=chains, cores=chains,
                       random_seed=seed, progressbar=False,
@@ -209,6 +224,14 @@ def main() -> int:
                          "measures what the old randomised-hash seed could have cost; see "
                          "stable_seed().")
     ap.add_argument("--test", action="store_true", help="one foundation, short chains")
+    ap.add_argument("--exclude-scan", action="store_true",
+                    help="drop rows whose digit was recovered by scanning prose "
+                         "(parse_strategy == 'scan'). This is the sensitivity analysis "
+                         "ANALYSIS_PLAN.md:192 pre-specified and that was never run "
+                         "(LIMITATIONS.md 1). Affects the free-generation arms only.")
+    ap.add_argument("--family-effect", action="store_true",
+                    help="add (1|family) to the model. Eight Qwens are not eight independent "
+                         "draws; see fit_one(). Sensitivity, not primary.")
     ap.add_argument("--draws", type=int, default=1500)
     ap.add_argument("--tune", type=int, default=1500)
     ap.add_argument("--chains", type=int, default=4)
@@ -220,6 +243,15 @@ def main() -> int:
     df = pd.read_csv(data_path)
     df = df[df["score"].notna()].copy()
     df["excluded"] = df["excluded"].astype(str) == "True"
+
+    if args.exclude_scan:
+        before = len(df)
+        df = df[df["parse_strategy"].astype(str) != "scan"].copy()
+        print(f"--exclude-scan: dropped {before - len(df)} of {before} rows "
+              f"({(before - len(df)) / before:.1%}) whose digit came from prose")
+    if args.family_effect and "family" not in df.columns:
+        print("--family-effect requested but the dataset has no `family` column")
+        return 1
 
     foundations = sorted(df["foundation"].unique())
     if args.test:
@@ -235,18 +267,27 @@ def main() -> int:
             if use_exclusions:
                 sub = sub[~sub["excluded"]]
             sub = sub.rename(columns={"condition": "method", "item_id": "item"})
-            sub = sub[["score", "model", "method", "item"]].dropna()
+            cols = ["score", "model", "method", "item"]
+            if args.family_effect:
+                cols.append("family")
+            sub = sub[cols].dropna()
             sub["item"] = sub["item"].astype(str)
             if sub["method"].nunique() < 2 or sub["model"].nunique() < 3:
                 print(f"  {fdn} (excl={use_exclusions}): too little data, skipped")
                 continue
 
             for hetero in (True, False):
+                # The tag seeds the chain, so it MUST distinguish every variant -- otherwise
+                # the scan-excluded and family-effect fits would silently reuse the primary
+                # fit's seed and their differences would be partly seed artifacts.
                 tag = (f"{fdn} | excl={'yes' if use_exclusions else 'no '} | "
-                       f"resid={'method-specific' if hetero else 'pooled       '}")
+                       f"resid={'method-specific' if hetero else 'pooled       '}"
+                       f"{' | noscan' if args.exclude_scan else ''}"
+                       f"{' | family' if args.family_effect else ''}")
                 try:
                     _, idata = fit_one(sub, hetero, args.draws, args.tune,
-                                       args.chains, seed=stable_seed(tag))
+                                       args.chains, seed=stable_seed(tag),
+                                       family_effect=args.family_effect)
                 except Exception as e:
                     print(f"  {tag}: FIT FAILED {type(e).__name__}: {str(e)[:120]}")
                     continue
@@ -257,7 +298,15 @@ def main() -> int:
                 summ = az.summary(idata, var_names=["~1|"], filter_vars="like")
                 max_rhat = float(np.nanmax(summ["r_hat"].values)) if len(summ) else np.nan
                 rows.append({
-                    "foundation": fdn, "exclusions": use_exclusions,
+                    "foundation": fdn,
+                    # Social Norms is Clifford's designed NON-MORAL CONTROL, not a seventh
+                    # foundation. Carried as a column so no downstream consumer can average it
+                    # into a foundation-level statistic by accident -- which is exactly what
+                    # happened to the rank correlations before 2026-08-10.
+                    "is_control": fdn == CONTROL_FOUNDATION,
+                    "exclusions": use_exclusions,
+                    "scan_excluded": args.exclude_scan,
+                    "family_effect": args.family_effect,
                     "residual": "method-specific" if hetero else "pooled",
                     "n_obs": len(sub), "n_models": sub["model"].nunique(),
                     "n_methods": sub["method"].nunique(),
@@ -276,12 +325,18 @@ def main() -> int:
     # what happened on the pod on 2026-08-09 before this was fixed. The v1 file is a committed
     # artifact backing FINDINGS.md; silently replacing its contents with a different sample
     # while keeping its name is the worst kind of data loss, because nothing looks wrong.
+    # The VARIANT must be in the name too, for the same reason. Four fits are run in one pod
+    # session (primary, scan-excluded, family-effect, and combinations); if they all resolved
+    # to `variance_ratio_v2.csv` the last one would win silently and the sensitivity analyses
+    # would vanish while appearing to have run.
     if args.out:
         out_path = Path(args.out)
     else:
         stem = "variance_ratio_test" if args.test else "variance_ratio"
         sfx = "_v2" if "_v2" in data_path.name else ""
-        out_path = OUT / f"{stem}{sfx}.csv"
+        variant = ("_noscan" if args.exclude_scan else "") + \
+                  ("_family" if args.family_effect else "")
+        out_path = OUT / f"{stem}{sfx}{variant}.csv"
     res.to_csv(out_path, index=False)
     print()
     print(f"wrote {out_path}")
