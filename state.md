@@ -475,6 +475,64 @@ samples and the magnitude is small either way.
 
 ---
 
+### F5 PROMPT-FACTOR PREDICTIONS — FIXED 2026-08-10, BEFORE any P01-P11 data exists
+
+Twelve prompt variants (P00 base + 11) x 5 conditions x 31 models. Analysis is **rank
+correlation, not variance decomposition** — see `config/prompt.yaml` for why (it is the P7
+mistake, and both comparison papers use rank/consistency metrics).
+
+Each prediction is anchored to a **published number**, so a failure is informative rather than
+just a shrug. Verifiable in git: this commit precedes every `*_f5.csv`.
+
+- **F5-1 (transfer of the "artifact" claim).** arXiv:2509.01790 finds prompt sensitivity is
+  "largely an artifact of heuristic evaluation" — on capability benchmarks, heuristic parsing
+  gave mean cross-prompt ranking ρ̄ = 0.30 against 0.95 for LLM-as-judge. Transferred here:
+  **the parsing arms (greedy, sampled) will show LOWER mean cross-prompt rank correlation than
+  the logprob arms (label, string_line, string_bare).**
+  *Falsifier:* logprob arms equal or less prompt-stable than parsing arms. That would mean the
+  artifact claim does not transfer from capability to values instruments, which is the more
+  interesting outcome and the reason this is registered.
+
+- **F5-2 (option order is the worst perturbation).** arXiv:2607.05554 reports option shuffling
+  at 0.407 consistency against 0.9+ for semantic perturbations. Here: **P03_reversed and
+  P04_shuffled will show the lowest cross-prompt rank agreement with P00 of any variant**,
+  under every condition.
+  *Falsifier:* a paraphrase or register variant (P01, P02, P08, P09) disrupts ranking more than
+  either order variant.
+
+- **F5-3 (values are more prompt-sensitive than capability).** arXiv:2607.05554 finds
+  subjective instruments at 0.787 mean consistency against 0.849 objective. Here: **mean
+  cross-prompt rank correlation on the MFV will be lower than the 0.95 arXiv:2509.01790
+  reports for its most stable readout**, i.e. a values instrument is harder to measure stably
+  than a capability benchmark.
+  *Falsifier:* MFV cross-prompt stability at or above 0.95.
+
+- **F5-4 (the headline comparison, and the one the project exists for).** **Cross-PROMPT rank
+  correlation, averaged over conditions, will be HIGHER than cross-METHOD rank correlation
+  averaged over prompts.** I.e. changing the scoring method moves the model ranking more than
+  changing the prompt wording does. Reference points already in hand: ρ(label, sampled) = 0.879
+  and ρ(label, string_bare) = 0.451 at fixed prompt.
+  *Falsifier — and it is a real possibility, not a formality:* prompt perturbation moves the
+  ranking as much as or more than method choice. **That would substantially qualify this
+  project's thesis**, reframing scoring method as one facet of a broader prompt-sensitivity
+  problem rather than a distinct measurement hazard. It would be reported as such.
+
+- **F5-5 (Decision 1 was defensible).** `config/prompt.yaml` Decision 1 dropped Kirgis's
+  "respond only with the code" instruction on the argument that it steers toward digits and so
+  disfavours the string arms. **P05_kirgis_instruction will therefore raise label retained mass
+  and LOWER string_bare retained mass relative to P00.**
+  *Falsifier:* no differential effect on the two arms' mass, which would mean Decision 1 was
+  solving a problem that did not exist.
+
+- **F5-6 (free reproducibility check).** P00 is the original prompt re-run in a later session
+  on different hardware. **The five fixed-prompt conditions will reproduce the v2 collection**:
+  identical scores for the deterministic arms (label, string_line, string_bare, greedy) and
+  within Monte-Carlo error for sampled.
+  *Falsifier:* systematic drift, which would settle the greedy-determinism question left open
+  in `LIMITATIONS.md` §12 — in the unwelcome direction.
+
+---
+
 ### Registered predictions for Phase 2 — FIXED 2026-08-08, BEFORE any Phase-2 data exists
 
 Phase 1 is collected and analysed. Phase 2 changes the harness (v2) and expands the roster to

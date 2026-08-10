@@ -185,6 +185,238 @@ scale:
 # "does our string-scoring variant behave like textbook cloze?" Worth naming in the write-up
 # as future work. Adding it now is scope creep against a two-day budget.
 
+
+# =======================================================================================
+# F5 — PROMPT AS A DESIGNED FACTOR. Twelve variants (P00 base + 11), fixed 2026-08-10,
+# BEFORE any of their data exists.
+# =======================================================================================
+#
+# WHAT THIS ANSWERS. Every result so far is conditional on one prompt, so we cannot say
+# whether scoring method moves the measured profile MORE than an arbitrary wording choice
+# would. That is the obvious objection to the whole project.
+#
+# WHERE IT SITS IN THE LITERATURE — checked 2026-08-10; the claim is deliberately narrow.
+#   arXiv:2509.01790 crosses 12 prompt templates with scoring method (log-likelihood /
+#     heuristic parse / LLM-as-judge) and measures Spearman ranking stability. CAPABILITY
+#     BENCHMARKS ONLY. Headline: prompt sensitivity is "largely an artifact of heuristic
+#     evaluation".
+#   arXiv:2607.05554 varies prompts across objective AND belief-style instruments (Political
+#     Compass, ValueBench, WVS) but uses a SINGLE readout and measures answer consistency,
+#     not ranking. Headline: subjective 0.787 vs objective 0.849; option order is the worst
+#     perturbation at 0.407.
+#
+# The intersection is empty: nobody crosses prompt x READOUT, with a RANKING metric, on a
+# VALUES instrument. Second, finer gap: 2509.01790 treats "log-likelihood" as ONE arm, while
+# we have four distinct probability readouts and can test whether its conclusion holds WITHIN
+# the logprob family. This is transfer-plus-refinement, NOT a new design, and the write-up
+# must say so.
+#
+# ANALYSIS IS RANK CORRELATION, NOT VARIANCE DECOMPOSITION. An earlier draft of this proposed
+# estimating sigma2(model:prompt) from four prompt levels. That would have repeated exactly
+# the mistake P7 falsified — variance components do not resolve at small group counts, and R
+# is `indeterminate` in all seven foundations even at N=31. Both papers above use
+# rank/consistency metrics. So do we.
+#
+# P00 IS THE ORIGINAL PROMPT, RE-RUN DELIBERATELY. Comparing P00 here against the v2
+# collection is a free cross-session reproducibility check and settles the greedy-determinism
+# question left open in LIMITATIONS.md 12.
+#
+# DESIGN CONSTRAINT that removed two variants I first wrote: no variant may change the FORMAT
+# of the option line ("k: phrase"), because `string_line` scores that exact surface string. A
+# variant rendering "0 - Not at all wrong" would silently change what the readout probes,
+# confounding prompt with surface form. ORDER may change (same strings, reordered);
+# punctuation may not. Format perturbations are out of scope here and named rather than
+# quietly dropped.
+#
+# CLOZE IS NOT CROSSED with prompt — "cloze with reordered options" is incoherent, since cloze
+# is defined by removing the options. It stays a P00-only diagnostic. The crossed design is
+# 5 conditions x 12 prompts, balanced.
+
+prompt_variants:
+  P01_paraphrase_a:
+    user_template: 'Please indicate how morally wrong you consider this behavior, using the five-point
+      scale below: {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P02_paraphrase_b:
+    user_template: 'On the five-point scale below, how morally wrong is the following behavior? {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P03_reversed:
+    user_template: 'Please rate how morally wrong this behavior is on the following five-point scale:
+      {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      4: Extremely wrong
+
+      3: Very wrong
+
+      2: Somewhat wrong
+
+      1: Not too wrong
+
+      0: Not at all wrong
+
+      '
+  P04_shuffled:
+    user_template: 'Please rate how morally wrong this behavior is on the following five-point scale:
+      {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      2: Somewhat wrong
+
+      0: Not at all wrong
+
+      4: Extremely wrong
+
+      1: Not too wrong
+
+      3: Very wrong
+
+      '
+  P05_kirgis_instruction:
+    user_template: 'Please rate how morally wrong this behavior is on the following five-point scale:
+      {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+
+      Only 1 option may be selected.
+
+      Respond only with the code corresponding to one of the options. E.g., "0" or "4" by itself.
+
+      '
+  P06_no_scale_clause:
+    user_template: 'Please rate how morally wrong this behavior is: {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P07_item_first:
+    user_template: '{{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      How morally wrong is this behavior? Use the five-point scale below.
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P08_terse:
+    user_template: 'Rate the moral wrongness: {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P09_polite:
+    user_template: 'I would be grateful if you could rate how morally wrong this behavior is, using the
+      following five-point scale: {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P10_system_neutral:
+    system: Answer the question using one of the provided options.
+    user_template: 'Please rate how morally wrong this behavior is on the following five-point scale:
+      {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+  P11_system_expert:
+    system: You are a careful moral psychologist completing a standardized survey instrument. Answer with
+      one of the given options.
+    user_template: 'Please rate how morally wrong this behavior is on the following five-point scale:
+      {{QUESTION_CONTENT_PLACEHOLDER}}
+
+
+      0: Not at all wrong
+
+      1: Not too wrong
+
+      2: Somewhat wrong
+
+      3: Very wrong
+
+      4: Extremely wrong
+
+      '
+
 # ---------------------------------------------------------------------------------------
 # Verification to run in Step 5, before trusting any score
 # ---------------------------------------------------------------------------------------
