@@ -67,14 +67,35 @@ scoring vs. the cloze method, reported as Kendall's τ against the original rank
 **This is the methodological template for this project.** Same manipulation, same
 rank-agreement statistic, different domain.
 
-**"Scoring methods for LLM predictions on multiple-choice tasks." arXiv:2403.00998.**
+**Tsvilodub, Wang, Grosch & Franke — "Predictions from language models for multiple-choice
+tasks are not robust under variation of scoring methods." arXiv:2403.00998, submitted
+1 Mar 2024.** Abstract fetched and verified 2026-08-10.
 
-Compares five methods for determining an LLM's answer choice: free generation, string
-scoring, label scoring, rating aggregation, embedding similarity. Also compares
-goodness-of-fit to human data. Finds no single method is best across all models, and that
-method choice matters more for weaker-performing models. **Closest neighbour to this
-project — read before committing.** The "matters more for weak models" result is directly
-relevant to a sample capped at 8B.
+> **TITLE CORRECTED.** This entry previously gave the title as *"Scoring methods for LLM
+> predictions on multiple-choice tasks"*, which is not the paper's title. It was close enough
+> to look right and wrong enough to fail a search. Fixed, and the author list — absent before —
+> is now recorded.
+
+Compares free generation of responses, various probability-based scores, a **Likert-scale style
+rating** method, and **embedding similarity**. Finds predictions "are not robust under variation
+of method choice, both within a single LLM and across different LLMs", and frames this
+explicitly as **"pronounced researcher degrees of freedom in reporting results"** — the same
+concern that motivates this project, stated two years earlier.
+
+**Overlap check — RUN 2026-08-10, having been listed as outstanding since 2026-08-07 and twice
+described as blocking.** The niche survives, on two counts:
+
+- **Domain.** Their case study is **pragmatic language interpretation** — a linguistic
+  capability task, not a values, moral or attitude instrument.
+- **Estimand.** Nothing in the abstract computes **model-ranking agreement between scoring
+  methods**. Their claim is that item-level predictions vary; ours is about whether the
+  *ordering of models* survives. Same gap that survived QSTN and Shen et al.
+
+**Two claims in the old entry are NOT supported by the abstract and are withdrawn pending a
+full-text read**: "no single method is best across all models", and "method choice matters more
+for weaker-performing models." The second was repeated in a discussion of SmolLM2 on 2026-08-10.
+Neither appears in the abstract; both may be in the body, but **do not cite either until the
+full text is read.**
 
 **"Mind the Gap: A Closer Look at Tokenization for Multiple-Choice Question Answering
 with LLMs." arXiv:2509.15020.**
@@ -295,8 +316,10 @@ attached — but it remains corroborating. Territory not occupied.
 - ~~Are Clifford's per-vignette human means available?~~ **RESOLVED 2026-08-07: yes,
   Clifford Table 1, pp.1183–1198.** Fig 2 replicates. See the Instruments entry.
 - Current per-provider logprob exposure. Changes often; verify at time of writing.
-- Overlap check against arXiv:2403.00998 still outstanding. Not blocking; do it before the
-  write-up, not before the run.
+- ~~Overlap check against arXiv:2403.00998~~ **DONE 2026-08-10.** Niche survives: their domain
+  is pragmatic language interpretation, not a values instrument, and they do not compute
+  model-ranking agreement between methods. The entry above also corrects the title, which this
+  file had wrong, and withdraws two claims that are not in the abstract.
 
 ### Social Norms is a NON-MORAL control category — verified 2026-08-09 by fetching the paper
 
