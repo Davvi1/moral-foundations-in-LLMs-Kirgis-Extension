@@ -18,11 +18,12 @@ Each claim carries a strength label:
 
 Scoring method perturbs a language model's measured moral profile by an amount comparable to
 the differences between models, and that is real rather than an artifact: a 700-fit permutation
-null collapses to ≈ 0.001 while observed R runs 0.34–1.08. But **the magnitude remains
-unresolved at N = 31, exactly as it was at N = 20** — all seven foundations are still
-`indeterminate`, which falsifies our own power prediction. **The two methods Kirgis actually
-confounded with provider agree at ρ = 0.842**, so his specific design flaw is one his
-conclusions can largely survive. The most consequential new result is about scale: **his
+null collapses to ≈ 0.001 while observed R runs **0.46–1.08 across the six moral foundations**
+(the non-moral control sits lower, at 0.34). But **the magnitude remains unresolved at N = 30,
+exactly as it was at N = 20** — all six foundations and the control are still `indeterminate`,
+which falsifies our own power prediction. **The two methods Kirgis actually confounded with
+provider agree at ρ = 0.818 over the six moral foundations**, so his specific design flaw is one
+his conclusions can largely survive. The most consequential new result is about scale: **his
 individualizing-over-binding pattern does appear, and it grows with model size** on both
 complete ladders — which explains why a ≤14B sample found nothing, and which survives
 removing a large compression confound that would otherwise have manufactured it.
@@ -37,9 +38,14 @@ removing a large compression confound that would otherwise have manufactured it.
 **two to three orders of magnitude** in every foundation. Method is not noise, and the
 estimator is calibrated: destroy the interaction by construction and it reports none.
 
+> **Fitted at N = 31 and now STALE — refit pending.** SmolLM2 is excluded (§3 note) and Social
+> Norms is reclassified as a control (below), so these need refitting on the pod. Neither change
+> is expected to move a verdict — all seven are indeterminate with wide intervals — but the
+> numbers below should be read as provisional until the refit lands.
+
 | foundation | R | 95% CrI | verdict | MC spread | null median |
 |---|---:|---|---|---:|---:|
-| Social Norms | 0.343 | [0.177, 0.613] | indeterminate | 0.0058 | 0.0006 |
+| *Social Norms — **NON-MORAL CONTROL**, not a foundation* | *0.343* | *[0.177, 0.613]* | *indeterminate* | *0.0058* | *0.0006* |
 | Loyalty | 0.458 | [0.238, 0.839] | indeterminate | 0.0049 | 0.0008 |
 | Sanctity | 0.586 | [0.284, 1.145] | indeterminate | 0.0193 | 0.0015 |
 | Care | 0.655 | [0.326, 1.288] | indeterminate | 0.0172 | 0.0015 |
@@ -49,6 +55,12 @@ estimator is calibrated: destroy the interaction by construction and it reports 
 
 R is a variance ratio, so read it on the SD scale: R ≈ 0.65 means the method-induced shift in a
 model's position is about **0.8× the spread between models**. Not a rounding error.
+
+**Note which row is lowest.** Social Norms has the smallest R, and it is *not a foundation* — it
+is Clifford's non-moral control, sitting at the floor of the scale where every readout agrees
+that nothing much is wrong. Quoting the range as "0.34–1.08 across foundations" therefore takes
+its lower bound from a control category. **Across the six actual moral foundations the range is
+0.46–1.08.**
 
 **ESTABLISHED — every verdict is still `indeterminate`, and this falsifies P7.** We predicted
 that at N ≈ 30 at least two foundations would escape the indeterminate band. **None did.**
@@ -82,14 +94,28 @@ unstable-in-sign", not "corrects a 4–16% deflation".
 > **`variance_ratio_v2.csv` and `mcmc_permutation_null_v2.csv` were fitted at N=31 and are now
 > stale.** They need refitting on the pod alongside the scan-excluded and family-effect runs.
 
-**ESTABLISHED — mean Spearman ρ over models, averaged across the seven foundations:**
+**ESTABLISHED — mean Spearman ρ over models. Averaged across the SIX MORAL FOUNDATIONS**, with
+the non-moral control shown separately rather than folded in:
 
-| pair | v2 (N=30) | v2 (N=31, with SmolLM2) | v1 (N=20) |
-|---|---:|---:|---:|
-| label ~ string_line | **0.968** | 0.969 | — |
-| label ~ greedy | 0.926 | 0.928 | 0.927 |
-| string_line ~ greedy | 0.925 | 0.925 | — |
-| **label ~ sampled** | **0.838** | 0.842 | **0.880** |
+| pair | **6 foundations** | control alone | 7 pooled (old) | v1 (N=20) |
+|---|---:|---:|---:|---:|
+| label ~ string_line | **0.964** | 0.996 | 0.968 | — |
+| label ~ greedy | 0.921 | 0.955 | 0.926 | 0.927 |
+| string_line ~ greedy | 0.920 | 0.954 | 0.925 | — |
+| **label ~ sampled** | **0.818** | 0.956 | 0.838 | **0.880** |
+| sampled ~ string_line | 0.795 | 0.946 | 0.817 | — |
+| greedy ~ sampled | 0.762 | 0.949 | 0.789 | — |
+| label ~ string_bare | 0.415 | 0.620 | 0.445 | — |
+| cloze ~ label | 0.374 | 0.498 | 0.392 | — |
+
+**Pooling the control was inflating every one of these**, by 0.005 to 0.029. The reason is
+mechanical and worth stating: the control items sit at the floor (human mean 0.19), every
+readout agrees that nothing much is wrong, so the model ranking is near-identical across methods
+— cross-method ρ of **0.95–0.996** against 0.37–0.96 for the moral foundations. That is a floor
+artifact, not evidence that methods agree.
+
+**So the headline number is ρ = 0.818, not 0.842.** The correction runs against us, and it is
+five times larger than the SmolLM2 exclusion (−0.020 vs −0.004).
 | greedy ~ sampled | 0.788 | 0.774 |
 | string_bare ~ sampled | 0.497 | — |
 | label ~ string_bare | 0.451 | 0.332 *(as `string`)* |

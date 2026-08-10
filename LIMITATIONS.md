@@ -250,6 +250,37 @@ at all wrong" produces large positive error mechanically. The headline "models o
 Social Norms" is real in the data but is substantially a floor effect, and should be reported
 as such rather than as a moral finding.
 
+> **RESOLVED 2026-08-10, and it is not "substantially" a floor effect — it is ENTIRELY one.**
+> `scripts/analyse_social_norms.py` fits the compression line on the 100 moral items only, so
+> the control is held out and cannot influence the line it is judged against, then asks where
+> the control falls relative to it.
+>
+> | | value |
+> |---|---:|
+> | compression line (moral items only) | model = 0.956 + 0.684 × human |
+> | **predicted** control mean, from compression alone | **1.085** |
+> | **observed** control mean | **1.045** |
+> | genuine excess over the line | **−0.040** (−0.10 residual SD) |
+> | 95% bootstrap CI on the excess, 5,000 item resamples | **[−0.327, +0.246]** |
+>
+> **The interval contains zero, and the point estimate is negative.** 105% of the raw gap is
+> accounted for by compression. Every condition agrees, all with negative excess (cloze −0.035,
+> greedy −0.125, label −0.163, sampled −0.100).
+>
+> **This retires the claim outright.** Not "report it as a floor effect" — *there is nothing
+> left to report*. Models treat the non-moral control exactly as the compression line predicts.
+> The sharper-sounding restatement suggested in `references.md` — "models fail to recognise a
+> deliberately non-moral item as non-moral" — is **also wrong**, and for the same reason: it
+> attributes to moral judgment what is a property of the response scale. That restatement was
+> mine, and it was wrong when I wrote it.
+>
+> The numbers in the table above (1.11, +0.924) are pre-SmolLM2-exclusion; current values are
+> 1.045 and +0.858. The conclusion is unchanged.
+>
+> **What survives:** the control category is where compression is *most visible*, because it is
+> the only part of the instrument near a scale endpoint. It is a good diagnostic for
+> compression — and no evidence at all about moral judgment.
+
 ---
 
 # Design and instrument

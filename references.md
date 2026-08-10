@@ -321,6 +321,18 @@ foundations in the variance-ratio model treats a control condition as a foundati
 **models failing to recognise a deliberately non-moral item as non-moral** — which is a sharper
 and more interesting claim than a foundation-level bias.
 
+> **CORRECTION 2026-08-10 — point (2) above is WRONG and is withdrawn.** It was my restatement,
+> and it was more confident than the evidence. Holding the control out and fitting the
+> compression line on the 100 moral items alone, the control's excess over that line is
+> **−0.040, 95% bootstrap CI [−0.327, +0.246]** — zero, with a negative point estimate. 105% of
+> the raw gap is compression. Models do **not** fail to recognise the non-moral items as
+> non-moral; they apply the same compression they apply to everything, and compression of a
+> floor value must read high. See `scripts/analyse_social_norms.py` and `LIMITATIONS.md` §5.
+>
+> Point (1) stands and has been acted on: the control is now reported separately throughout.
+> Pooling it into the seven-foundation average was inflating every cross-method rank
+> correlation by 0.005–0.029, because floor-bound items rank identically under every readout.
+
 - **p.10 corroborates the Care split** used in `PROVENANCE.md`: "For the Care foundation, we
   focused on three forms of harm... emotional harm to a human, physical harm to a human, and
   physical harm to a non-human animal." Kirgis retains only the emotional-harm subset, so
