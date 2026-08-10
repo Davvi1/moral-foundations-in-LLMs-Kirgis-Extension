@@ -148,25 +148,70 @@ def main() -> int:
              f"[{lo:+.3f}, {hi:+.3f}] |")
     verdict = "INCLUDES ZERO" if lo <= 0 <= hi else "excludes zero"
     L.append(f"\n**The interval {verdict}.**\n")
-    if lo <= 0 <= hi:
-        L.append("### The claim does not survive\n")
-        L.append("**Models do not over-moralise the non-moral items in any sense beyond the "
-                 "compression they apply to everything.** Once the floor effect is removed, "
-                 "the control category sits on the line the moral items define. The observed "
-                 f"raw gap of {f['raw_gap']:+.3f} is "
-                 f"{f['compression'] / f['raw_gap']:.0%} accounted for by compression.\n")
-        L.append("This **retires a headline claim**, and the retirement is the finding. "
-                 "\"Models fail to recognise a deliberately non-moral item as non-moral\" is "
-                 "the sharper-sounding version of the same number and it is **also wrong** — "
-                 "it attributes to moral judgment what is a property of the response scale.\n")
-        L.append("What can still be said, and it is worth saying: the control category is "
-                 "where compression is **most visible**, precisely because it is the only "
-                 "part of the instrument near a scale endpoint. It is a good diagnostic for "
-                 "compression. It is not evidence about moral judgment.\n")
-    else:
-        L.append("### The claim survives the floor-effect explanation\n")
-        L.append("Social Norms sits off the compression line by more than sampling error, so "
-                 "something beyond scale compression is happening on the non-moral items.\n")
+
+    # ---- THE CATCH. Added after the first version of this analysis over-claimed. ---------
+    hm = [human[i] for i in moral]
+    hc = [human[i] for i in ctrl]
+    overlap = [h for h in hm if min(hc) <= h <= max(hc)]
+    L.append("## The catch — and it is a large one\n")
+    L.append("**This is an extrapolation, not an interpolation, and the first version of this "
+             "analysis did not say so.**\n")
+    L.append(f"| | range | n |")
+    L.append(f"|---|---|---:|")
+    L.append(f"| moral items (the fitting data) | {min(hm):.2f} – {max(hm):.2f} | {len(hm)} |")
+    L.append(f"| control items (the prediction target) | {min(hc):.2f} – {max(hc):.2f} | "
+             f"{len(hc)} |")
+    L.append(f"| moral items inside the control range | — | **{len(overlap)}** |")
+    L.append(f"\nThere is **no overlap at all**, and a gap of "
+             f"{min(hm) - max(hc):.2f} scale points containing no observations. The line is "
+             f"fitted on data spanning {min(hm):.2f}–{max(hm):.2f} and used to predict at "
+             f"{st.mean(hc):.2f}. Whether it holds there is **untestable with this "
+             f"instrument**.\n")
+    L.append("Worse, the relationship is **not linear over the range we do observe**, so there "
+             "is no reason to assume it continues straight into the gap:\n")
+    L.append("| moral items fitted | n | b | predicted at 0.19 | excess |")
+    L.append("|---|---:|---:|---:|---:|")
+    subs = [("all (1.40–3.80)", moral),
+            ("lower half (≤2.60)", [i for i in moral if human[i] <= 2.6]),
+            ("upper half (>2.60)", [i for i in moral if human[i] > 2.6])]
+    for nm, ss in subs:
+        if len(ss) < 8:
+            continue
+        aa, bb = ols([human[i] for i in ss], [item_model[i] for i in ss])
+        pr = aa + bb * st.mean(hc)
+        L.append(f"| {nm} | {len(ss)} | {bb:.3f} | {pr:.3f} | "
+                 f"{f['obs_ctrl'] - pr:+.3f} |")
+    L.append("")
+    L.append("`b` rises from **0.678** at the low end to **1.226** at the high end. Fit the "
+             "upper half and the model 'predicts' a control mean of −0.53, which is off the "
+             "scale. **The excess is not identified**: it ranges from −0.08 to +1.58 depending "
+             "on a choice with no principled answer.\n")
+
+    L.append("## Verdict — two claims, and only one of them survives\n")
+    L.append("**1. SOLID — the raw gap is not evidence of over-moralisation.** The control's "
+             f"raw gap of {f['raw_gap']:+.3f} sits against 0.09–0.25 for the moral "
+             "foundations, and that contrast is what the 'models over-moralise Social Norms' "
+             "claim rested on. But the control items sit at the floor of the scale, and *any* "
+             "compressive measurement of a floor value reads high. Every plausible compression "
+             "model predicts a large positive gap there whether or not models treat these "
+             "items differently. **So the raw gap carries no information about moral "
+             "judgment, and the claim built on it must be withdrawn.** This does not depend on "
+             "the extrapolation — it follows from the floor alone.\n")
+    L.append("**2. NOT ESTABLISHED — whether a residual excess exists.** Saying models treat "
+             "the control *exactly* as compression predicts requires extrapolating the "
+             "compression line across a 0.9-point gap with no data, into a region where the "
+             "observed relationship is already non-linear. The most defensible extrapolations "
+             "— those anchored on the moral items nearest the control — agree with each other "
+             "(excess −0.07 to −0.08, against −0.040 for the full fit), which is mildly "
+             "reassuring. It is not a result.\n")
+    L.append("**The honest summary: the raw gap is uninformative, and the residual is "
+             "unidentified.** The instrument cannot answer the sharper question, because "
+             "Clifford's control items were designed to sit at the floor and nothing bridges "
+             "the gap between them and the moral items. That is a limitation of the stimulus "
+             "set, not something a better analysis would fix.\n")
+    L.append("What can still be said: the control category is where compression is **most "
+             "visible**, being the only part of the instrument near a scale endpoint. A good "
+             "diagnostic for compression; no evidence about moral judgment either way.\n")
 
     # Per condition -- does the conclusion depend on the readout?
     L.append("## By condition — is this an artifact of one readout?\n")

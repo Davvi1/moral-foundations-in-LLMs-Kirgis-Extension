@@ -322,12 +322,18 @@ foundations in the variance-ratio model treats a control condition as a foundati
 and more interesting claim than a foundation-level bias.
 
 > **CORRECTION 2026-08-10 — point (2) above is WRONG and is withdrawn.** It was my restatement,
-> and it was more confident than the evidence. Holding the control out and fitting the
-> compression line on the 100 moral items alone, the control's excess over that line is
-> **−0.040, 95% bootstrap CI [−0.327, +0.246]** — zero, with a negative point estimate. 105% of
-> the raw gap is compression. Models do **not** fail to recognise the non-moral items as
-> non-moral; they apply the same compression they apply to everything, and compression of a
-> floor value must read high. See `scripts/analyse_social_norms.py` and `LIMITATIONS.md` §5.
+> and it was more confident than the evidence. The control items sit at the **floor** of the
+> scale (human mean 0.19; 93.8% of Clifford's respondents call them "not wrong"), and models
+> compress toward the middle, so *any* compressive measurement of a floor value reads high. The
+> raw gap of +0.86 is therefore **uninformative about moral judgment** and cannot support
+> "models fail to recognise a deliberately non-moral item as non-moral."
+>
+> **Second correction, same day:** my first attempt to quantify the residual — excess −0.040,
+> bootstrap CI [−0.327, +0.246] — was itself over-claimed. It extrapolates the compression line
+> from moral items spanning 1.40–3.80 down to 0.19, with **zero overlap** and a 0.90-point gap
+> containing no data, and the relationship is non-linear over the observed range (b = 0.678 low
+> end, 1.226 high end). The residual is **not identified**. See `scripts/analyse_social_norms.py`
+> and `LIMITATIONS.md` §5.
 >
 > Point (1) stands and has been acted on: the control is now reported separately throughout.
 > Pooling it into the seven-foundation average was inflating every cross-method rank

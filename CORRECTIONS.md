@@ -371,6 +371,48 @@ one did not surface the other, because nothing cross-checked them.
 
 ---
 
+## C14 — I retired one over-claim by making another, and caught it an hour later
+
+**Claimed.** `LIMITATIONS.md` §5, `references.md` and a commit message, all written 2026-08-10:
+*"models treat the non-moral control exactly as the compression line predicts"*, supported by an
+excess of −0.040 with a bootstrap CI of [−0.327, +0.246]. Presented as retiring the
+"models over-moralise Social Norms" claim outright — *"there is nothing left to report"*.
+
+**True.** The number is arithmetically correct and close to meaningless. It comes from fitting
+`model = a + b·human` on the 100 moral items and evaluating it at the control's human mean of
+0.19. But:
+
+- **The moral items span 1.40–3.80. The control items span 0.00–0.50. The overlap is ZERO**, with
+  a 0.90-point gap containing no observations. It is an extrapolation 1.2 units past the edge of
+  the data, presented as though it were a fit.
+- **The relationship is not linear over the observed range.** `b` = 0.678 on the lower half,
+  **1.226** on the upper half. Fit the upper half and the prediction at 0.19 is **−0.53** — off
+  the scale entirely.
+- So the residual excess ranges from **−0.08 to +1.58** depending on which subset you fit, a
+  choice with no principled answer. **It is not identified.**
+
+**How caught.** By doing the *next* task rather than by re-reading. Propagating the baseline
+measurement error meant asking how sensitive the fitted line is, which meant looking at where
+the line was being evaluated, which made the extrapolation obvious. The σ-sensitivity table was
+the tell: the excess swung −0.040 → +0.546 across a plausible σ range, which is not how a stable
+estimate behaves.
+
+**What it changes.** The original claim — "models over-moralise Social Norms" — **stays
+withdrawn**, and that part was never in doubt: the control sits at the floor, any compressive
+measurement of a floor value reads high, and this follows from the floor alone with no
+extrapolation. What is withdrawn is my *stronger converse*. The honest position is now two
+statements, not one: **the raw gap is uninformative, and the residual is unidentified.** The
+instrument cannot resolve the second, because Clifford designed the control items to sit at the
+floor and nothing bridges the distance to the moral items.
+
+**The pattern, and it is not the same as C1–C13.** Every previous correction was a defect in
+code or process. This one is a defect in *inference*: the arithmetic was right, the diagnostic
+was absent, and the write-up voice was confident. The lesson is narrow and worth keeping —
+**an extrapolation should never be reported without its range check**, and "the CI contains
+zero" says nothing about whether the model producing the CI applies where it was evaluated.
+
+---
+
 ## Standing note for the write-up
 
 Seven of these twelve were found by a check that was **built in advance** — a validation

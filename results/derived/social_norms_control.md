@@ -27,13 +27,37 @@ Compression line from the 100 moral items: **model = 0.956 + 0.684 × human** (r
 
 **The interval INCLUDES ZERO.**
 
-### The claim does not survive
+## The catch — and it is a large one
 
-**Models do not over-moralise the non-moral items in any sense beyond the compression they apply to everything.** Once the floor effect is removed, the control category sits on the line the moral items define. The observed raw gap of +0.858 is 105% accounted for by compression.
+**This is an extrapolation, not an interpolation, and the first version of this analysis did not say so.**
 
-This **retires a headline claim**, and the retirement is the finding. "Models fail to recognise a deliberately non-moral item as non-moral" is the sharper-sounding version of the same number and it is **also wrong** — it attributes to moral judgment what is a property of the response scale.
+| | range | n |
+|---|---|---:|
+| moral items (the fitting data) | 1.40 – 3.80 | 100 |
+| control items (the prediction target) | 0.00 – 0.50 | 16 |
+| moral items inside the control range | — | **0** |
 
-What can still be said, and it is worth saying: the control category is where compression is **most visible**, precisely because it is the only part of the instrument near a scale endpoint. It is a good diagnostic for compression. It is not evidence about moral judgment.
+There is **no overlap at all**, and a gap of 0.90 scale points containing no observations. The line is fitted on data spanning 1.40–3.80 and used to predict at 0.19. Whether it holds there is **untestable with this instrument**.
+
+Worse, the relationship is **not linear over the range we do observe**, so there is no reason to assume it continues straight into the gap:
+
+| moral items fitted | n | b | predicted at 0.19 | excess |
+|---|---:|---:|---:|---:|
+| all (1.40–3.80) | 100 | 0.684 | 1.085 | -0.040 |
+| lower half (≤2.60) | 57 | 0.678 | 1.129 | -0.084 |
+| upper half (>2.60) | 43 | 1.226 | -0.530 | +1.575 |
+
+`b` rises from **0.678** at the low end to **1.226** at the high end. Fit the upper half and the model 'predicts' a control mean of −0.53, which is off the scale. **The excess is not identified**: it ranges from −0.08 to +1.58 depending on a choice with no principled answer.
+
+## Verdict — two claims, and only one of them survives
+
+**1. SOLID — the raw gap is not evidence of over-moralisation.** The control's raw gap of +0.858 sits against 0.09–0.25 for the moral foundations, and that contrast is what the 'models over-moralise Social Norms' claim rested on. But the control items sit at the floor of the scale, and *any* compressive measurement of a floor value reads high. Every plausible compression model predicts a large positive gap there whether or not models treat these items differently. **So the raw gap carries no information about moral judgment, and the claim built on it must be withdrawn.** This does not depend on the extrapolation — it follows from the floor alone.
+
+**2. NOT ESTABLISHED — whether a residual excess exists.** Saying models treat the control *exactly* as compression predicts requires extrapolating the compression line across a 0.9-point gap with no data, into a region where the observed relationship is already non-linear. The most defensible extrapolations — those anchored on the moral items nearest the control — agree with each other (excess −0.07 to −0.08, against −0.040 for the full fit), which is mildly reassuring. It is not a result.
+
+**The honest summary: the raw gap is uninformative, and the residual is unidentified.** The instrument cannot answer the sharper question, because Clifford's control items were designed to sit at the floor and nothing bridges the gap between them and the moral items. That is a limitation of the stimulus set, not something a better analysis would fix.
+
+What can still be said: the control category is where compression is **most visible**, being the only part of the instrument near a scale endpoint. A good diagnostic for compression; no evidence about moral judgment either way.
 
 ## By condition — is this an artifact of one readout?
 

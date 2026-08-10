@@ -267,8 +267,37 @@ as such rather than as a moral finding.
 > accounted for by compression. Every condition agrees, all with negative excess (cloze −0.035,
 > greedy −0.125, label −0.163, sampled −0.100).
 >
-> **This retires the claim outright.** Not "report it as a floor effect" — *there is nothing
-> left to report*. Models treat the non-moral control exactly as the compression line predicts.
+> ### CORRECTED SAME DAY — the paragraph below over-claimed, and here is the catch
+>
+> The wording that stood here for about an hour — *"models treat the non-moral control exactly
+> as the compression line predicts"* — is **too strong and is withdrawn**. Found while
+> propagating the baseline measurement error, which forced a look at where the line is being
+> evaluated.
+>
+> **It is an extrapolation with zero overlap.** The moral items span human means 1.40–3.80. The
+> control items span 0.00–0.50. **No moral item lies within the control range**, and a 0.90-point
+> gap separates them with no observations in it. The line is fitted on 1.40–3.80 and evaluated
+> at 0.19.
+>
+> And the relationship is **not linear over the range we do observe**, so there is no warrant for
+> continuing it straight into the gap:
+>
+> | moral items fitted | b | predicted at 0.19 | excess |
+> |---|---:|---:|---:|
+> | all (1.40–3.80) | 0.684 | 1.085 | −0.040 |
+> | lower half (≤2.60) | 0.678 | 1.129 | −0.084 |
+> | upper half (>2.60) | **1.226** | **−0.530** | **+1.575** |
+>
+> **The residual excess is not identified** — it ranges from −0.08 to +1.58 depending on a
+> choice with no principled answer.
+>
+> **What survives, and it is still enough to retire the claim:** the raw gap is *uninformative*,
+> because the control sits at the floor and any compressive measurement of a floor value reads
+> high. That follows from the floor alone and needs no extrapolation. So "models over-moralise
+> Social Norms" must be withdrawn. What cannot be said is the stronger converse — that models
+> treat the control *exactly* as predicted. **The gap is uninformative; the residual is
+> unidentified.** The instrument cannot resolve it, because Clifford designed the control items
+> to sit at the floor and nothing bridges the distance to the moral items.
 > The sharper-sounding restatement suggested in `references.md` — "models fail to recognise a
 > deliberately non-moral item as non-moral" — is **also wrong**, and for the same reason: it
 > attributes to moral judgment what is a property of the response scale. That restatement was
