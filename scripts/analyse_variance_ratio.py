@@ -38,7 +38,7 @@ import numpy as np  # noqa: E402
 import pandas as pd  # noqa: E402
 
 REPO = Path(__file__).resolve().parent.parent
-LONG = REPO / "results" / "derived" / "analysis_long.csv"
+LONG = REPO / "results" / "derived" / "analysis_long_v2.csv"
 OUT = REPO / "results" / "derived"
 
 # Clifford (2015, p.9) designed the Social Norms items as a non-moral CONTROL stimulus set,

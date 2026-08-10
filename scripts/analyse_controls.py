@@ -35,8 +35,8 @@ import numpy as np
 import pandas as pd
 
 REPO = Path(__file__).resolve().parent.parent
-LONG = REPO / "results" / "derived" / "analysis_long.csv"
-OUT = REPO / "results" / "derived" / "controls.md"
+LONG = REPO / "results" / "derived" / "analysis_long_v2.csv"
+OUT = REPO / "results" / "derived" / "controls_v2.md"
 # Derived from the data at runtime, not hardcoded: v1 has 4 conditions, v2 has 6. A literal
 # list KeyErrors on v2 (or silently analyses a subset). Fixed order for stable report output.
 METHOD_ORDER = ["label", "string", "string_line", "string_bare", "cloze", "greedy", "sampled"]

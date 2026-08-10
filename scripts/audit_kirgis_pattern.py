@@ -46,8 +46,8 @@ except Exception:
     pass
 
 REPO = Path(__file__).resolve().parent.parent
-LONG = REPO / "results" / "derived" / "analysis_long.csv"
-OUT = REPO / "results" / "derived" / "kirgis_pattern_audit.md"
+LONG = REPO / "results" / "derived" / "analysis_long_v2.csv"
+OUT = REPO / "results" / "derived" / "kirgis_pattern_audit_v2.md"
 
 # Derived from the data, not hardcoded: v1 has {label, string, greedy, sampled} while v2 has
 # {label, string_line, string_bare, cloze, greedy, sampled}. A hardcoded list silently

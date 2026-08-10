@@ -460,7 +460,7 @@ def main() -> int:
                          "primary variance ratio and reported separately.")
     ap.add_argument("--conditions", nargs="*", default=None,
                     help="subset to run, e.g. --conditions label (default: all four)")
-    ap.add_argument("--suffix", default="",
+    ap.add_argument("--suffix", default="_v2",
                     help="filename suffix, e.g. .labelfix — lets a corrected condition be "
                          "written alongside the original instead of overwriting it")
     args = ap.parse_args()

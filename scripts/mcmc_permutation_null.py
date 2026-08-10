@@ -112,7 +112,7 @@ def _fit_and_extract(args_tuple):
 
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__.split("\n")[0])
-    ap.add_argument("--data", default=str(DERIVED / "analysis_long.csv"),
+    ap.add_argument("--data", default=str(DERIVED / "analysis_long_v2.csv"),
                     help="long-form analysis file (default: the v1 Phase-1 dataset)")
     ap.add_argument("--out", default=None)
     ap.add_argument("--n-perm", type=int, default=100, help="permutations per foundation")

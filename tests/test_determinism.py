@@ -146,7 +146,10 @@ def _build(tmp_repo_out: Path, suffix: str, hashseed: str) -> Path:
     return dest
 
 
-@pytest.mark.parametrize("suffix", ["", "_v2"])
+# Only "_v2" remains: the v1 collection was deleted 2026-08-10 (V1_TO_V2.md). The parametrize
+# is kept with one value rather than inlined, because the determinism guarantee is per
+# COLLECTION and a future harness must be added here, not tested ad hoc.
+@pytest.mark.parametrize("suffix", ["_v2"])
 def test_analysis_dataset_rebuilds_identically(tmp_path, suffix):
     """THE test. Same raw inputs, two different hash seeds, byte-identical output.
 

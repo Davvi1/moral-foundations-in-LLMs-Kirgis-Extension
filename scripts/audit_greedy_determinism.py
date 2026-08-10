@@ -1,5 +1,11 @@
 """Is greedy decoding actually reproducible across runs? Measured, not assumed.
 
+CANNOT RUN AS OF 2026-08-10. This script needs BOTH raw collections, and the v1 half was
+deleted in the V1 cleanup. Its result is committed at results/derived/greedy_determinism.md
+and is cited in METHODS_EXPLAINER.md s3 and LIMITATIONS.md s12. To re-run it, check out the
+git tag `pre-cleaning-out-v1`. Kept in the tree because the METHOD is the citable part --
+a reviewer asking "how did you establish that" should be able to read it.
+
     python scripts/audit_greedy_determinism.py
     python scripts/audit_greedy_determinism.py --out results/derived/greedy_determinism.md
 

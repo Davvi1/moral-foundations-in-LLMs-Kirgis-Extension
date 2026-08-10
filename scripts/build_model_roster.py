@@ -108,7 +108,8 @@ def main() -> int:
     `scripts/` with `--help` to prove it can print usage on a machine with no GPU. This
     script had no argparse, so `--help` was simply an ignored argv entry and the script RAN,
     regenerating the roster from the hard-coded N=20 ROSTER list. Alphabetical order meant
-    `add_phase2_models.py` added the Phase-2 models moments earlier and this overwrote them,
+    `add_phase2_models.py` (since deleted, see V1_TO_V2.md) added the Phase-2 models
+    moments earlier and this overwrote them,
     so every `pytest` invocation silently reverted the roster from N=30 to N=20.
 
     That is worse than it sounds. `rows()` fetches the CURRENT sha from the Hub, so an
@@ -157,7 +158,7 @@ def main() -> int:
     if existing_n > len(ROSTER) and not args.force:
         print(f"REFUSING: config/models.yaml has {existing_n} primary models and this would "
               f"write {len(ROSTER)}, dropping {existing_n - len(ROSTER)}.\n"
-              f"Models added by scripts/add_phase2_models.py are not in this script's "
+              f"Models added by the phase-2 roster step are not in this script's "
               f"hard-coded ROSTER list and would be lost. Pass --force if that is intended.")
         return 1
 

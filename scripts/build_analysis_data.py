@@ -3,7 +3,7 @@
 
     python scripts/build_analysis_data.py
 
-Writes results/derived/analysis_long.csv: one row per model x item x condition.
+Writes results/derived/analysis_long_v2.csv: one row per model x item x condition.
 The sampled condition is collapsed to its mean over k=10 replicates, with the Monte-Carlo
 standard error retained, because that error term is what the variance model needs to avoid
 attributing sampling noise to the model x method interaction.
@@ -56,20 +56,14 @@ def f(x):
 
 
 def main() -> int:
-    # --suffix selects WHICH harness's raw files to build from. Without it the glob picks up
-    # v1 and v2 files together and silently interleaves two incompatible condition sets into
-    # one dataset -- the sort of blend that produces a plausible-looking file and a
-    # meaningless analysis. v1 stays the default.
-    #
-    # NOTE, 2026-08-10: this comment used to end "so the committed Phase-1 outputs regenerate
-    # byte-for-byte." That is NO LONGER TRUE and the sentence has been removed rather than left
-    # to mislead. The --min-discrimination rule added below applies to both collections and
-    # changes 464 rows of the v1 artifact. Applying it to v2 only would have been the easier
-    # path and the wrong one: a validity criterion that holds for one collection and not the
-    # other is the same inconsistency this project audits Kirgis for.
+    # --suffix selects which harness's raw files to build from. Only `_v2` exists now: the v1
+    # collection was deleted on 2026-08-10 (see V1_TO_V2.md). The argument is KEPT rather than
+    # hard-coded because the bug it was added for -- C12, a glob that silently spanned two
+    # collections and wrote one over the other -- is a property of unversioned paths, not of v1.
+    # A future v3 would reintroduce exactly the same hazard.
     ap = argparse.ArgumentParser(description="Build the long-form analysis dataset.")
-    ap.add_argument("--suffix", default="",
-                    help="raw-file suffix to build from: '' for v1 (default), '_v2' for v2")
+    ap.add_argument("--suffix", default="_v2",
+                    help="raw-file suffix to build from. Only '_v2' exists; see V1_TO_V2.md")
     ap.add_argument("--min-discrimination", type=float, default=0.25,
                     help="exclude a model whose mean between-item SD falls below this "
                          "multiple of the human baseline's between-item SD. 0 disables. "

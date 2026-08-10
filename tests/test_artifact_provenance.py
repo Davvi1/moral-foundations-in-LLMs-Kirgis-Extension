@@ -31,7 +31,8 @@ DERIVED = REPO / "results" / "derived"
 V1_CONDITIONS = {"label", "string", "greedy", "sampled"}
 V2_CONDITIONS = {"label", "string_line", "string_bare", "cloze", "greedy", "sampled"}
 
-V1_MODELS = 20      # Phase-1 roster
+V1_MODELS = 20      # Phase-1 roster. Retained as documentation only -- the v1 collection was
+                    # deleted 2026-08-10 (V1_TO_V2.md); nothing asserts against it any more.
 V2_MODELS = 31      # Phase-2/3 roster, 32 pinned minus Mistral-Large (deliberately uncollected)
 V2_MODELS_ANALYSED = 30   # 31 collected minus SmolLM2-1.7B, dropped by the discrimination
                           # threshold on 2026-08-10. See LIMITATIONS.md 22 -- the criterion is
@@ -49,15 +50,6 @@ def _read(name: str):
 # The long-form datasets
 # =======================================================================================
 
-
-def test_v1_dataset_is_v1():
-    d = _read("analysis_long.csv")
-    assert d.model.nunique() == V1_MODELS, (
-        f"analysis_long.csv holds {d.model.nunique()} models, expected {V1_MODELS}. "
-        "If this is a v2 file wearing a v1 name, see CORRECTIONS.md C12.")
-    assert set(d.condition.unique()) == V1_CONDITIONS, set(d.condition.unique())
-
-
 def test_v2_dataset_is_v2():
     d = _read("analysis_long_v2.csv")
     assert d.model.nunique() == V2_MODELS, (
@@ -68,17 +60,6 @@ def test_v2_dataset_is_v2():
 # =======================================================================================
 # The fitted results
 # =======================================================================================
-
-
-def test_v1_variance_ratio_is_v1():
-    """The specific file C12 clobbered. FINDINGS.md sources its R table from this."""
-    d = _read("variance_ratio.csv")
-    assert set(d.n_models.unique()) == {V1_MODELS}, (
-        f"variance_ratio.csv reports n_models={sorted(d.n_models.unique())}, expected "
-        f"{V1_MODELS}. This file backs the R table in FINDINGS.md; if it now holds v2 "
-        "results, that table is citing a sample it does not describe.")
-    assert set(d.n_methods.unique()) == {len(V1_CONDITIONS)}
-
 
 def test_v2_variance_ratio_is_v2():
     """Both roster sizes are expected here, and the reason is not sloppiness.
@@ -131,7 +112,7 @@ def test_sensitivity_artifacts_declare_their_variant(name, scan, fam):
 # =======================================================================================
 
 
-@pytest.mark.parametrize("name", ["analysis_long.csv", "analysis_long_v2.csv"])
+@pytest.mark.parametrize("name", ["analysis_long_v2.csv"])
 def test_no_dataset_blends_harnesses(name):
     """`build_analysis_data.py`'s glob once matched every *.csv in results/raw, which now
     holds both harnesses. Building without --suffix would have interleaved two incompatible

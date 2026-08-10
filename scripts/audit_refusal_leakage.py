@@ -33,8 +33,8 @@ except Exception:
     pass
 
 REPO = Path(__file__).resolve().parent.parent
-LONG = REPO / "results" / "derived" / "analysis_long.csv"
-OUT = REPO / "results" / "derived" / "refusal_leakage_audit.md"
+LONG = REPO / "results" / "derived" / "analysis_long_v2.csv"
+OUT = REPO / "results" / "derived" / "refusal_leakage_audit_v2.md"
 
 
 def spearman(x, y):
