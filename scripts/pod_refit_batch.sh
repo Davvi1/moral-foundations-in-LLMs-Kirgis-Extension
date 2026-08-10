@@ -58,20 +58,32 @@ echo
 
 FILTER='Sampling|Progress|NUTS|jitter|Multiprocess|^\s*$'
 
-echo "### [1/3] PRIMARY variance ratio — v2, N=30, control labelled ###"
-python -u scripts/analyse_variance_ratio.py --data "$V2" 2>&1 | grep -vE "$FILTER"
-echo "  exit=${PIPESTATUS[0]}"
+# THE THREE JOBS RUN CONCURRENTLY, not in sequence. Each fit sets cores=chains=4, so one job
+# saturates only 4 vCPU; on a 16-vCPU box three jobs use 12 and the wall clock drops from
+# ~2h to ~40min. Since the pod is billed by the hour that is a direct saving, and the jobs are
+# independent -- separate processes, separate output files, no shared state.
+#
+# Do NOT raise this to four-plus jobs without adding vCPU: oversubscribing cores makes each
+# chain slower and the arithmetic stops working.
+run_job() {
+  local tag="$1"; shift
+  echo "### START $tag  $(date -u +%TZ) ###"
+  python -u scripts/analyse_variance_ratio.py --data "$V2" "$@" > "/workspace/${tag}.log" 2>&1
+  echo "### DONE  $tag exit=$? $(date -u +%TZ) ###"
+}
+
+run_job primary                       &
+run_job noscan  --exclude-scan        &
+run_job family  --family-effect       &
+wait
+echo "all three jobs finished at $(date -u +%FT%TZ)"
 echo
 
-echo "### [2/3] SCAN-EXCLUDED — the pre-specified analysis never run (LIMITATIONS 1) ###"
-python -u scripts/analyse_variance_ratio.py --data "$V2" --exclude-scan 2>&1 | grep -vE "$FILTER"
-echo "  exit=${PIPESTATUS[0]}"
-echo
-
-echo "### [3/3] FAMILY RANDOM EFFECT — (1|family), F3 ###"
-python -u scripts/analyse_variance_ratio.py --data "$V2" --family-effect 2>&1 | grep -vE "$FILTER"
-echo "  exit=${PIPESTATUS[0]}"
-echo
+for t in primary noscan family; do
+  echo "--- $t ---"
+  grep -vE "$FILTER" "/workspace/${t}.log" | grep -E "R=|FIT FAILED|FATAL|exclude-scan" | tail -32
+  echo
+done
 
 {
   echo "=== refit batch summary  ($(date -u +%FT%TZ)) ==="
