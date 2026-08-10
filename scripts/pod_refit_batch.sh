@@ -116,6 +116,36 @@ PY
 cat /workspace/refit_summary.txt
 
 # ---------------------------------------------------------------------------------------
+# DO NOT STOP UNTIL THE RESULTS HAVE BEEN COLLECTED.
+#
+# This cost a run on 2026-08-10. The pod was created with `volumeInGb: 0` -- no persistent
+# storage -- while this script still carried the stop-on-completion teardown inherited from
+# `pod_analysis_batch.sh`, which was written for a pod backed by a network volume. RunPod wipes
+# the CONTAINER disk on stop. The batch completed, wrote all three CSVs, stopped the pod, and
+# destroyed its own output. 38 minutes of compute for nothing.
+#
+# The two safety properties are in tension and both are required:
+#   - never leave a pod billing after the work is done (2026-08-08, ~1h44m leaked)
+#   - never destroy results that have not been retrieved (2026-08-10, one run lost)
+#
+# Resolution: signal completion, then WAIT for the collector to acknowledge, with a hard
+# timeout so a dropped connection still cannot leave the pod running indefinitely. The pod
+# stops when results are safe, or when the timeout says nobody is coming.
+touch /workspace/DONE
+echo "=== DONE marker written $(date -u +%FT%TZ); waiting for /workspace/PULLED ==="
+IDLE_TIMEOUT_S=${IDLE_TIMEOUT_S:-3600}
+waited=0
+while [ ! -f /workspace/PULLED ] && [ "$waited" -lt "$IDLE_TIMEOUT_S" ]; do
+  sleep 20; waited=$((waited + 20))
+done
+if [ -f /workspace/PULLED ]; then
+  echo "=== results acknowledged after ${waited}s; stopping ==="
+else
+  echo "=== TIMEOUT after ${waited}s with no acknowledgement; stopping anyway ==="
+  echo "=== RESULTS WERE NOT COLLECTED — they are about to be destroyed with the disk ==="
+fi
+
+# ---------------------------------------------------------------------------------------
 # Verified teardown. Check the EXIT CODE of the stop call, not merely that the binary
 # exists — that distinction cost ~1h44m of idle billing on 2026-08-08.
 # ---------------------------------------------------------------------------------------
