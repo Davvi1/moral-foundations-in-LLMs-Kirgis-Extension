@@ -60,7 +60,7 @@ precisely the error class that mis-scored Kirgis's grok-3 responses — a digit 
 running prose — so it is the last thing we should have left unchecked.
 
 **Resolved for the ranking result, 2026-08-09.** The obvious worry was that our most-quoted
-number — ρ(label, sampled) = 0.842, the Kirgis confound pair — depended on an analysis we never
+number — ρ(label, sampled), the Kirgis confound pair — depended on an analysis we never
 ran. It does depend on it, and the dependency runs in the *reassuring* direction:
 
 | pair | all rows | anchored only | change |
@@ -181,7 +181,8 @@ unmeasured**. Hand-coding a few hundred rows would settle it cheaply.
 
 ## 2. The headline estimand was never resolved · EVIDENTIAL
 
-**All seven foundations are `indeterminate` at N = 20 and again at N = 31.** Every 95% credible
+**All seven levels — six foundations plus the non-moral control — are `indeterminate` at N = 20
+and again at N = 31.** Every 95% credible
 interval straddles a band boundary. We can say the model × method interaction is real — two
 independent nulls confirm the estimator is calibrated — and that its magnitude is comparable to
 between-model variance. We cannot say how large it is.
@@ -586,7 +587,7 @@ an empirical improvement.
   makes the roster look more uniformly competent than the open-weight landscape is. The
   write-up should report SmolLM2's behaviour in the text even though it is out of the analysis.
 - **Direction of bias is knowable and is against us**: including it very slightly *inflates*
-  cross-method agreement (0.842 vs 0.838), so the exclusion makes the headline marginally
+  cross-method agreement (0.842 vs 0.838, both pooling the control), so the exclusion makes the headline marginally
   worse, not better. Worth stating, because the usual worry about post-hoc exclusion is that it
   flatters the result.
 

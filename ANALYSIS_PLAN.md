@@ -160,14 +160,16 @@ simulated replicates at N=8.
 The `indeterminate` verdict exists because the simulation shows no feasible N resolves an R
 sitting near a boundary. Forcing a three-way call would manufacture false precision.
 
-**Multiplicity:** all seven foundation-level intervals are reported together, never
+**Multiplicity:** all seven fitted intervals are reported together — six moral foundations plus
+the non-moral control, which is reported separately and never averaged in — never
 selectively. No correction is applied because no null-hypothesis test is performed. The
 headline claim is made at foundation level and not aggregated into a single verdict.
 
 ### Secondary — rank agreement (descriptive only)
 
 Spearman ρ of the model ordering under each pair of methods, within foundation, after centring
-out the method main effect. 6 pairs × 7 foundations. **No pass/fail threshold is attached** —
+out the method main effect. 6 pairs × 7 levels (six foundations + control). **No pass/fail
+threshold is attached** —
 at this N the statistic is too blunt to carry one.
 
 ### Controls

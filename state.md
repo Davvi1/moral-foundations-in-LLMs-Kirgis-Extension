@@ -380,7 +380,8 @@ Full results: `results/derived/design_simulation.md`, reproducible via
 4. **Bayesian estimation is now required, not preferred.** The moment estimator returns
    σ̂²_model ≤ 0 — leaving R undefined — on up to 7.4% of replicates at N=8. A constrained
    posterior cannot do that.
-5. **Multiplicity across the 7 foundations is resolved:** report all seven intervals; the
+5. **Multiplicity across the 7 fitted levels is resolved:** report all seven intervals (six
+   foundations plus the non-moral control); the
    headline claim is stated at the foundation level, not aggregated into a single verdict.
    No correction is applied because no null-hypothesis test is being performed — but the
    seven verdicts are reported together, never selectively.
@@ -470,7 +471,8 @@ at any N a student project can reach, and the contribution becomes the design an
 
 **A Phase-1 finding that did not replicate.** C2 recorded that pooling the residual variance
 *deflates* R by 4–16% at N=20, itself a reversal of the analysis plan's prediction. At N=31 it
-*inflates* R by +0.3% to +6.6% in six of seven foundations. The direction is not stable across
+*inflates* R by +0.3% to +6.6% in six of the seven levels fitted (six foundations plus the
+non-moral control). The direction is not stable across
 samples and the magnitude is small either way.
 
 ---

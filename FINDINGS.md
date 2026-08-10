@@ -1,9 +1,19 @@
 # What we found, and what it means for Kirgis
 
-Synthesis of the completed analysis. **Primary results are the v2 harness at N = 31**
-(`analysis_long_v2.csv`, forced-continuation scoring). The v1 harness at N = 20 is retained
-throughout as a comparison, never silently mixed — see `CORRECTIONS.md` C12 for why that
-distinction is now enforced by tests rather than by convention.
+Synthesis of the completed analysis. **Primary results are the v2 harness: 31 models
+collected, 30 analysed** (`analysis_long_v2.csv`, forced-continuation scoring). SmolLM2-1.7B is
+excluded by a uniform discrimination threshold — see `LIMITATIONS.md` §22, which records that
+the criterion is post hoc. **Counts of the form "n of 31" below describe the COLLECTION;
+analyses run on 30.**
+
+**Foundation counts:** the instrument has **six moral foundations plus one non-moral control**
+(Social Norms). Statistics averaged "over seven foundations" pooled a control into a
+foundation-level number and inflated every cross-method correlation; they have been recomputed
+over the six. See §3.
+
+The v1 harness at N = 20 is retained throughout as a comparison, never silently mixed — see
+`CORRECTIONS.md` C12 for why that distinction is now enforced by tests rather than by
+convention.
 
 Each claim carries a strength label:
 
@@ -30,7 +40,7 @@ removing a large compression confound that would otherwise have manufactured it.
 
 ---
 
-## 2. The primary result — R at N = 31
+## 2. The primary result — R (fitted at N = 31; **refit pending at N = 30**)
 
 **ESTABLISHED — there is a real model × method interaction.** The full-MCMC permutation null
 (700 fits, F9, the specification the analysis plan originally named) collapses to a median R of
@@ -40,7 +50,7 @@ estimator is calibrated: destroy the interaction by construction and it reports 
 
 > **Fitted at N = 31 and now STALE — refit pending.** SmolLM2 is excluded (§3 note) and Social
 > Norms is reclassified as a control (below), so these need refitting on the pod. Neither change
-> is expected to move a verdict — all seven are indeterminate with wide intervals — but the
+> is expected to move a verdict — all seven levels are indeterminate with wide intervals — but the
 > numbers below should be read as provisional until the refit lands.
 
 | foundation | R | 95% CrI | verdict | MC spread | null median |
@@ -69,14 +79,16 @@ conclusion is the one P7 itself anticipated: this estimand is not resolvable at 
 project can reach, so the contribution is the design analysis rather than a resolved R.
 
 **ESTABLISHED — the numbers are reproducible, and we know what the reproducibility bug cost.**
-The MCMC seed was randomised per process (C11). Refitting all seven foundations under five
+The MCMC seed was randomised per process (C11). Refitting all seven levels (six foundations
+plus the control) under five
 explicit seeds moves `R_median` by **0.005–0.033**, which is **0.8%–2.2% of the credible-interval
 width**, and **no verdict changes**. The bug was real; its effect on any published conclusion
 was not. That is now a measured quantity rather than an assumption.
 
 **A previous finding of ours does NOT replicate.** At N = 20 we reported that pooling the
 residual variance *deflates* R by 4–16%, itself a reversal of the analysis plan's prediction
-(C2). At N = 31 pooling *inflates* R, by +0.3% to +6.6% in six of seven foundations. So the
+(C2). At N = 31 pooling *inflates* R, by +0.3% to +6.6% in six of the seven levels fitted
+(six foundations plus the control). So the
 direction is not stable across samples and the effect is small either way. The pre-specified
 method-specific residual remains the primary, but the case for it is now "small and
 unstable-in-sign", not "corrects a 4–16% deflation".
@@ -124,8 +136,9 @@ five times larger than the SmolLM2 exclusion (−0.020 vs −0.004).
 
 **ESTABLISHED, and it must not be buried: Kirgis's own confound is comparatively benign.** His
 two arms were top-3 logprob weighting (≈ our `label`) and the mean of ten sampled responses
-(≈ our `sampled`). Those rank models at **ρ = 0.842 at N = 31**, having been 0.880 at N = 20 —
-now measured on 55% more models, with a corrected scorer, and with the label arm no longer
+(≈ our `sampled`). Those rank models at **ρ = 0.818 over the six moral foundations at N = 30**
+(0.838 with the control pooled in, 0.842 before SmolLM2 was excluded), having been 0.880 at
+N = 20 — now measured on 50% more models, with a corrected scorer, and with the label arm no longer
 silently broken on a third of the roster. **The specific methodological flaw that motivated
 this entire project is one his conclusions can largely survive.** Saying so is the result of
 the audit, not a concession, and a write-up that suppressed it would be dishonest.
@@ -199,11 +212,11 @@ two 70B models license a claim about GPT-4-class systems.
 
 ## 5. Claim-by-claim bearing on Kirgis
 
-| Kirgis's claim | our bearing (v2, N=31) | strength |
+| Kirgis's claim | our bearing (v2, N=30 analysed) | strength |
 |---|---|---|
 | 1. MFT has explanatory power for LLM moral judgment | untouched — we did not test this | — |
-| 2. Models diverge from the human baseline | **divergence: yes**, under every one of six readouts — severity compression plus over-moralisation of Social-Norms items. **His directional pattern: the raw gap cannot adjudicate it** (compression predicts negative), the compression-adjusted gap is **+0.077 to +0.179** across readouts with 14–20 of 31 models positive, **and it grows with scale** | divergence ESTABLISHED; pattern SUPPORTED, and now with a mechanism |
-| 3. Providers differ systematically | the most exposed claim, but less than feared. Method perturbation is comparable to between-model variance (R ≈ 0.34–1.08), and his method is collinear with provider for five of six providers — **but his particular method pair agrees at ρ = 0.842**, so the ranking is unlikely to be an artifact of *that* confound | SUGGESTIVE |
+| 2. Models diverge from the human baseline | **divergence: yes**, under every one of six readouts — severity compression, `b` = 0.777 after correcting for regression dilution. *(The "over-moralisation of Social-Norms items" that stood here is **withdrawn** — those items are a non-moral control at the scale floor, where any compressive measurement reads high. See §5 of `LIMITATIONS.md` and C14.)* **His directional pattern: the raw gap cannot adjudicate it** (compression predicts negative), the compression-adjusted gap is **+0.077 to +0.179** across readouts, **and it grows with scale** | divergence ESTABLISHED; pattern SUPPORTED, and now with a mechanism |
+| 3. Providers differ systematically | the most exposed claim, but less than feared. Method perturbation is comparable to between-model variance (**R ≈ 0.46–1.08 across the six moral foundations**), and his method is collinear with provider for five of six providers — **but his particular method pair agrees at ρ = 0.818**, so the ranking is unlikely to be an artifact of *that* confound | SUGGESTIVE |
 | 4. Divergence grows with capability | **now directly supported within open-weight families** — P5, both ladders, LOO-robust, after removing the compression confound. Whether it extends to his frontier range is an extrapolation we cannot test | SUPPORTED within our range |
 
 **NOT SHOWN — that Kirgis's conclusions are wrong.** We did not replicate his models, his
@@ -323,7 +336,7 @@ we cannot pin it down at any feasible N. The B2 simulation turns that into a con
 statement about what resolving it would require.
 
 Then **Kirgis, fairly**: his design carries a real risk, we quantified it, and for his specific
-pair of methods it is modest (ρ = 0.842). Separately, his logprob arm has a data-integrity
+pair of methods it is modest (ρ = 0.818). Separately, his logprob arm has a data-integrity
 problem he did not detect, and his code does not implement the formula his paper prints.
 
 Do not lead with "Kirgis is wrong". We did not show that. We showed his confound is survivable,

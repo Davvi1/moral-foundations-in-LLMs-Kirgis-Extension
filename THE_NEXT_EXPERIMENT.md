@@ -43,7 +43,8 @@ variance *conditional on one prompt*. That limitation is already written down
 
 Experiment 1 asks: **does the scoring method move the measured moral profile, and the model
 ranking, on one instrument under one prompt?** Answer, at N=31: the variance ratio R is
-indeterminate in all seven foundations (0.343–1.075), but ρ(label, sampled) = 0.842 — Kirgis's
+indeterminate in all seven levels (0.46–1.08 across the six moral foundations; the non-moral
+control sits at 0.34), but ρ(label, sampled) = 0.818 over the six foundations — Kirgis's
 confound is survivable for rankings, and the four conditions turn out to be three independent
 readouts.
 
@@ -307,7 +308,7 @@ inference, is the cost driver, so 12× the data is not 12× the bill.
 **Analysis: rank correlation, not variance decomposition.** Stated flatly because the opposite was
 proposed and was wrong. Estimating σ²(model:prompt) from 12 prompt levels would repeat exactly the
 error P7 falsified — variance components do not resolve at small group counts, and R is
-indeterminate in all seven foundations even at N=31. Both comparison papers use rank/consistency
+indeterminate in all seven levels even at N=31. Both comparison papers use rank/consistency
 metrics. So do we. Primary statistic: Spearman ρ between model rankings, following 2509.01790;
 Kendall's τ as sensitivity, following Alzahrani et al.
 
@@ -385,6 +386,6 @@ Recorded now so the decision is not made retrospectively.
 - If a second instrument cannot be found whose response format matches the MFV's, the instrument
   factor is confounded with format and Q2 is not answerable as posed. Better to run Q1 alone and
   say so than to run a confounded Q2.
-- If experiment 1's write-up shows the ranking result (ρ = 0.842) is the paper's real
+- If experiment 1's write-up shows the ranking result (ρ = 0.818) is the paper's real
   contribution, then the correct next move may be **more models on one instrument**, not more
   instruments — a rank correlation is far more sensitive to N models than to N items.
