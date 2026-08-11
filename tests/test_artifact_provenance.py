@@ -84,10 +84,30 @@ def test_v2_variance_ratio_is_v2():
         f"sources its R table from these rows.")
     assert set(d.n_models.unique()) <= {V2_MODELS_ANALYSED, V2_MODELS}, (
         f"unexpected roster size in variance_ratio_v2.csv: {sorted(d.n_models.unique())}")
-    assert set(d.n_methods.unique()) == {len(V2_CONDITIONS)}
+    # n_methods is FIVE, not six. Cloze is excluded from the primary because it is scored
+    # against a different prompt (C15) -- and this assertion previously read
+    # `== {len(V2_CONDITIONS)}`, i.e. six, which ENCODED THE BUG AS CORRECT and is why nothing
+    # caught it. The confounded fit lives in variance_ratio_v2_withcloze.csv and is checked
+    # separately below.
+    assert set(d.n_methods.unique()) == {len(V2_CONDITIONS) - 1}, (
+        f"primary R table reports n_methods={sorted(d.n_methods.unique())}; expected "
+        f"{len(V2_CONDITIONS) - 1} (the six v2 conditions minus cloze). If cloze is back in "
+        f"the primary, R is inflated ~2.7x by a prompt-confounded arm -- see C15.")
     # The control must be labelled, or a downstream consumer can average it in as a foundation.
     assert "is_control" in d.columns, "is_control column missing — refit with the current script"
     assert d.is_control.astype(str).str.lower().eq("true").sum() > 0, "no row flagged as control"
+
+
+def test_withcloze_artifact_is_the_confounded_sensitivity():
+    """The confounded fit is KEPT, deliberately, and must be distinguishable from the primary.
+
+    R roughly triples when cloze is included. Reporting both is the honest treatment: the gap is
+    the largest researcher degree of freedom in this analysis. But the two must never be
+    confusable, so the sensitivity carries six methods and its own filename.
+    """
+    d = _read("variance_ratio_v2_withcloze.csv")
+    assert set(d.n_methods.unique()) == {len(V2_CONDITIONS)}, (
+        "variance_ratio_v2_withcloze.csv should contain all six conditions including cloze")
 
 
 @pytest.mark.parametrize("name,scan,fam", [

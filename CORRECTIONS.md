@@ -515,6 +515,35 @@ effect. Only one of the two is a design violation.
 refit (`41e48c8`) contains the string "cloze" **zero times** — there was no filter — and every
 committed R row records `n_methods = 6`.
 
+### RESOLVED by MCMC refit, 2026-08-11 — and the moment estimator had UNDERSTATED it
+
+112 fits. Measured inflation from including cloze: **mean 2.70×**, against the ~2.1× the moment
+estimator implied. The rough check was in the right direction and too kind.
+
+| foundation | R, design-conformant | *with cloze* | ratio |
+|---|---:|---:|---:|
+| *Social Norms (control)* | **0.133** → `robust` | *0.439* | 3.30× |
+| Care | 0.181 | *0.632* | 3.50× |
+| Loyalty | 0.181 | *0.485* | 2.68× |
+| Sanctity | 0.246 | *0.545* | 2.22× |
+| Liberty | 0.317 | *0.756* | 2.39× |
+| Fairness | 0.408 | *0.957* | 2.35× |
+| Authority | 0.469 | *1.157* | 2.46× |
+
+**Three consequences, and the first is a withdrawn claim.**
+
+1. *"Method perturbation is comparable to between-model variance"* is **not supported**. Design
+   conformant, R runs 0.181–0.469 across the six moral foundations — a fifth to a half of
+   between-model variance. The stronger sentence was an artifact of the confounded arm.
+2. **Five of seven upper credible bounds exceeded 1.0 with cloze; zero do without it.** The
+   corrected result is bounded away from "not interpretable" — cleaner than what we had.
+3. **The control resolves to `robust`** ([0.067, 0.240]), the project's first non-`indeterminate`
+   verdict.
+
+**The error ran in our own favour**, which is why this is the worst entry in this file. Both
+numbers are now reported side by side: the gap between them is the largest researcher degree of
+freedom in the analysis, and it was found in our own work.
+
 **What remains uncertain, stated precisely.** The −52% comes from a moment-estimator
 decomposition, not MCMC. It tracks the MCMC values closely in ordering but underestimates them
 in level (e.g. Authority 0.867 vs 1.157). So the *direction and rough magnitude are established*;

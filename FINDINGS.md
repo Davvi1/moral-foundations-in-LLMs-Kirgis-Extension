@@ -28,10 +28,12 @@ Each claim carries a strength label:
 
 Scoring method perturbs a language model's measured moral profile by an amount comparable to
 the differences between models, and that is real rather than an artifact: a 700-fit permutation
-null collapses to ≈ 0.001 while observed R runs **0.49–1.16 across the six moral foundations**
-(the non-moral control sits lower, at 0.44). But **the magnitude remains unresolved at N = 30,
-exactly as it was at N = 20** — all six foundations and the control are still `indeterminate`,
-which falsifies our own power prediction. **The two methods Kirgis actually confounded with
+null collapses to ≈ 0.001 while observed R runs **0.18–0.47 across the six moral foundations**
+(the non-moral control sits lower still, at 0.13, and is the one **`robust`** verdict). But
+**the magnitude remains unresolved at N = 30 for every moral foundation**, which falsifies our
+own power prediction. Method effects are real and **roughly a fifth to a half of between-model
+variance** — not comparable to it, a claim we withdrew on 2026-08-11 when the prompt-varying
+cloze arm was removed from the primary (C15). **The two methods Kirgis actually confounded with
 provider agree at ρ = 0.818 over the six moral foundations**, so his specific design flaw is one
 his conclusions can largely survive. The most consequential new result is about scale: **his
 individualizing-over-binding pattern does appear, and it grows with model size** on both
@@ -48,49 +50,48 @@ removing a large compression confound that would otherwise have manufactured it.
 **two to three orders of magnitude** in every foundation. Method is not noise, and the
 estimator is calibrated: destroy the interaction by construction and it reports none.
 
-**REFITTED 2026-08-10 at N = 30**, with the control labelled, plus the two sensitivities that
-had been outstanding. 84 fits. Primary specification: exclusions applied, method-specific
+**REFITTED 2026-08-11 at N = 30, WITH CLOZE EXCLUDED (C15).** The primary now matches the
+design: cloze is scored against a different prompt, so a method-effect estimate containing it is
+confounded with prompt. 112 fits. Primary specification: exclusions applied, method-specific
 residuals.
 
-| foundation | **R (N=30)** | 95% CrI | verdict | *was (N=31)* | scan-excl | +family |
+| foundation | **R** | 95% CrI | verdict | scan-excl | +family | *with cloze* |
 |---|---:|---|---|---:|---:|---:|
-| *Social Norms — **NON-MORAL CONTROL**, not a foundation* | *0.439* | *[0.223, 0.818]* | *indeterminate* | *0.343* | *0.450* | *0.426* |
-| Loyalty | 0.485 | [0.243, 0.939] | indeterminate | 0.458 | 0.476 | 0.472 |
-| Sanctity | 0.545 | [0.257, 1.085] | indeterminate | 0.586 | 0.514 | 0.549 |
-| Care | 0.632 | [0.310, 1.224] | indeterminate | 0.655 | 0.609 | 0.660 |
-| Liberty | 0.756 | [0.381, 1.479] | indeterminate | 0.779 | 0.756 | 0.835 |
-| Fairness | 0.957 | [0.460, 1.991] | indeterminate | 1.021 | 0.894 | 0.931 |
-| Authority | 1.157 | [0.564, 2.352] | indeterminate | 1.075 | 1.149 | 1.211 |
+| *Social Norms — **NON-MORAL CONTROL*** | **0.133** | [0.067, 0.240] | **robust** | 0.137 | 0.131 | *0.439* |
+| Care | 0.181 | [0.081, 0.369] | indeterminate | 0.144 | 0.183 | *0.632* |
+| Loyalty | 0.181 | [0.089, 0.355] | indeterminate | 0.164 | 0.179 | *0.485* |
+| Sanctity | 0.246 | [0.102, 0.527] | indeterminate | 0.208 | 0.251 | *0.545* |
+| Liberty | 0.317 | [0.153, 0.633] | indeterminate | 0.294 | 0.333 | *0.756* |
+| Fairness | 0.408 | [0.199, 0.810] | indeterminate | 0.356 | 0.404 | *0.957* |
+| Authority | 0.469 | [0.231, 0.957] | indeterminate | 0.414 | 0.461 | *1.157* |
 
-**Every one of the 21 fits above is `indeterminate`** — 7 levels × 3 specifications. Convergence:
-78 of 84 fits at `rhat` ≤ 1.01, six between 1.02 and 1.03. That is slightly above the 1.01 target
-and is disclosed rather than rounded away; it does not threaten a conclusion whose intervals are
-0.6–2.2 wide, but the target was 1.01 and six fits missed it.
+**A CLAIM OF OURS IS WITHDRAWN, and this is the most consequential correction in the project.**
+Every R published before 2026-08-11 included the cloze arm. Including it inflates R by a mean of
+**2.70×** — measured, not estimated; a moment-estimator check had put it at ~2.1× and
+**understated it**. Three things follow, and the first is the one that hurts:
 
-**ESTABLISHED — the pre-specified scan-exclusion analysis changes nothing.** `ANALYSIS_PLAN.md:192`
-required repeating the primary analysis without prose-scraped digits. It was never run (a PROCESS
-failure logged in `LIMITATIONS.md` §1); it has now been run. Dropping those 4.7% of rows moves R
-by −6% to +3% and **flips no verdict**. The ranking half had already shown the same direction:
-excluding them *improved* cross-method agreement (greedy~sampled 0.790 → 0.959). The check we
-promised and skipped turns out to have been safe to skip — which is knowable only now that it
-has been done.
+1. **"Method perturbation is comparable to between-model variance" is no longer supported.** That
+   sentence rested on R values near and above 1. Design-conformant, R runs **0.181–0.469 across
+   the six moral foundations** — method effects are roughly **a fifth to a half** of between-model
+   variance, not comparable to it. The stronger claim was an artifact of a prompt-varying arm.
+2. **The result is now bounded away from "not interpretable".** With cloze, **five of seven**
+   upper credible bounds exceeded 1.0, so R could plausibly have been larger than between-model
+   variance. Without it, **zero of seven** do. That is a cleaner result than we had, and it is
+   the one the design specified.
+3. **One verdict resolves.** The non-moral control is **`robust`** — [0.067, 0.240], entirely
+   inside the band. Readouts agree almost perfectly on items every model rates near the floor,
+   which is what a control ought to show and is the first non-`indeterminate` verdict the project
+   has produced.
 
-**ESTABLISHED — family clustering does not materially affect R, and my prediction was half
-wrong.** Eight Qwens, four Llama and four Phi are not independent draws (F3). I predicted adding
-`(1|family)` would raise R and widen intervals, since it partials shared variance out of R's
-denominator. **Neither happened systematically**: R rose in 4 of 7 levels and fell in 3; intervals
-widened in 4 and narrowed in 3. The largest move is Liberty, +10%. So the Qwen-clustering
-objection — a reviewer's first question — has a measured answer rather than a hand-wave, and the
-answer is that it does not change the result.
+**The direction matters and should be stated plainly in the write-up:** the error ran in our own
+favour. Including cloze made scoring method look like a bigger problem than it is, which is the
+direction that most demands correction and the reason C15 is logged as the worst entry in
+`CORRECTIONS.md`.
 
-R is a variance ratio, so read it on the SD scale: R ≈ 0.65 means the method-induced shift in a
-model's position is about **0.8× the spread between models**. Not a rounding error.
-
-**Note which row is lowest.** Social Norms has the smallest R, and it is *not a foundation* — it
-is Clifford's non-moral control, sitting at the floor of the scale where every readout agrees
-that nothing much is wrong. Quoting the range as "0.44–1.16 across foundations" therefore takes
-its lower bound from a control category. **Across the six actual moral foundations the range is
-0.49–1.16.**
+**ESTABLISHED — the sensitivities are now on the corrected basis, and they barely move.**
+Scan-exclusion shifts R by −20% to +3%; the family random effect by −2% to +5%. Both were
+previously computed on the confounded primary and have been refitted. Convergence: max `rhat`
+1.02 across all 112 fits.
 
 **ESTABLISHED — every verdict is still `indeterminate`, and this falsifies P7.** We predicted
 that at N ≈ 30 at least two foundations would escape the indeterminate band. **None did.**
@@ -239,7 +240,7 @@ two 70B models license a claim about GPT-4-class systems.
 |---|---|---|
 | 1. MFT has explanatory power for LLM moral judgment | untouched — we did not test this | — |
 | 2. Models diverge from the human baseline | **divergence: yes**, under every one of six readouts — severity compression, `b` = 0.777 after correcting for regression dilution. *(The "over-moralisation of Social-Norms items" that stood here is **withdrawn** — those items are a non-moral control at the scale floor, where any compressive measurement reads high. See §5 of `LIMITATIONS.md` and C14.)* **His directional pattern: the raw gap cannot adjudicate it** (compression predicts negative), the compression-adjusted gap is **+0.077 to +0.179** across readouts, **and it grows with scale** | divergence ESTABLISHED; pattern SUPPORTED, and now with a mechanism |
-| 3. Providers differ systematically | the most exposed claim, but less than feared. Method perturbation is comparable to between-model variance (**R ≈ 0.49–1.16 across the six moral foundations**), and his method is collinear with provider for five of six providers — **but his particular method pair agrees at ρ = 0.818**, so the ranking is unlikely to be an artifact of *that* confound | SUGGESTIVE |
+| 3. Providers differ systematically | the most exposed claim, but less than feared. Method perturbation is comparable to between-model variance (**R ≈ 0.18–0.47 across the six moral foundations**), and his method is collinear with provider for five of six providers — **but his particular method pair agrees at ρ = 0.818**, so the ranking is unlikely to be an artifact of *that* confound | SUGGESTIVE |
 | 4. Divergence grows with capability | **now directly supported within open-weight families** — P5, both ladders, LOO-robust, after removing the compression confound. Whether it extends to his frontier range is an extrapolation we cannot test | SUPPORTED within our range |
 
 **NOT SHOWN — that Kirgis's conclusions are wrong.** We did not replicate his models, his

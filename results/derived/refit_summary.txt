@@ -1,11 +1,21 @@
-=== refit batch summary  (2026-08-10T17:21:46Z) ===
-  variance_ratio_v2.csv  rows=28  bytes=3766
-  variance_ratio_v2_noscan.csv  rows=28  bytes=3729
-  variance_ratio_v2_family.csv  rows=28  bytes=3732
+=== refit batch summary  (2026-08-10T21:03:02Z) ===
+  variance_ratio_v2.csv  rows=28  bytes=3761
+  variance_ratio_v2_withcloze.csv  rows=28  bytes=3766
+  variance_ratio_v2_noscan.csv  rows=28  bytes=3736
+  variance_ratio_v2_family.csv  rows=28  bytes=3731
 
 --- R by foundation, all three runs ---
 
 variance_ratio_v2.csv  (n_models=30)
+   Social Norms   R=0.133 [0.067, 0.240]  robust  rhat=1.010  [CONTROL]
+   Care           R=0.181 [0.081, 0.369]  indeterminate  rhat=1.000
+   Loyalty        R=0.181 [0.089, 0.355]  indeterminate  rhat=1.010
+   Sanctity       R=0.246 [0.102, 0.527]  indeterminate  rhat=1.000
+   Liberty        R=0.317 [0.153, 0.633]  indeterminate  rhat=1.010
+   Fairness       R=0.408 [0.199, 0.810]  indeterminate  rhat=1.000
+   Authority      R=0.469 [0.231, 0.957]  indeterminate  rhat=1.000
+
+variance_ratio_v2_withcloze.csv  (n_models=30)
    Social Norms   R=0.439 [0.223, 0.818]  indeterminate  rhat=1.000  [CONTROL]
    Loyalty        R=0.485 [0.243, 0.939]  indeterminate  rhat=1.000
    Sanctity       R=0.545 [0.257, 1.085]  indeterminate  rhat=1.010
@@ -15,19 +25,19 @@ variance_ratio_v2.csv  (n_models=30)
    Authority      R=1.157 [0.564, 2.352]  indeterminate  rhat=1.000
 
 variance_ratio_v2_noscan.csv  (n_models=30)
-   Social Norms   R=0.450 [0.229, 0.860]  indeterminate  rhat=1.000  [CONTROL]
-   Loyalty        R=0.476 [0.248, 0.915]  indeterminate  rhat=1.000
-   Sanctity       R=0.514 [0.250, 1.029]  indeterminate  rhat=1.020
-   Care           R=0.609 [0.293, 1.185]  indeterminate  rhat=1.010
-   Liberty        R=0.756 [0.377, 1.507]  indeterminate  rhat=1.010
-   Fairness       R=0.894 [0.427, 1.854]  indeterminate  rhat=1.010
-   Authority      R=1.149 [0.550, 2.430]  indeterminate  rhat=1.010
+   Social Norms   R=0.137 [0.071, 0.258]  indeterminate  rhat=1.010  [CONTROL]
+   Care           R=0.144 [0.061, 0.323]  indeterminate  rhat=1.000
+   Loyalty        R=0.164 [0.081, 0.323]  indeterminate  rhat=1.000
+   Sanctity       R=0.208 [0.082, 0.461]  indeterminate  rhat=1.020
+   Liberty        R=0.294 [0.140, 0.591]  indeterminate  rhat=1.010
+   Fairness       R=0.356 [0.173, 0.719]  indeterminate  rhat=1.010
+   Authority      R=0.414 [0.199, 0.836]  indeterminate  rhat=1.000
 
 variance_ratio_v2_family.csv  (n_models=30)
-   Social Norms   R=0.426 [0.206, 0.797]  indeterminate  rhat=1.010  [CONTROL]
-   Loyalty        R=0.472 [0.235, 0.899]  indeterminate  rhat=1.000
-   Sanctity       R=0.549 [0.271, 1.147]  indeterminate  rhat=1.010
-   Care           R=0.660 [0.329, 1.365]  indeterminate  rhat=1.010
-   Liberty        R=0.835 [0.386, 1.719]  indeterminate  rhat=1.000
-   Fairness       R=0.931 [0.440, 1.907]  indeterminate  rhat=1.000
-   Authority      R=1.211 [0.556, 2.721]  indeterminate  rhat=1.000
+   Social Norms   R=0.131 [0.066, 0.248]  robust  rhat=1.010  [CONTROL]
+   Loyalty        R=0.179 [0.086, 0.352]  indeterminate  rhat=1.010
+   Care           R=0.183 [0.079, 0.388]  indeterminate  rhat=1.000
+   Sanctity       R=0.251 [0.112, 0.532]  indeterminate  rhat=1.010
+   Liberty        R=0.333 [0.157, 0.698]  indeterminate  rhat=1.000
+   Fairness       R=0.404 [0.191, 0.809]  indeterminate  rhat=1.000
+   Authority      R=0.461 [0.228, 0.940]  indeterminate  rhat=1.000
