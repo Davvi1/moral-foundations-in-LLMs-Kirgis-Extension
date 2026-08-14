@@ -69,7 +69,7 @@ FINDINGS.md                 synthesis; claims with strength labels
 LIMITATIONS.md              everything constraining what may be claimed
 CORRECTIONS.md              every claim withdrawn or reversed, and how it was caught
 references.md               every citation verified by fetching the source
-RESUME.md                   operational sequence + pod cheat-sheet
+`FINDINGS.md`                   operational sequence + pod cheat-sheet
 ```
 
 ## Reproducing

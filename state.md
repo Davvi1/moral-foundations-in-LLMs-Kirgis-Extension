@@ -53,7 +53,7 @@ construction, which manufactures the interaction being measured.
 **Working plan:** `~/.claude/plans/okay-what-should-be-gleaming-possum.md`, 9 steps.
 Steps 1–3 complete as of 2026-08-07.
 
-**→ READ `RESUME.md` FIRST when picking this up.** It carries the audit of what is and is not
+**→ READ `FINDINGS.md` FIRST when picking this up.** It carries the audit of what is and is not
 verified, the pod cheat-sheet, and the ordered sequence for the next session. The single most
 important item there: **QSTN has never actually been run.** Everything on the pod so far used
 raw vLLM. QSTN pins only `vllm>=0.12` and we installed 0.26.0, so its API compatibility is

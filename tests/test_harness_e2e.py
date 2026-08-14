@@ -58,18 +58,18 @@ def harness(fake_vllm_module, tmp_path, monkeypatch):
     return R
 
 
-# Both harnesses are live code and both must stay correct. v2 is what new collection uses;
-# v1 still backs every committed Phase-1 CSV and its manifests pin those code paths, so a
-# regression there would make the archived results unreproducible. Parametrising means every
-# end-to-end guarantee below is asserted twice, once per harness, rather than the older one
-# quietly rotting once it stopped being the default.
+# v2 is the only harness. v1 was deleted on 2026-08-11 together with the collection it
+# produced (V1_TO_V2.md), so there is no longer an archived result whose reproducibility
+# depends on those code paths. The parametrisation is kept with a single value rather than
+# inlined: a future v3 must be added HERE, so that every end-to-end guarantee below is
+# asserted once per harness instead of the older one quietly rotting once it stops being the
+# default — which is precisely what happened to v1.
 EXPECTED_CONDITIONS = {
-    "v1": {"label", "string", "greedy", "sampled"},
     "v2": {"label", "string_line", "string_bare", "greedy", "sampled"},
 }
 
 
-@pytest.fixture(params=["v1", "v2"])
+@pytest.fixture(params=["v2"])
 def args_ns(request):
     import argparse
 
@@ -90,36 +90,6 @@ ENTRY = {"id": "Qwen/Qwen2.5-0.5B-Instruct", "revision": PINNED_REV,
 
 # =======================================================================================
 # Silent-data-loss guards
-# =======================================================================================
-
-
-def test_every_key_produced_by_a_runner_is_in_FIELDS(qwen_tok, prompt_cfg, items):
-    """csv.DictWriter(extrasaction='ignore') DROPS unknown keys silently. If a runner ever
-    emits a column missing from FIELDS, that data vanishes with no error. This is the
-    single most dangerous silent failure in the harness."""
-    import run_experiment as R
-
-    ps = [C.render_prompt(qwen_tok, prompt_cfg, q, i) for i, q in items[:2]]
-    ids = C.option_token_ids(qwen_tok, prompt_cfg["options"])
-    llm = fake_vllm.FakeLLM(qwen_tok, lambda p, sp, t: {
-        "text": "2", "token_ids": [ids[2][0]], "first_logprobs": {ids[2][0]: -0.1}})
-
-    produced: set[str] = set()
-    for rows in (
-        C.run_label(llm, fake_vllm.SamplingParams, ps, ids),
-        C.run_string(llm, fake_vllm.SamplingParams, qwen_tok, ps, prompt_cfg["options"]),
-        C.run_free(llm, fake_vllm.SamplingParams, ps, greedy=True),
-        C.run_free(llm, fake_vllm.SamplingParams, ps, greedy=False, k=2, seeds=[0, 1]),
-    ):
-        for r in rows:
-            produced |= set(r)
-
-    missing = produced - set(R.FIELDS) - {"model", "revision", "foundation"}
-    assert not missing, f"these columns would be silently dropped by DictWriter: {sorted(missing)}"
-
-
-# =======================================================================================
-# Full run
 # =======================================================================================
 
 
@@ -186,8 +156,7 @@ def test_no_column_is_entirely_empty(harness, prompt_cfg, items, args_ns, tmp_pa
     # Harness-specific columns. FIELDS is shared, so each harness leaves the other's
     # diagnostics blank; that is correct, and stating it here keeps the guard sharp for
     # every remaining column.
-    exempt |= {"v1": {"surface_form", "boundary_shift"},   # v2-only diagnostics
-               "v2": {"label_position"}}[args_ns.harness]  # v1 scanned positions; v2 does not
+    exempt |= {"v2": {"label_position"}}[args_ns.harness]  # v1 scanned positions; v2 does not
     for col in rows[0]:
         if col in exempt:
             continue

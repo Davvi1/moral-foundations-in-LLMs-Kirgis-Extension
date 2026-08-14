@@ -363,15 +363,6 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
             print(f"  {cond:<12} done (+{len(new)})  mean mass="
                   f"{(sum(mass)/len(mass) if mass else float('nan')):.4f}"
                   f"  boundary_shift={shifted}  degenerate={degen}")
-    else:
-        if "label" in want:
-            rows += C.run_label(llm, SamplingParams, prompts, tok_ids)
-            print(f"  label    done ({len(rows)} rows)")
-        if "string" in want:
-            n = len(rows)
-            rows += C.run_string(llm, SamplingParams, tok, prompts, opts,
-                                 length_normalise=True)
-            print(f"  string   done (+{len(rows)-n})")
     if "greedy" in want:
         n = len(rows)
         rows += C.run_free(llm, SamplingParams, prompts, greedy=True)
@@ -449,7 +440,10 @@ def main() -> int:
                     help="shard each model across this many GPUs (0 = auto: the largest "
                          "power of two that nvidia-smi can see). Needed for models whose "
                          "bf16 weights exceed one card, e.g. Mistral-Large at ~245 GiB.")
-    ap.add_argument("--harness", choices=["v1", "v2"], default="v2",
+    # v1 was deleted 2026-08-11 (V1_TO_V2.md). The flag is gone; the VALUE is kept because
+    # every raw CSV and manifest records `harness`, and dropping the column would break the
+    # provenance tests that distinguish the collections.
+    ap.add_argument("--harness", choices=["v2"], default="v2",
                     help="v2 (default) scores every option by forced continuation: exact p_k, "
                          "no top-k truncation, no position scan, boundary measured not assumed. "
                          "v1 reproduces the archived Phase-1 code paths and should be used only "

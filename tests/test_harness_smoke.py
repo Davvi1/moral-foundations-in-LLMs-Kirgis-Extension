@@ -24,7 +24,7 @@ import tempfile
 import types
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 # Two models, chosen to exercise BOTH sides of defect D1. Qwen's chat template does not emit
 # BOS, so local and engine token counts agree and v1's boundary happened to be right.
@@ -99,8 +99,19 @@ RESULTS = []
 
 
 def check(name, cond, detail=""):
+    """Record, print, and ASSERT.
+
+    The assert was added when these files moved into tests/ on 2026-08-11. Without it pytest
+    collects the test_* functions, runs them, sees no exception and reports PASS even when
+    every check inside failed — which would have been worse than leaving them uncollected,
+    because the suite would have gone green while covering nothing.
+
+    `main()` still catches the assertion per test function, so the standalone runner keeps
+    printing the full report instead of stopping at the first failure.
+    """
     RESULTS.append((name, bool(cond), detail))
     print(f"  {'PASS' if cond else 'FAIL'}  {name}{('  — ' + detail) if detail else ''}")
+    assert cond, f"{name}{('  — ' + detail) if detail else ''}"
 
 
 def run_one(R, prompt_cfg, models_cfg, items, meta, model_id) -> bool:
@@ -195,8 +206,9 @@ def run_one(R, prompt_cfg, models_cfg, items, meta, model_id) -> bool:
         return not t["v1_boundary_was_correct"]
 
 
-def main() -> int:
-    argparse.ArgumentParser().parse_args()
+def main(parse_argv: bool = False) -> int:
+    if parse_argv:
+        argparse.ArgumentParser().parse_args()
     from transformers import AutoTokenizer
 
     import run_experiment as R
@@ -225,5 +237,16 @@ def main() -> int:
     return 0
 
 
+def test_v2_harness_smoke():
+    """pytest entry point.
+
+    This file had NO test_* function, so moving it into tests/ would have collected zero
+    tests while looking like coverage. main() drives run_model() against a fake vLLM and real
+    tokenizers for two models chosen to exercise different tokenizer behaviour, and returns
+    non-zero if any check failed.
+    """
+    assert main() == 0, "v2 harness smoke test failed — see printed checks above"
+
+
 if __name__ == "__main__":
-    raise SystemExit(main())
+    raise SystemExit(main(parse_argv=True))

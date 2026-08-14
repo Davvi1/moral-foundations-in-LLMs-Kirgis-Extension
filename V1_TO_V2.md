@@ -108,10 +108,49 @@ Derived: `analysis_long.csv`, `variance_ratio.csv`, `controls.md`, `kirgis_patte
 Scripts whose only purpose was v1 or a one-shot migration: `merge_labelfix.py`,
 `add_phase2_models.py`, `add_phase3_models.py`, `diagnose_string_scoring.py`, `compare_v1_v2.py`.
 
-**Kept despite looking v1-ish:** `scripts/conditions.py`. Its `run_label` / `run_string` /
-`run_free` are the v1 scorers, but the rest of the module — `render_prompt`, `option_token_ids`,
-`expectation`, `parse_digit`, `is_refusal`, `failure_type` — is shared infrastructure that v2
-depends on. `conditions_v2.py` imports from it directly. Deleting it would break the v2 harness.
+**Kept despite looking v1-ish:** `scripts/conditions.py`. It held the v1 scorers, but the rest
+of the module — `render_prompt`, `option_token_ids`, `expectation`, `parse_digit`, `is_refusal`,
+`failure_type` — is shared infrastructure that v2 depends on, and `conditions_v2.py` imports
+from it directly. Deleting the module would break the v2 harness. *(The dead scorers themselves
+were removed in the second pass — see §7. `run_free` remains, because v2 uses it.)*
 
 Also kept: `reanalyse_kirgis.py`, `kirgis_reanalysis.md` and `kirgis_rescored.csv`. Those audit
 **Kirgis's own published data**, not our v1 collection, and are unrelated to this cleanup.
+
+---
+
+## 7. Second pass, 2026-08-11 — dead code the V1 deletion left behind
+
+Removing the v1 *data* left v1 *code* stranded. Cleared in a follow-up:
+
+- **`conditions.py` lost `run_label` and `run_string`** — the v1 scorers, uncalled once the v1
+  collection was gone. **`run_free` stays**: v2 uses it for the greedy and sampled arms.
+- **`run_experiment.py` lost its `--harness v1` branch.** The `harness` *field* survives in every
+  raw CSV and manifest, and the provenance tests read it, so the value is pinned to `"v2"`
+  rather than deleted.
+- **Ten tests exercising those scorers were removed**, and `test_harness_e2e.py` stopped
+  parametrising over both harnesses.
+
+**And the finding that made this worth doing.** `pytest.ini` sets `testpaths = tests`, so
+`scripts/test_conditions_v2.py` and `scripts/test_harness_smoke.py` — 613 lines covering the
+**live** scorer and harness — had never run in the suite, while ~800 lines thoroughly tested the
+harness we had just deleted. **The test suite was inverted.** Both files moved into `tests/`.
+
+Moving them was not sufficient. Their `check()` helper printed `PASS`/`FAIL` and returned; under
+pytest that reports success no matter what the check found, so a straight move would have turned
+the suite green while covering nothing. `check()` now asserts, and `test_harness_smoke.py` — which
+had no `test_*` function at all and would have contributed zero collected tests — gained a real
+pytest entry point. Verified by calling `check(..., False)` directly in both files and confirming
+it raises.
+
+### Deleted in the same pass
+
+- **`scripts/pod_overnight.sh`** — drove the v2 collection, which is complete.
+- **`scripts/pod_analysis_batch.sh`** — superseded by `pod_refit_batch.sh`.
+  *Worth recording since the file is gone:* this is where the **verified-teardown pattern**
+  originated — check the exit code of `runpodctl stop pod` rather than merely that the binary
+  exists. That distinction was written after ~1h44m of idle billing leaked on 2026-08-08, and it
+  is referenced in `CORRECTIONS.md`. `pod_refit_batch.sh` carries the pattern forward, plus the
+  pull-before-stop guard added on 2026-08-10 after a completed run destroyed its own output.
+- **`RESUME.md`** — an operational sequence last updated 2026-08-07, superseded by `FINDINGS.md`
+  and by every correction since.

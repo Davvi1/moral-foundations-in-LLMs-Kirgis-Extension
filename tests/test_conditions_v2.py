@@ -23,7 +23,7 @@ import sys
 from dataclasses import dataclass
 from pathlib import Path
 
-sys.path.insert(0, str(Path(__file__).resolve().parent))
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "scripts"))
 
 from conditions import Prompt  # noqa: E402
 from conditions_v2 import (  # noqa: E402
@@ -123,8 +123,19 @@ RESULTS = []
 
 
 def check(name, cond, detail=""):
+    """Record, print, and ASSERT.
+
+    The assert was added when these files moved into tests/ on 2026-08-11. Without it pytest
+    collects the test_* functions, runs them, sees no exception and reports PASS even when
+    every check inside failed — which would have been worse than leaving them uncollected,
+    because the suite would have gone green while covering nothing.
+
+    `main()` still catches the assertion per test function, so the standalone runner keeps
+    printing the full report instead of stopping at the first failure.
+    """
     RESULTS.append((name, bool(cond), detail))
     print(f"  {'PASS' if cond else 'FAIL'}  {name}{('  — ' + detail) if detail else ''}")
+    assert cond, f"{name}{('  — ' + detail) if detail else ''}"
 
 
 def test_known_answer():
@@ -359,16 +370,19 @@ def main() -> int:
     args = ap.parse_args()
 
     print("v2 forced-continuation scorer — known-answer tests")
-    test_known_answer()
-    test_no_truncation()
-    test_boundary_merge()
-    test_variant_dedup()
-    test_variant_sum()
-    test_unequal_boundaries()
-    test_surface_forms()
-    test_engine_call_shape()
+    suite = [test_known_answer, test_no_truncation, test_boundary_merge, test_variant_dedup,
+             test_variant_sum, test_unequal_boundaries, test_surface_forms,
+             test_engine_call_shape]
     if args.online:
-        test_real_tokenizers()
+        suite.append(test_real_tokenizers)
+    for fn in suite:
+        # check() asserts now, so a failure would abort the run. Swallow it here ONLY: the
+        # failure is already recorded in RESULTS and reported below, and the standalone
+        # runner's value is showing every check, not stopping at the first bad one.
+        try:
+            fn()
+        except AssertionError:
+            pass
 
     failed = [n for n, ok, _ in RESULTS if not ok]
     print(f"\n{len(RESULTS) - len(failed)}/{len(RESULTS)} checks passed")
