@@ -13,8 +13,17 @@ with a pre-committed falsifier. They are evaluated here exactly as written.
       emerges with capability" story for open-weight models at any scale we can reach.
 
   P6  The per-model METHOD SPREAD (max - min condition mean) DECREASES with log parameters.
-      Basis: arXiv:2403.00998. If true, R is partly a small-model artifact -- which qualifies
+      Basis: arXiv:2403.00998 -- but see C20. Its full text was read 2026-08-15 and the claim
+      is a VISUAL-INSPECTION remark (p.5, "Judging from visual inspection"), over four models,
+      about models that PERFORM WORSE rather than models that are SMALLER. A directional prior,
+      not a published result. If true, R is partly a small-model artifact -- which qualifies
       OUR OWN headline, not just Kirgis's.
+
+      READ P6's OUTCOME WITH ONE MORE CAVEAT, added 2026-08-15. The spread is computed over
+      PROB = label, string_line, string_bare -- and label ~ string_line correlate at 0.964, so
+      the spread is |label - string_bare| at r = 0.989. P6 is therefore substantially a
+      statement about the BARE-PHRASE probe, whose mean retained mass is 0.0028, and not about
+      method sensitivity in general. See docs/FINDINGS.md 2 and docs/LIMITATIONS.md 4.
 
 TWO THINGS THIS SCRIPT REFUSES TO DO, both of which would be easy and wrong:
 
@@ -269,8 +278,9 @@ def main() -> int:
                      "ladders: Kirgis's claim 2 does not generalise to open-weight models at "
                      "any scale we can reach, and the 'emerges with capability' story is dead.")
     v6 = verdict_for(r6, False, "P6",
-                     "The pre-committed basis was arXiv:2403.00998, which reports larger "
-                     "method sensitivity for weaker models. That does not reproduce here.")
+                     "The pre-committed basis was arXiv:2403.00998, a visual-inspection "
+                     "remark suggesting larger method sensitivity for worse-performing "
+                     "models (C20). That direction does not reproduce here.")
     L.append(v5 + "\n")
     L.append(v6 + "\n")
     L.append("\nA failed prediction is reported as failed. The Phase-1 record already contains "

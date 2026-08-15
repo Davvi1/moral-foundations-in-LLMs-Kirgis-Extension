@@ -677,6 +677,19 @@ run manifest.
   models. If true, R is partly a small-model artifact and should shrink on the Phase-2 roster
   — which would qualify our own headline, not just Kirgis's.
 
+  > **AMENDMENT 2026-08-15 (C20) — the prediction text above is left VERBATIM, as all registered
+  > predictions are; this corrects its stated BASIS, which was overstated.** The full text of
+  > arXiv:2403.00998 was read on 2026-08-15 (it had only ever been read in abstract). The claim
+  > is there, on p.5, but it is prefaced **"Judging from visual inspection"** — no test, no
+  > effect size — it rests on **four models** (two 175B, one 7B, one 3B), and it is about models
+  > that **perform worse on the task**, not models that are *smaller*. "Reports" is too strong a
+  > verb, and the size-vs-performance slippage is ours.
+  >
+  > **The prediction and its outcome are unaffected** — P6 was tested against our own data, not
+  > against theirs. What changes is how the prior is described in the write-up: *"a
+  > visual-inspection remark in Tsvilodub et al. (2024), which we treated as a directional
+  > prior"*, not *"a published result"*.
+
 **Power**
 
 - **P7.** At N=30 the credible intervals on R_f will narrow enough that at least two

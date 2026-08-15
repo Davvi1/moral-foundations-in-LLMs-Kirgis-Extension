@@ -42,11 +42,18 @@ variance *conditional on one prompt*. That limitation is already written down
 ## 2. The question the next experiment asks
 
 Experiment 1 asks: **does the scoring method move the measured moral profile, and the model
-ranking, on one instrument under one prompt?** Answer, at N=31: the variance ratio R is
-indeterminate in all seven levels (0.46–1.08 across the six moral foundations; the non-moral
-control sits at 0.34), but ρ(label, sampled) = 0.818 over the six foundations — Kirgis's
-confound is survivable for rankings, and the four conditions turn out to be three independent
-readouts.
+ranking, on one instrument under one prompt?** Answer, at N=30: the variance ratio R is
+**0.181–0.469 across the six moral foundations, indeterminate in all six**; the non-moral
+control resolves to **`robust`** at 0.133. ρ(label, sampled) = 0.818 over the six foundations —
+Kirgis's confound is survivable for rankings, and the four conditions turn out to be three
+independent readouts.
+
+> **CORRECTED 2026-08-15 (C15/C18).** This paragraph read *"at N=31 … indeterminate in all seven
+> levels (0.46–1.08 across the six moral foundations; the non-moral control sits at 0.34)"*.
+> Those are **with-cloze** figures on the pre-refit N=31 basis — the confounded arm C15
+> withdrew, which inflated R by 2.70×. Two things were wrong beyond the numbers: the primary is
+> **N = 30**, and the control is no longer indeterminate. This document was the fifth to carry
+> C15-era values.
 
 Experiment 2 asks the two questions that answer immediately raises:
 
@@ -194,9 +201,13 @@ check.
 - **Alzahrani et al., arXiv:2402.01781 (ACL 2024)** — benchmark perturbations including answer
   selection method shift MMLU leaderboard position by up to eight places, reported as Kendall's τ.
   Still the methodological template for the ranking statistic.
-- **arXiv:2403.00998** — five methods for determining an LLM's answer choice; no single method
-  best; method choice matters more for weaker models. The outstanding overlap check
-  (`references.md`, "Open, unverified") is now **blocking** for experiment 2, not deferrable.
+- **arXiv:2403.00998** — five methods for determining an LLM's answer choice. Full text read
+  2026-08-15: **no single method is best across all models** (though label scoring won for three
+  of their four, and their Discussion calls it "best and most stable"); and method choice
+  "seems to matter more for models which overall perform worse" — **a visual-inspection remark,
+  four models, no statistical test** (C20). Overlap check **DONE 2026-08-10**: their domain is
+  pragmatic language interpretation and they compute no cross-method model-ranking agreement,
+  so the ranking estimand survives.
 
 ### 3.4 Found during this check, relevant to instrument choice
 
@@ -308,7 +319,9 @@ inference, is the cost driver, so 12× the data is not 12× the bill.
 **Analysis: rank correlation, not variance decomposition.** Stated flatly because the opposite was
 proposed and was wrong. Estimating σ²(model:prompt) from 12 prompt levels would repeat exactly the
 error P7 falsified — variance components do not resolve at small group counts, and R is
-indeterminate in all seven levels even at N=31. Both comparison papers use rank/consistency
+indeterminate in **all six moral foundations** even at N=30 (the non-moral control does
+resolve, to `robust`; a floor-bound control is not evidence the estimand is tractable).
+Both comparison papers use rank/consistency
 metrics. So do we. Primary statistic: Spearman ρ between model rankings, following 2509.01790;
 Kendall's τ as sensitivity, following Alzahrani et al.
 
@@ -368,8 +381,9 @@ factor would.
   as "models fail to recognise a deliberately non-moral item as non-moral."
 - **Propagate the ±0.2 baseline SE.** Clifford's item means come from n ≈ 30 each; treating them
   as error-free understates uncertainty. Free.
-- **Overlap check against arXiv:2403.00998** (`references.md`, "Open, unverified"). Now blocking
-  for experiment 2.
+- ~~**Overlap check against arXiv:2403.00998.**~~ **DONE 2026-08-10**, and the full text was
+  read 2026-08-15 (C20). The niche survives on domain and estimand; both previously withdrawn
+  claims are confirmed present in the body, one of them much weaker than we had been citing.
 - **Add arXiv:2507.13490 to `references.md`** as occupied territory. It is the closest neighbour
   and its absence was a gap in the novelty check.
 - **The write-up itself.**

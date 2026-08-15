@@ -134,6 +134,115 @@ def test_every_cited_document_exists():
         + "\n  ".join(sorted(broken)))
 
 
+ARXIV = re.compile(r"arXiv:(\d{4}\.\d{4,5})", re.I)
+
+# A BAN is "do not cite … until <something is verified>". Deliberately narrow. `references.md`
+# also contains "Do not cite from the abstract" (a caveat about WHICH PART to cite) and "Do not
+# cite the journal entry as evidence" (a caveat about weight). Neither forbids the source, and
+# a guard that treated them as bans would fire wrongly and get trained away.
+BAN_PHRASE = re.compile(r"do not cite[^.]*\buntil\b", re.I)
+
+
+def _banned_arxiv_ids(text: str) -> set[str]:
+    """arXiv ids whose references.md entry forbids citing them pending verification.
+
+    An entry starts at a line beginning with `**` and runs to the next such line. Its arXiv ids
+    are taken from the HEADING SPAN — the first few lines — because headings in this file wrap:
+
+        **Tsvilodub, Wang, Grosch & Franke — "Predictions from language models for multiple-
+        choice tasks are not robust under variation of scoring methods." arXiv:2403.00998,
+        submitted 1 Mar 2024.** Abstract fetched and verified 2026-08-10.
+
+    A first version required the id on the *opening* line and so matched almost nothing in this
+    file while appearing to work — the same shape as C13, and caught only because the guard was
+    deliberately tested against a source the repo cites.
+    """
+    HEADING_SPAN = 4
+    banned: set[str] = set()
+    entries: list[list[str]] = []
+    for ln in text.splitlines():
+        if ln.startswith("**") or not entries:
+            entries.append([ln])
+        else:
+            entries[-1].append(ln)
+    for entry in entries:
+        ids = {m.lower() for m in ARXIV.findall(" ".join(entry[:HEADING_SPAN]))}
+        if ids and any(BAN_PHRASE.search(ln) for ln in entry):
+            banned.update(ids)
+    return banned
+
+
+def test_the_do_not_cite_extractor_actually_detects_a_ban():
+    """C13's lesson, applied to C20's guard: a check that cannot fail is not a check.
+
+    Every ban in `references.md` may legitimately be lifted — as ValueBench's was on 2026-08-15
+    by verifying the author list — at which point the guard below inspects nothing and passes
+    for free. That is precisely the shape of C13, where the token-boundary check filtered on a
+    condition matching zero rows and printed its pass line having examined none.
+
+    So the extractor is exercised against a fixture with a known ban. If this fails, the guard
+    below is decorative regardless of what references.md happens to contain today.
+    """
+    fixture = (
+        "**Someone — \"A Paper.\" arXiv:1234.56789, submitted 1 Jan 2026.**\n"
+        "Body text. **Author list NOT yet verified — do not cite until it is.**\n"
+        "\n"
+        "**Other — \"Another.\" arXiv:9876.54321.**\n"
+        "Body text. Do not cite from the abstract; the numbers are in the body.\n"
+        "\n"
+        "**Third, With A Long Name — \"A Title That Wraps Across\n"
+        "Several Lines Of The Heading.\" arXiv:5555.55555, submitted 2 Feb 2026.**\n"
+        "Body text. Do not cite until the full text is read.\n"
+    )
+    got = _banned_arxiv_ids(fixture)
+    assert "1234.56789" in got, "a 'do not cite until' ban was not detected"
+    assert "9876.54321" not in got, (
+        "'do not cite from the abstract' is a caveat about which part to cite, not a ban on "
+        "the source; treating it as one would make this guard fire wrongly")
+    assert "5555.55555" in got, (
+        "a ban on an entry whose heading WRAPS was missed. Headings in references.md routinely "
+        "wrap, so an extractor that only reads the opening line matches almost nothing while "
+        "appearing to work — the C13 shape, and the first version of this had exactly that bug")
+
+
+def test_no_source_under_a_do_not_cite_ban_is_cited_elsewhere():
+    """C20. `references.md` can forbid citing a source until its full text is read. Nothing
+    enforced that, and the ban was violated in seven places — including the registered basis of
+    prediction P6 and two strings inside `analyse_scale.py`.
+
+    The mechanism is the project's worst recurring one: a rule written in one file and obeyed
+    nowhere, which is C15's shape. `references.md` exists to enforce CLAUDE.md's hardest
+    standing rule (never cite from memory). It was correct, current and explicit; it simply had
+    no reader.
+
+    Contract: `references.md` is a list of entries, each opening with a bolded heading naming
+    its source. If an entry's body contains 'do not cite', the arXiv id in THAT ENTRY'S HEADING
+    is banned everywhere else. Lifting a ban means editing references.md deliberately — which
+    is the point.
+
+    The heading rule matters and was learned immediately: a first version banned any id within
+    three lines of the phrase, which swept up a neighbouring paper mentioned in passing inside
+    the ValueBench entry. A guard that fires on things it should not gets trained away.
+    """
+    refs = REPO / "docs" / "references.md"
+    if not refs.exists():
+        pytest.skip("docs/references.md missing")
+    banned = _banned_arxiv_ids(refs.read_text(encoding="utf-8"))
+
+    violations: list[str] = []
+    for src in _sources():
+        if src.name == "references.md":
+            continue
+        text = src.read_text(encoding="utf-8", errors="replace")
+        for ident in sorted(banned):
+            if re.search(rf"arXiv:{re.escape(ident)}", text, re.I):
+                violations.append(f"{src.relative_to(REPO)} cites arXiv:{ident}")
+    assert not violations, (
+        "docs/references.md bans citing these sources until their full text is read, and they "
+        "are cited anyway (C20):\n  " + "\n  ".join(violations)
+        + "\n\nEither read the source and lift the ban in references.md, or remove the citation.")
+
+
 def test_the_ten_moved_documents_are_where_the_repo_says_they_are():
     """Pins the 2026-08-11 layout. Root keeps only README, CLAUDE and LICENSE."""
     for name in ["ANALYSIS_PLAN", "CORRECTIONS", "FINDINGS", "LIMITATIONS",

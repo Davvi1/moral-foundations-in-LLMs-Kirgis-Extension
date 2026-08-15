@@ -91,11 +91,55 @@ described as blocking.** The niche survives, on two counts:
   methods**. Their claim is that item-level predictions vary; ours is about whether the
   *ordering of models* survives. Same gap that survived QSTN and Shen et al.
 
-**Two claims in the old entry are NOT supported by the abstract and are withdrawn pending a
+**Two claims in the old entry are NOT supported by the abstract and were withdrawn pending a
 full-text read**: "no single method is best across all models", and "method choice matters more
-for weaker-performing models." The second was repeated in a discussion of SmolLM2 on 2026-08-10.
-Neither appears in the abstract; both may be in the body, but **do not cite either until the
-full text is read.**
+for weaker-performing models."
+
+> ### FULL TEXT READ 2026-08-15. Both claims ARE in the body. One is solid; the other is much weaker than this repo has been representing it.
+>
+> PDF fetched from `arxiv.org/pdf/2403.00998` and read. The passage carrying both is **p.5**,
+> immediately after Figure 3, verbatim:
+>
+> > "There is no strong evidence for a single method delivering supreme results for all models.
+> > Label scoring worked best for all models except for GPT-instruct, where free generation
+> > achieves slightly higher accuracy and likelihood and where even string-scoring outperforms
+> > label-scoring. **Judging from visual inspection, the choice of method (and score) seems to
+> > matter more for models which overall perform worse than for the best performing models.**
+> > This is unlikely a mere ceiling effect for the well-performing models, since accuracy is far
+> > from ceiling even for the best performing model."
+>
+> **Claim 1 — "no single method is best" — VERIFIED**, with a nuance that cuts against a lazy
+> citation: label scoring *did* work best for three of their four models, and their Discussion
+> says "Best and most stable results were achieved with label scoring, in line with previous
+> results (cf. Hu and R. Levy, 2023)." So the paper does **not** support "all methods are
+> equally arbitrary"; it supports "no method wins universally, and label scoring is the best
+> default." **Note the tension with QSTN**, which recommends *against* token-probability
+> methods on alignment-with-humans grounds. Two papers, opposite recommendations, different
+> criteria — which is this project's own "a method can win one criterion and fail another"
+> point, found in the literature. Worth a sentence in the write-up.
+>
+> **Claim 2 — "matters more for weaker models" — PRESENT BUT WEAK, and cite it only as
+> written.** Three qualifications, all load-bearing:
+>
+> 1. It is prefaced **"Judging from visual inspection"**. There is no statistical test, no
+>    effect size, and no interval. It is an eyeball remark in a results section.
+> 2. It rests on **four models**: GPT-3.5-turbo-instruct and text-davinci-002 (175B), LLaMA-2
+>    (7B), FLAN-T5-XL (3B). Four points, two of them the same size.
+> 3. It is about models that **perform worse on the task**, not models that are *smaller*.
+>    Those coincide in their roster, so the two readings are not separable in their data.
+>
+> **Consequence for us, stated plainly: our P6 registered its basis as "arXiv:2403.00998
+> reports method sensitivity is larger for weaker models."** That is too strong a verb for a
+> visual-inspection remark over four models, and the size-vs-performance slippage is ours, not
+> theirs. P6's *outcome* is unaffected — it was tested against our own data — but the strength
+> of its prior basis was overstated in `state.md`, `LIMITATIONS.md`, `METHODOLOGY_REVIEW.md`,
+> `THE_NEXT_EXPERIMENT.md` and `analyse_scale.py`. Corrected in all five; see C20.
+>
+> **Incidental, and it explains the earlier title error above:** the paper's *running header* on
+> pp.2–8 is "Scoring methods for LLM predictions on multiple-choice tasks" — which is exactly
+> the wrong title this file carried until 2026-08-10. It was not invented; it was read off the
+> page header instead of the title page. Worth knowing as a failure mode: a plausible wrong
+> citation can come from the source itself.
 
 **"Mind the Gap: A Closer Look at Tokenization for Multiple-Choice Question Answering
 with LLMs." arXiv:2509.15020.**
@@ -242,11 +286,15 @@ recognise the construct and answer in a socially desirable way. Persona prompts 
 questionnaire responses but not realistic-query responses. **A deeper challenge than the one we
 run: it questions the questionnaire format itself.** Cite as a limitation; do not sidestep it.
 
-**ValueBench. arXiv:2406.04214, ACL 2024 long paper; `github.com/ValueByte-AI/ValueBench`.**
-44 psychometric inventories, 453 value dimensions. Used as a subjective dataset by
-arXiv:2607.05554. **Author list NOT yet verified — do not cite until it is.** Its native pipeline
-rephrases first-person items into advice-seeking questions and scores via an evaluator LLM, which
-is not compatible with a fixed-prompt logprob design without modification.
+**Ren, Ye, Fang, Zhang & Song — "ValueBench: Towards Comprehensively Evaluating Value
+Orientations and Understanding of Large Language Models." arXiv:2406.04214, submitted 6 Jun 2024;
+ACL 2024. `github.com/ValueByte-AI/ValueBench`.** Author list and full title **verified 2026-08-15
+by fetching the arXiv listing** — they were unverified until then, and the entry carried a "do not
+cite until it is" ban that was being violated in `THE_NEXT_EXPERIMENT.md` (C20).
+44 established psychometric inventories, 453 multifaceted value dimensions. Used as a subjective
+dataset by arXiv:2607.05554. Its native pipeline rephrases first-person items into advice-seeking
+questions and scores via an evaluator LLM, which is not compatible with a fixed-prompt logprob
+design without modification.
 
 ---
 

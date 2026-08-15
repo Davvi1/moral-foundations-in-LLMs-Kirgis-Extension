@@ -737,7 +737,68 @@ reviewer looks — so the errors accumulated in prose status claims, which nothi
 
 ---
 
-## Updated tally, 2026-08-15 — nineteen corrections
+## C20 — a "do not cite until verified" instruction was violated in seven places, including a registered prediction's basis
+**Date:** 2026-08-15 · **Severity:** high — this is the project's hardest rule failing on its own record
+
+**Claimed.** `references.md` opens: *"Every entry below was verified by fetching or searching the
+source, not recalled."* On 2026-08-10 it withdrew two claims about arXiv:2403.00998 — "no single
+method is best across all models" and "method choice matters more for weaker-performing models" —
+because neither is in the abstract, and instructed in bold: **"do not cite either until the full
+text is read."**
+
+**True.** Both were cited anyway, in **seven places**, and the file recording the ban was the only
+one observing it:
+
+| location | what it says |
+|---|---|
+| `state.md:676` | **P6's registered basis** — "arXiv:2403.00998 reports method sensitivity is larger for weaker models" |
+| `state.md:779` | "arXiv:2403.00998 finds scoring method matters more for weaker models" |
+| `LIMITATIONS.md` §22 | "consistent with arXiv:2403.00998's result that…" |
+| `METHODOLOGY_REVIEW.md` F4 | "arXiv:2403.00998 **predicts** method sensitivity *shrinks* with capability" |
+| `THE_NEXT_EXPERIMENT.md` | both withdrawn claims, verbatim |
+| `analyse_scale.py` ×2 | docstring and the P6 verdict string, "which **reports** larger method sensitivity for weaker models" |
+
+**Resolved by reading the paper**, which is what should have happened on 2026-08-10. PDF fetched
+and read 2026-08-15. **Both claims are in the body — and the second is far weaker than every one
+of those seven citations implies.** p.5, verbatim:
+
+> "There is no strong evidence for a single method delivering supreme results for all models…
+> **Judging from visual inspection**, the choice of method (and score) seems to matter more for
+> models which overall perform worse than for the best performing models."
+
+Three things that no citation carried: it is prefaced **"Judging from visual inspection"** — no
+test, no effect size, no interval; it rests on **four models** (two 175B, one 7B, one 3B); and it
+concerns models that **perform worse on the task**, not models that are *smaller*. The
+size-versus-performance slippage is ours, not theirs.
+
+Claim 1 also needs care: label scoring won for three of their four models and their Discussion
+calls it *"best and most stable"*, so the paper supports "no method wins universally, and label
+scoring is a good default" — **not** "all methods are equally arbitrary."
+
+**What it changes.** **P6's outcome is untouched** — it was tested against our own data, never
+theirs. What changes is the write-up's description of its prior: *"a visual-inspection remark in
+Tsvilodub et al. (2024), treated as a directional prior"*, not *"a published result"*. All seven
+sites are corrected; `state.md`'s registered text is left verbatim with a dated amendment block,
+following the C8 precedent.
+
+**Caught by:** the document sweep, which read `references.md` and then grepped for what cited it —
+the first time anyone had checked the citation record *against the citations*.
+
+**The pattern, and it is the sharpest instance in this file.** `CLAUDE.md`'s hardest standing rule
+is *never cite from memory*, and `references.md` exists to enforce it. The enforcement document
+was correct, current, and explicit. It simply had no reader. **A rule written in one file and
+obeyed nowhere is the same failure as C15**, which is the worst entry here — a commitment in prose
+with nothing enforcing it — and it recurred in the part of the project specifically built to
+prevent it.
+
+**Incidental, and worth keeping.** The wrong title this file carried until 2026-08-10 —
+*"Scoring methods for LLM predictions on multiple-choice tasks"* — turns out to be the paper's
+**running page header** on pp.2–8. It was not invented; it was read off the wrong part of the
+document. A plausible wrong citation can come from the source itself.
+
+---
+
+## Updated tally, 2026-08-15 — twenty corrections
 
 Replaces the C14-era note above, which counted twelve.
 
@@ -748,10 +809,10 @@ Replaces the C14-era note above, which counted twelve.
 | **luck** — a failure that looked unrelated | C9, C10 | 2 |
 | the author **asking for a double-check** | C3, C5 | 2 |
 | **reading the numbers under a verdict** | C4, C12, C14, C15 | 4 |
-| **external review** | C16, C17, C18, C19 | 4 |
+| **external review** | C16, C17, C18, C19, C20 | 5 |
 
 **Not one was found by looking at a result and feeling that it seemed wrong.** That was true at
-twelve and it is still true at nineteen.
+twelve and it is still true at twenty.
 
 **What the last four add to the lesson.** C1–C15 were found from inside the project, and the
 checks that found them were all pointed at *numbers*. The 2026-08-15 four were found from

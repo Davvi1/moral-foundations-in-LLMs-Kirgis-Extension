@@ -687,8 +687,9 @@ an empirical improvement.
   boundary. Anyone who rejects the validity argument should read the N=31 column in
   `FINDINGS.md` §3, which is retained for exactly that purpose.
 - **It removes a substantive finding from the sample.** That a 1.7B model answers "3" to all 116
-  items is itself evidence about where the instrument stops working — consistent with
-  arXiv:2403.00998's result that method choice matters more for weaker models. Excluding it
+  items is itself evidence about where the instrument stops working — consistent with the
+  visual-inspection remark in arXiv:2403.00998 (p.5, four models, no test — see `references.md`)
+  that method choice matters more for models that perform worse. Excluding it
   makes the roster look more uniformly competent than the open-weight landscape is. The
   write-up should report SmolLM2's behaviour in the text even though it is out of the analysis.
 - **Direction of bias is knowable and is against us**: including it very slightly *inflates*

@@ -137,8 +137,9 @@ fixes, both straightforward:
 ## F4 — Kirgis's capability claim (claim 4) is untested, and David wants it tested
 **Severity: medium; opportunity: high.**
 
-Our roster caps at 14B; his claim is about scale. arXiv:2403.00998 predicts method sensitivity
-*shrinks* with capability — directly testable with within-family size ladders:
+Our roster caps at 14B; his claim is about scale. arXiv:2403.00998 *suggests* method
+sensitivity shrinks with task performance — a visual-inspection remark over four models, not a
+measured result (C20) — and it is directly testable with within-family size ladders:
 
 - **Llama-3.1: 1B → 3B → 8B → 70B** (3.1-70B likely covered by the existing 3.1 grant)
 - **Qwen2.5: 0.5 → 1.5 → 3 → 7 → 14 → 32 → 72B**
