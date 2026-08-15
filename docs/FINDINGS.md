@@ -265,7 +265,7 @@ this entire project is one his conclusions can largely survive.** Saying so is t
 the audit, not a concession, and a write-up that suppressed it would be dishonest.
 
 **ESTABLISHED — the design has three independent probability readouts, not four.** `label` and
-`string_line` correlate at **ρ = 0.969** across models and **r = 0.988 at item level**, because
+`string_line` correlate at **ρ = 0.964** across models and **r = 0.988 at item level**, because
 
     log P("3: Very wrong") = log P("3") + log P(": Very wrong" | prompt + "3")
 

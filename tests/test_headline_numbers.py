@@ -144,7 +144,8 @@ def test_no_stale_rho_values_survive_in_the_prose():
     lines = [ln for ln in FINDINGS.read_text(encoding="utf-8").splitlines()
              if not ln.lstrip().startswith(">") and "C18" not in ln
              and ("ρ" in ln or "rho" in ln.lower())]
-    for stale, live in (("0.451", "0.415"), ("0.404", "0.374"), ("0.269", "0.226")):
+    for stale, live in (("0.451", "0.415"), ("0.404", "0.374"), ("0.269", "0.226"),
+                        ("0.969", "0.964")):
         hit = next((ln for ln in lines if stale in ln), None)
         assert hit is None, (
             f"docs/FINDINGS.md quotes the withdrawn rho {stale} outside a correction note; "

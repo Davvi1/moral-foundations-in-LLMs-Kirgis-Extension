@@ -664,8 +664,15 @@ label~string_bare **0.415**, label~cloze **0.374**, string_bare~cloze **0.226**.
 range is **+0.081 to +0.187**; the +0.077 to +0.179 figure was reproduced exactly by re-running
 the audit at N=31 with no exclusions, which identifies it beyond doubt.
 
+**A fourth instance, found 2026-08-15 while rewriting the README.** `label ~ string_line` is
+quoted as **ρ = 0.969** in `FINDINGS.md` §3, `LIMITATIONS.md` §6, `METHODOLOGY_REVIEW.md` F1 and
+the P2 outcome row of `state.md`. That is the seven-pooled figure; on the six-foundation basis it
+is **0.964**. It supports the "three independent readouts, not four" claim, which is unaffected —
+0.964 and 0.969 both mean *the same measurement* — but it is the same stale basis in four more
+places, and it shows the sweep that produced C18 was not exhaustive.
+
 **Nothing reverses.** P4r is still FALSIFIED (0.226 vs 0.374). P2 is still SUPPORTED. The
-direction and every verdict are unchanged.
+"three readouts, not four" finding is unaffected. The direction and every verdict are unchanged.
 
 **Why it is in this file anyway.** This is the error class the project polices in others: a
 number that stays in circulation because the correction reached the table and not the sentence.

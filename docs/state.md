@@ -48,7 +48,7 @@ What remains is the write-up.
 - **19 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
   after the fact (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run
   overwriting a v1 artifact). All now guarded by `tests/test_determinism.py` and
-  `tests/test_artifact_provenance.py`. **303 tests pass.**
+  `tests/test_artifact_provenance.py`. **304 tests pass.**
 - **Still open, deliberately:** F5 (prompt as a designed factor) and a scale-augmented variance
   model. Both named in `METHODOLOGY_REVIEW.md`.
 
@@ -498,7 +498,7 @@ originals stand unedited above, with amendments dated where a prediction proved 
 | # | outcome | evidence |
 |---|---|---|
 | P1′ | **SUPPORTED** | `string_line` mass > `string_bare` on 31/31 models (0.626 vs 0.003) |
-| P2 | **SUPPORTED, but weaker than it looks** | ρ(label, line) 0.969 vs ρ(label, bare) 0.451. **However** line and label are near-identical measurements (item-level r = 0.988) because the prompt displays the digit→phrase mapping — so agreement "recovering" is partly definitional. See FINDINGS §3. |
+| P2 | **SUPPORTED, but weaker than it looks** | ρ(label, line) 0.964 vs ρ(label, bare) 0.415 *(six-foundation basis; 0.969/0.451 was the seven-pooled N=31 basis — C18)*. **However** line and label are near-identical measurements (item-level r = 0.988) because the prompt displays the digit→phrase mapping — so agreement "recovering" is partly definitional. See FINDINGS §3. |
 | P3 | **SUPPORTED but thin** | ρ = −0.195 (n=20), carried by Mistral-7B (moved 0.369; high-mass models ~0.013). Report the mechanism, not the correlation. |
 | P4′ | **SUPPORTED** | cloze mass > bare on 23/31 models |
 | P4r | **FALSIFIED** | ρ(cloze, bare) 0.269 < ρ(cloze, label) 0.404 — predicted the reverse |

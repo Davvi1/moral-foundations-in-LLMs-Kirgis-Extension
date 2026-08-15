@@ -82,6 +82,11 @@ ran. It does depend on it, and the dependency runs in the *reassuring* direction
 | greedy ~ sampled | 0.790 | **0.959** | **+0.169** |
 | label ~ string_line | 0.969 | 0.969 | 0.000 |
 
+*(Basis note added 2026-08-15: this table is the **N=31, control-pooled** basis it was computed
+on in 2026-08-09, which is why label~sampled reads 0.846 here and 0.818 in `FINDINGS.md` §3. It
+is left as computed rather than restated — the comparison is between its own two columns, and
+recomputing one column would misreport the analysis that was run. C18.)*
+
 Excluding prose-derived digits, the two arms Kirgis confounded agree **more**, not less
 (0.879, essentially the v1 figure of 0.880). The probability arms are untouched, as they must
 be. And greedy ~ sampled jumps from 0.790 to 0.959 — scan-parsing was adding noise to both
@@ -347,7 +352,7 @@ as such rather than as a moral finding.
 
 ## 6. The four conditions are three independent readouts · DESIGN
 
-`label` and `string_line` are near-identical: **ρ = 0.969 across models, r = 0.988 at item
+`label` and `string_line` are near-identical: **ρ = 0.964 across models, r = 0.988 at item
 level**, exactly identical on the most confident models. Because
 
     log P("3: Very wrong") = log P("3") + log P(": Very wrong" | prompt + "3")
