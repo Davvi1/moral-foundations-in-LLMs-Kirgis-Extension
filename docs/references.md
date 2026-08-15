@@ -362,7 +362,7 @@ and more interesting claim than a foundation-level bias.
 > Pooling it into the seven-foundation average was inflating every cross-method rank
 > correlation by 0.005–0.029, because floor-bound items rank identically under every readout.
 
-- **p.10 corroborates the Care split** used in `PROVENANCE.md`: "For the Care foundation, we
+- **p.10 corroborates the Care split** used in `data/source/PROVENANCE.md`: "For the Care foundation, we
   focused on three forms of harm... emotional harm to a human, physical harm to a human, and
   physical harm to a non-human animal." Kirgis retains only the emotional-harm subset, so
   **Care in this study is emotional harm to humans only.**

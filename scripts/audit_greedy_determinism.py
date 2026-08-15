@@ -2,17 +2,17 @@
 
 CANNOT RUN AS OF 2026-08-10. This script needs BOTH raw collections, and the v1 half was
 deleted in the V1 cleanup. Its result is committed at results/derived/greedy_determinism.md
-and is cited in METHODS_EXPLAINER.md s3 and LIMITATIONS.md s12. To re-run it, check out the
+and is cited in docs/METHODS_EXPLAINER.md s3 and docs/LIMITATIONS.md s12. To re-run it, check out the
 git tag `pre-cleaning-out-v1`. Kept in the tree because the METHOD is the citable part --
 a reviewer asking "how did you establish that" should be able to read it.
 
     python scripts/audit_greedy_determinism.py
     python scripts/audit_greedy_determinism.py --out results/derived/greedy_determinism.md
 
-WHY THIS EXISTS. `METHODS_EXPLAINER.md` s3 calls greedy "deterministic in principle" and
+WHY THIS EXISTS. `docs/METHODS_EXPLAINER.md` s3 calls greedy "deterministic in principle" and
 flags -- without testing -- that GPU floating-point reduction order can vary with batch
 composition, so bit-identical output across differently batched runs is not guaranteed.
-`LIMITATIONS.md` s12 records the same caveat as FLAGGED BUT NOT VERIFIED. It was corrected
+`docs/LIMITATIONS.md` s12 records the same caveat as FLAGGED BUT NOT VERIFIED. It was corrected
 once already, on 2026-08-09, because METHODS_EXPLAINER had falsely claimed we verified it.
 
 We can verify it now for free, with no GPU, because the v1 and v2 collections independently
@@ -150,7 +150,7 @@ def main() -> int:
         L.append(f"`{args.condition}` reproduced exactly on every comparable cell.")
     else:
         L.append(f"**`{args.condition}` is NOT reproducible across runs.** The caveat flagged "
-                 f"in `METHODS_EXPLAINER.md` §3 and `LIMITATIONS.md` §12 is real and now "
+                 f"in `docs/METHODS_EXPLAINER.md` §3 and `docs/LIMITATIONS.md` §12 is real and now "
                  f"measured: {pct(score_diff)} of scores move between two runs of the same "
                  f"model, on the same prompt, same GPU model and same package versions.\n")
         L.append("**What this does and does not establish.** It establishes that a "
@@ -162,7 +162,7 @@ def main() -> int:
         L.append("**Consequence for the design.** Of the arms described as deterministic, "
                  "greedy is the one that generates text, and generation is where the "
                  "instability lives. Re-running it is therefore not 'measuring a ruler "
-                 "twice' — a claim `METHODS_EXPLAINER.md` §5 makes about the deterministic "
+                 "twice' — a claim `docs/METHODS_EXPLAINER.md` §5 makes about the deterministic "
                  "arms collectively and which does not hold for this one.\n")
     if per_model_score:
         L.append("## Models whose greedy SCORE moved\n")

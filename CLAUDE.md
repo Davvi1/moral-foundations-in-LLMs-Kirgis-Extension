@@ -21,7 +21,7 @@ assume he has absorbed something because it was explained once.
 claim about what a paper says, who wrote it, or whether something has been done. Never
 produce an arXiv number, author list, or finding from recall. A plausible-looking citation
 he can't verify is worse than no citation, because he might build on it. If you can't
-verify something, say so plainly. `references.md` in this repo contains citations that
+verify something, say so plainly. `docs/references.md` in this repo contains citations that
 were verified by fetching the source — use those rather than re-deriving them, and mark
 anything new you add with how you verified it. The same caution applies to HuggingFace
 repo IDs: confirm the exact string resolves before writing it into code.

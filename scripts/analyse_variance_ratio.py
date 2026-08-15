@@ -5,7 +5,7 @@
 
     R_f = sigma2(model x method) / sigma2(model)
 
-Every choice here comes from state.md and was fixed before any outcome model was fitted.
+Every choice here comes from docs/state.md and was fixed before any outcome model was fitted.
 Nothing in this file decides anything.
 
 METHOD-SPECIFIC RESIDUAL VARIANCES ARE MANDATORY, not optional. The four conditions have
@@ -46,7 +46,7 @@ OUT = REPO / "results" / "derived"
 # but every output row is labelled so it can never be averaged in as a foundation.
 CONTROL_FOUNDATION = "Social Norms"
 
-# Bands fixed in state.md, with the `indeterminate` verdict added after the B2 simulation
+# Bands fixed in docs/state.md, with the `indeterminate` verdict added after the B2 simulation
 # showed that no feasible N resolves an R sitting on a boundary.
 BANDS = [(0.0, 0.25, "robust"), (0.25, 1.0, "degraded"), (1.0, np.inf, "not interpretable")]
 
@@ -63,9 +63,9 @@ def stable_seed(tag: str) -> int:
     artifact — therefore could not be regenerated from `analysis_long.csv`. Every posterior
     summary in it (R_median, R_q2.5, R_q97.5, max_rhat) moves with the seed, and `verdict()`
     is a banded classification that can flip when an interval sits near the 0.25 or 1.0
-    boundary, which per FINDINGS.md is the case for all seven foundations.
+    boundary, which per docs/FINDINGS.md is the case for all seven foundations.
 
-    This is the same defect as C10 in CORRECTIONS.md, but worse: C10 touched a descriptive
+    This is the same defect as C10 in docs/CORRECTIONS.md, but worse: C10 touched a descriptive
     column, this one seeds the primary estimand. It was found by auditing for siblings of C10
     rather than by anything noticing on its own.
 
@@ -227,8 +227,8 @@ def main() -> int:
     ap.add_argument("--exclude-scan", action="store_true",
                     help="drop rows whose digit was recovered by scanning prose "
                          "(parse_strategy == 'scan'). This is the sensitivity analysis "
-                         "ANALYSIS_PLAN.md:192 pre-specified and that was never run "
-                         "(LIMITATIONS.md 1). Affects the free-generation arms only.")
+                         "docs/ANALYSIS_PLAN.md:192 pre-specified and that was never run "
+                         "(docs/LIMITATIONS.md 1). Affects the free-generation arms only.")
     ap.add_argument("--family-effect", action="store_true",
                     help="add (1|family) to the model. Eight Qwens are not eight independent "
                          "draws; see fit_one(). Sensitivity, not primary.")
@@ -258,7 +258,7 @@ def main() -> int:
     #   config/prompt.yaml:33     "Excluded from the primary variance ratio, because a prompt
     #                              effect inside a number defined as a method effect is exactly
     #                              the error this project audits Kirgis for."
-    #   METHODOLOGY_REVIEW.md:13  "changes two things at once and is excluded from the primary"
+    #   docs/METHODOLOGY_REVIEW.md:13  "changes two things at once and is excluded from the primary"
     #   audit_kirgis_pattern.py   excludes it, and says why
     #
     # This script did not. Every R published before 2026-08-10 therefore included it, and a
@@ -349,7 +349,7 @@ def main() -> int:
     # The output name follows the INPUT. Without this, `--data analysis_long_v2.csv` wrote its
     # 31-model results over the committed 20-model `variance_ratio.csv` — which is exactly
     # what happened on the pod on 2026-08-09 before this was fixed. The v1 file is a committed
-    # artifact backing FINDINGS.md; silently replacing its contents with a different sample
+    # artifact backing docs/FINDINGS.md; silently replacing its contents with a different sample
     # while keeping its name is the worst kind of data loss, because nothing looks wrong.
     # The VARIANT must be in the name too, for the same reason. Four fits are run in one pod
     # session (primary, scan-excluded, family-effect, and combinations); if they all resolved

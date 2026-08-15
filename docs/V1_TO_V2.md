@@ -93,8 +93,8 @@ Deleting the files does not retract the analysis. These remain valid and cited:
   what shows the headline ρ moving 0.880 → 0.818 as the roster grew and the scorer was fixed.
 - **`CORRECTIONS.md` C1–C12** are largely v1-era. They are the project's record of what it got
   wrong and are load-bearing for the write-up, not historical trivia.
-- **`results/derived/v1_v2_comparison.md`**, **`string_scoring_diagnosis.md`** and
-  **`tokenization_boundary_diagnosis.md`** are retained: they are the *evidence for the
+- **`results/derived/v1_v2_comparison.md`**, **`results/derived/string_scoring_diagnosis.md`** and
+  **`results/derived/tokenization_boundary_diagnosis.md`** are retained: they are the *evidence for the
   migration*, not v1 results.
 
 ## 6. What was deleted
@@ -114,7 +114,7 @@ of the module — `render_prompt`, `option_token_ids`, `expectation`, `parse_dig
 from it directly. Deleting the module would break the v2 harness. *(The dead scorers themselves
 were removed in the second pass — see §7. `run_free` remains, because v2 uses it.)*
 
-Also kept: `reanalyse_kirgis.py`, `kirgis_reanalysis.md` and `kirgis_rescored.csv`. Those audit
+Also kept: `reanalyse_kirgis.py`, `results/derived/kirgis_reanalysis.md` and `kirgis_rescored.csv`. Those audit
 **Kirgis's own published data**, not our v1 collection, and are unrelated to this cleanup.
 
 ---

@@ -59,7 +59,7 @@ def harness(fake_vllm_module, tmp_path, monkeypatch):
 
 
 # v2 is the only harness. v1 was deleted on 2026-08-11 together with the collection it
-# produced (V1_TO_V2.md), so there is no longer an archived result whose reproducibility
+# produced (docs/V1_TO_V2.md), so there is no longer an archived result whose reproducibility
 # depends on those code paths. The parametrisation is kept with a single value rather than
 # inlined: a future v3 must be added HERE, so that every end-to-end guarantee below is
 # asserted once per harness instead of the older one quietly rotting once it stops being the

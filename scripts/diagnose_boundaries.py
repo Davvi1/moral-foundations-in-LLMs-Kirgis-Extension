@@ -7,7 +7,7 @@ Writes results/derived/tokenization_boundary_diagnosis.md.
 
 Both defects were found while TESTING the v2 scorer, not while analysing results, which is
 the only reason they were found at all — neither raised an error and neither produced an
-obviously wrong number. One of them invalidates a claim I made in METHODOLOGY_REVIEW.md F1.
+obviously wrong number. One of them invalidates a claim I made in docs/METHODOLOGY_REVIEW.md F1.
 
   D1  Local-vs-engine tokenization mismatch. v1 located the option's first token at
       len(local_tokenizer.encode(prompt, add_special_tokens=False)) and applied that index to
@@ -175,7 +175,7 @@ def main() -> int:
     L.append("| quantity | value |")
     L.append("|---|---:|")
     L.append(d2_demo())
-    L.append("**What this invalidates.** METHODOLOGY_REVIEW.md F1 argued that string scoring")
+    L.append("**What this invalidates.** docs/METHODOLOGY_REVIEW.md F1 argued that string scoring")
     L.append("was mismeasuring partly because it 'retained mass 0.22 against label's 0.81'.")
     L.append("**That comparison is withdrawn** — the numbers are not commensurable, and a low")
     L.append("value is the expected magnitude for a sum of five geometric means. The error was")

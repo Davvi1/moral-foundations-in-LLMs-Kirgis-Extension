@@ -64,12 +64,12 @@ data/mfv_116_meta.csv       foundation labels + Clifford's per-vignette human me
 scripts/build_items.py      derives the two data files from source; self-verifying
 scripts/probe_tokenization.py   the "0" vs " 0" hazard check, per tokenizer
 results/                    probe logs and derived, analysis-ready outputs
-state.md                    living record — decisions, analysis plan, findings
-FINDINGS.md                 synthesis; claims with strength labels
-LIMITATIONS.md              everything constraining what may be claimed
-CORRECTIONS.md              every claim withdrawn or reversed, and how it was caught
-references.md               every citation verified by fetching the source
-`FINDINGS.md`                   operational sequence + pod cheat-sheet
+docs/state.md                    living record — decisions, analysis plan, findings
+docs/FINDINGS.md                 synthesis; claims with strength labels
+docs/LIMITATIONS.md              everything constraining what may be claimed
+docs/CORRECTIONS.md              every claim withdrawn or reversed, and how it was caught
+docs/references.md               every citation verified by fetching the source
+`docs/FINDINGS.md`                   operational sequence + pod cheat-sheet
 ```
 
 ## Reproducing
@@ -111,7 +111,7 @@ Three bugs were caught this way that would each have cost GPU time:
   28 GB download;
 - the `--help` sweep itself was silently reverting `config/models.yaml` from 30 models to 20
   on every run, because two scripts had no argparse and so *ran* instead of printing usage
-  (`CORRECTIONS.md` C9).
+  (`docs/CORRECTIONS.md` C9).
 
 ### Pre-flight
 
@@ -167,7 +167,7 @@ rather than recalled.
 
 ## Pre-specified analysis plan
 
-The analysis plan is fixed in `state.md` before any confirmatory data exists. Primary statistic
+The analysis plan is fixed in `docs/state.md` before any confirmatory data exists. Primary statistic
 is a variance ratio per foundation,
 
 ```

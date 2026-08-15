@@ -256,7 +256,7 @@ pre-announce the renormalisation effect as large.
   measure. OLMo-2 is non-reasoning and a different training lineage, so it adds real diversity.
 - **Item files built 2026-08-07** — `data/mfv_116.csv` (QSTN format) and `data/mfv_116_meta.csv`
   (foundation + Clifford human means), derived by `scripts/build_items.py` from a pinned copy
-  of Kirgis's CSV in `data/source/` with `PROVENANCE.md`. Build is self-verifying: it asserts
+  of Kirgis's CSV in `data/source/` with `data/source/PROVENANCE.md`. Build is self-verifying: it asserts
   n=116 and the foundation counts and fails loudly rather than propagating a bad questionnaire.
 - **REVERSED 2026-08-07: the harness is built on raw vLLM, not QSTN.** The earlier
   recommendation ("build on QSTN, hand-write only string scoring") was made when QSTN looked

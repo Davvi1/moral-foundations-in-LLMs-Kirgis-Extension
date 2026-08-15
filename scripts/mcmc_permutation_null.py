@@ -3,7 +3,7 @@
     python scripts/mcmc_permutation_null.py --test              # 1 foundation, 4 perms
     python scripts/mcmc_permutation_null.py --n-perm 100 --workers 40
 
-WHY THIS EXISTS. `ANALYSIS_PLAN.md` specified that the permutation null use the same Bayesian
+WHY THIS EXISTS. `docs/ANALYSIS_PLAN.md` specified that the permutation null use the same Bayesian
 model as the primary analysis. What actually ran (`analyse_controls.py`) used a cheap moment
 estimator instead, because 100 permutations x 7 foundations = 700 MCMC fits was estimated at
 ~12 h on the hardware then available. That shortcut is currently disclosed in the write-up as
@@ -147,7 +147,7 @@ def main() -> int:
 
     # Suffix follows the input dataset, so the artifact declares its own provenance.
     # An unsuffixed name means the v1 harness by convention; leaving a v2-derived file
-    # unsuffixed asserts something false about it. See CORRECTIONS.md C12.
+    # unsuffixed asserts something false about it. See docs/CORRECTIONS.md C12.
     _sfx = "_v2" if "_v2" in Path(args.data).name else ""
     out_path = Path(args.out) if args.out else DERIVED / (
         f"mcmc_null_test{_sfx}.csv" if args.test else f"mcmc_permutation_null{_sfx}.csv")
@@ -190,7 +190,7 @@ def main() -> int:
             # run on the same data would emit rows in a different order on a different host.
             # The VALUES are safe -- every job carries an explicit derived seed -- but an
             # unsorted CSV is not a reproducible artifact, which is the same class of defect as
-            # C10/C11 in CORRECTIONS.md.
+            # C10/C11 in docs/CORRECTIONS.md.
             pd.DataFrame(results).sort_values(["foundation", "perm"]).to_csv(
                 out_path, index=False)
             if done % 10 == 0 or done == len(jobs):

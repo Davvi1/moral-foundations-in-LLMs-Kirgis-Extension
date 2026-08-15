@@ -1,7 +1,13 @@
 # Methodology review — status after the v2 collection
 
-> **STATUS, updated 2026-08-09.** Every flaw below has now been acted on, and the outcomes are
-> recorded here rather than left implied. Primary results moved to the v2 harness at N = 31;
+> **STATUS, updated 2026-08-11.** Three corrections postdate the original 2026-08-09 table and
+> are folded in below: **C13** (the QA gate had never passed on v2), **C14** (an extrapolation
+> reported without its range check) and **C15** (cloze inside the primary variance ratio). The
+> F-numbering is unchanged so older commits still line up.
+>
+> **STATUS, originally 2026-08-09.** Every flaw below has now been acted on, and the outcomes are
+> recorded here rather than left implied. Primary results moved to the v2 harness — **31 models
+> collected, 30 analysed** after the discrimination exclusion (`LIMITATIONS.md` §22);
 > see `FINDINGS.md`. Resolution status per item:
 >
 > | # | flaw | status |
@@ -10,10 +16,10 @@
 > | F2 | label position-scan degrees of freedom | **RESOLVED.** Forced continuation gives exact p_k with no top-k truncation and no position rule. Label mass 0.81 → 0.997. |
 > | F3 | underpowered by design | **ACTED ON, PREDICTION FAILED.** N raised 20 → 31. P7 predicted ≥2 foundations would escape `indeterminate`; **none did**. The estimand is not resolvable at feasible N. Family random effect remains unfitted — see "still outstanding". |
 > | F4 | capability claim untested | **RESOLVED, and the strongest positive result.** Ladders to 72.7B. P5 supported on both, LOO-robust, after removing a compression confound that would have manufactured a third of the effect. |
-> | F5 | everything conditional on one prompt | **NOT DONE.** The cloze arm varies the prompt but changes two things at once and is excluded from the primary. Prompt-as-designed-factor remains future work. |
+> | F5 | everything conditional on one prompt | **NOT DONE, and this row was load-bearing in the worst way.** The cloze arm varies the prompt, changes two things at once, and *must* be excluded from the primary — this sentence was one of the three places that said so while **no code enforced it**. It was included in every published R until 2026-08-11, inflating R by **2.70×**. See **C15**. Prompt-as-designed-factor remains future work: `THE_NEXT_EXPERIMENT.md`. |
 > | F6 | Kirgis's substantive finding never audited | **RESOLVED at both N.** Raw gap cannot adjudicate (compression predicts negative, C3); compression-adjusted gap +0.077 to +0.179 across six readouts, and it grows with scale. |
 > | F7 | refusal contaminates readouts | **RESOLVED and extended.** ρ = −0.54 over 31 models. Plus the MNAR audit: a multi-readout design measures the missing-data bias instead of assuming it. |
-> | F8 | internlm boundary / greedy determinism | **PARTIALLY RESOLVED — this row previously said RESOLVED and overstated.** The *boundary* half is resolved: LCP computed engine-side, shift 0 on all 31 models (the original diagnosis of *why* internlm failed was falsified, C7, and the true cause remains unverified — v2 does not depend on it). The *greedy determinism* half was never checked: line 191 below lists the spot-check as a to-do and it was not done. See `LIMITATIONS.md` §12. |
+> | F8 | internlm boundary / greedy determinism | **PARTIALLY RESOLVED — this row previously said RESOLVED and overstated.** The *boundary* half is resolved: LCP computed engine-side, shift 0 on all 31 models (the original diagnosis of *why* internlm failed was falsified, C7, and the true cause remains unverified — v2 does not depend on it). The *greedy determinism* half is now **RESOLVED, and it FAILED**: greedy is not reproducible across runs — raw text differs on 10.56% of cells, the parsed score on 2.28%, mean shift 1.038. See `LIMITATIONS.md` §12 and `results/derived/greedy_determinism.md`. |
 > | F9 | permutation-null deviation | **RESOLVED.** 700/700 full-MCMC fits. Null median 0.0006–0.0021 against observed 0.34–1.08. The deviation paragraph can be deleted. |
 >
 > **Outstanding and NOT deliberate — found on the limitations pass 2026-08-09:** the

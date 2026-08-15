@@ -440,7 +440,7 @@ def main() -> int:
                     help="shard each model across this many GPUs (0 = auto: the largest "
                          "power of two that nvidia-smi can see). Needed for models whose "
                          "bf16 weights exceed one card, e.g. Mistral-Large at ~245 GiB.")
-    # v1 was deleted 2026-08-11 (V1_TO_V2.md). The flag is gone; the VALUE is kept because
+    # v1 was deleted 2026-08-11 (docs/V1_TO_V2.md). The flag is gone; the VALUE is kept because
     # every raw CSV and manifest records `harness`, and dropping the column would break the
     # provenance tests that distinguish the collections.
     ap.add_argument("--harness", choices=["v2"], default="v2",

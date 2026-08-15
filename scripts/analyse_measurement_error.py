@@ -124,7 +124,7 @@ def main() -> int:
              "`clifford_not_wrong_pct` we can reconstruct enough of the response distribution "
              "to bound the per-item SE from below.\n")
     L.append(f"- two-point lower bound, averaged over items: **SE >= {se_lb:.3f}**")
-    L.append(f"- the value assumed in `references.md` from n≈{args.n_raters}: **0.2**")
+    L.append(f"- the value assumed in `docs/references.md` from n≈{args.n_raters}: **0.2**")
     L.append("- the bound ignores spread among the non-zero answers, so the true SE is "
              "**larger** than the bound and the corrections below are conservative.\n")
 
@@ -179,7 +179,7 @@ def main() -> int:
     exc = obs_ctrl - st.mean([a_c + b_c * human[i] for i in ctrl])
     L.append(f"\nThe excess moves from −0.040 (uncorrected) to **{exc:+.3f}** at sigma = 0.2. "
              f"and to +0.546 at sigma = 0.3 — outside the bootstrap interval "
-             f"**[−0.327, +0.246]** reported in `social_norms_control.md`.\n")
+             f"**[−0.327, +0.246]** reported in `results/derived/social_norms_control.md`.\n")
     L.append("**This swing is the tell, and it is what exposed C14.** A stable estimate does "
              "not move by 0.6 across a plausible range of a nuisance parameter. It does here "
              "because the control sits **1.2 scale points below any moral item**, so the line "

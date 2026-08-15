@@ -1,6 +1,6 @@
 """Design decisions written in prose must be enforced by code.
 
-WHY THIS EXISTS — C15. `config/prompt.yaml`, `METHODOLOGY_REVIEW.md` and
+WHY THIS EXISTS — C15. `config/prompt.yaml`, `docs/METHODOLOGY_REVIEW.md` and
 `audit_kirgis_pattern.py` all stated that the cloze arm is **excluded from the primary variance
 ratio**, because cloze is scored against a different prompt and a method-effect estimate
 containing it is confounded with prompt. `analyse_variance_ratio.py` never implemented it. Every
@@ -48,7 +48,7 @@ def test_variance_ratio_excludes_cloze_by_default():
     # The filter must be conditional on the OPT-IN flag, i.e. cloze goes unless asked for.
     assert re.search(r"if not args\.include_cloze", s), (
         "cloze is not excluded by default. The design (config/prompt.yaml:33, "
-        "METHODOLOGY_REVIEW.md:13) requires exclusion from the PRIMARY; including it must be "
+        "docs/METHODOLOGY_REVIEW.md:13) requires exclusion from the PRIMARY; including it must be "
         "an explicit opt-in, never the default.")
     assert re.search(r'!=\s*["\']cloze["\']', s), (
         "no filter dropping rows where condition == 'cloze'")
@@ -65,7 +65,7 @@ def test_including_cloze_writes_a_distinct_file():
 def test_the_control_category_is_labelled_in_output():
     """Social Norms is a non-moral control (Clifford 2015 p.9), not a seventh foundation.
 
-    `ANALYSIS_PLAN.md:164` requires it be "reported separately and never averaged in". Before
+    `docs/ANALYSIS_PLAN.md:164` requires it be "reported separately and never averaged in". Before
     2026-08-10 it was pooled into every cross-method rank correlation, inflating them by
     0.005–0.029. The output must carry the flag that makes pooling a visible choice.
     """
@@ -78,7 +78,7 @@ def test_the_control_category_is_labelled_in_output():
 def test_the_discrimination_rule_is_a_threshold_not_a_named_model():
     """A post hoc exclusion is only defensible if it is a uniform rule.
 
-    `LIMITATIONS.md` §22 records that the criterion was defined after seeing the data. That is
+    `docs/LIMITATIONS.md` §22 records that the criterion was defined after seeing the data. That is
     survivable because it applies to anything below the cut. Hard-coding the model that
     triggered it would make it unfalsifiable.
     """
@@ -92,7 +92,7 @@ def test_the_discrimination_rule_is_a_threshold_not_a_named_model():
     for name in ("SmolLM2", "smollm"):
         assert name not in code, (
             f"build_analysis_data.py branches on the model name {name!r}. The exclusion must "
-            f"be a uniform threshold applied to whatever falls below it — see LIMITATIONS.md "
+            f"be a uniform threshold applied to whatever falls below it — see docs/LIMITATIONS.md "
             f"§22, which only survives review because the rule is general.")
 
 

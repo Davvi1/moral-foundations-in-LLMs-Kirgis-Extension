@@ -3,7 +3,7 @@
 WHY THIS EXISTS. On 2026-08-09 the primary analysis was run with
 `--data analysis_long_v2.csv` and wrote its 31-model results **over the committed 20-model
 `variance_ratio.csv`** — same filename, entirely different sample, and nothing about the file
-looked wrong afterwards. That is C12 in CORRECTIONS.md. It was caught by an inventory step
+looked wrong afterwards. That is C12 in docs/CORRECTIONS.md. It was caught by an inventory step
 noticing a missing file, not by anything checking the contents.
 
 The naming convention is: **unsuffixed = v1 (the N=20 Phase-1 harness), `_v2` = the N=31
@@ -32,10 +32,10 @@ V1_CONDITIONS = {"label", "string", "greedy", "sampled"}
 V2_CONDITIONS = {"label", "string_line", "string_bare", "cloze", "greedy", "sampled"}
 
 V1_MODELS = 20      # Phase-1 roster. Retained as documentation only -- the v1 collection was
-                    # deleted 2026-08-10 (V1_TO_V2.md); nothing asserts against it any more.
+                    # deleted 2026-08-10 (docs/V1_TO_V2.md); nothing asserts against it any more.
 V2_MODELS = 31      # Phase-2/3 roster, 32 pinned minus Mistral-Large (deliberately uncollected)
 V2_MODELS_ANALYSED = 30   # 31 collected minus SmolLM2-1.7B, dropped by the discrimination
-                          # threshold on 2026-08-10. See LIMITATIONS.md 22 -- the criterion is
+                          # threshold on 2026-08-10. See docs/LIMITATIONS.md 22 -- the criterion is
                           # post hoc and is documented as such.
 
 
@@ -80,7 +80,7 @@ def test_v2_variance_ratio_is_v2():
     primary = d[d.exclusions.astype(str).str.lower() == "true"]
     assert set(primary.n_models.unique()) == {V2_MODELS_ANALYSED}, (
         f"primary (exclusions=True) rows report n_models="
-        f"{sorted(primary.n_models.unique())}, expected {V2_MODELS_ANALYSED}. FINDINGS.md 2 "
+        f"{sorted(primary.n_models.unique())}, expected {V2_MODELS_ANALYSED}. docs/FINDINGS.md 2 "
         f"sources its R table from these rows.")
     assert set(d.n_models.unique()) <= {V2_MODELS_ANALYSED, V2_MODELS}, (
         f"unexpected roster size in variance_ratio_v2.csv: {sorted(d.n_models.unique())}")

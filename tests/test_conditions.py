@@ -1,7 +1,7 @@
 """Tests for the four scoring conditions.
 
 Grouped by the failure they are designed to catch. Where a test encodes a claim made
-elsewhere in the repo (config/prompt.yaml, state.md), the docstring says so — if the test
+elsewhere in the repo (config/prompt.yaml, docs/state.md), the docstring says so — if the test
 fails, the claim is wrong and the documentation must change with the code.
 """
 
@@ -66,12 +66,12 @@ def test_generation_prompt_is_added(qwen_tok, prompt_cfg, items):
 
 
 # =======================================================================================
-# 2. Tokenization claims — these encode findings recorded in state.md
+# 2. Tokenization claims — these encode findings recorded in docs/state.md
 # =======================================================================================
 
 
 def test_bare_and_spaced_digits_differ_on_qwen(qwen_tok):
-    """state.md records "0"=[15] and " 0"=[220,15] on Qwen. If this breaks, re-probe."""
+    """docs/state.md records "0"=[15] and " 0"=[220,15] on Qwen. If this breaks, re-probe."""
     for k in range(5):
         bare = qwen_tok.encode(str(k), add_special_tokens=False)
         spaced = qwen_tok.encode(f" {k}", add_special_tokens=False)

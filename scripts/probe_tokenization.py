@@ -1,6 +1,6 @@
 """Step 3 probe: does the label token survive the chat template, and as which ID?
 
-state.md lists this as day-one risk #1. The hazard (arXiv:2509.15020) is that "0" and " 0"
+docs/state.md lists this as day-one risk #1. The hazard (arXiv:2509.15020) is that "0" and " 0"
 are DIFFERENT token IDs, chat templates differ in what they emit before the first generated
 token, and published studies disagree about which one to score. Getting this wrong silently
 corrupts every label-scoring number without raising an error.

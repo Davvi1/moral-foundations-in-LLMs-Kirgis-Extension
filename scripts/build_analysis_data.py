@@ -8,7 +8,7 @@ The sampled condition is collapsed to its mean over k=10 replicates, with the Mo
 standard error retained, because that error term is what the variance model needs to avoid
 attributing sampling noise to the model x method interaction.
 
-Nothing here decides anything. Every threshold comes from state.md and was fixed before any
+Nothing here decides anything. Every threshold comes from docs/state.md and was fixed before any
 outcome model was fitted.
 """
 
@@ -30,7 +30,7 @@ REPO = Path(__file__).resolve().parent.parent
 RAW = REPO / "results" / "raw"
 OUT = REPO / "results" / "derived"
 
-# From state.md, "Exclusion rules — FIXED 2026-08-08".
+# From docs/state.md, "Exclusion rules — FIXED 2026-08-08".
 PARSE_THRESHOLD = 0.50
 FREE_CONDITIONS = {"greedy", "sampled"}
 
@@ -57,13 +57,13 @@ def f(x):
 
 def main() -> int:
     # --suffix selects which harness's raw files to build from. Only `_v2` exists now: the v1
-    # collection was deleted on 2026-08-10 (see V1_TO_V2.md). The argument is KEPT rather than
+    # collection was deleted on 2026-08-10 (see docs/V1_TO_V2.md). The argument is KEPT rather than
     # hard-coded because the bug it was added for -- C12, a glob that silently spanned two
     # collections and wrote one over the other -- is a property of unversioned paths, not of v1.
     # A future v3 would reintroduce exactly the same hazard.
     ap = argparse.ArgumentParser(description="Build the long-form analysis dataset.")
     ap.add_argument("--suffix", default="_v2",
-                    help="raw-file suffix to build from. Only '_v2' exists; see V1_TO_V2.md")
+                    help="raw-file suffix to build from. Only '_v2' exists; see docs/V1_TO_V2.md")
     ap.add_argument("--min-discrimination", type=float, default=0.25,
                     help="exclude a model whose mean between-item SD falls below this "
                          "multiple of the human baseline's between-item SD. 0 disables. "

@@ -52,7 +52,7 @@ OUTDIR = REPO / "results" / "derived"
 K_METHODS = 4
 RNG = np.random.default_rng(20260807)
 
-# Pre-specified bands, from state.md
+# Pre-specified bands, from docs/state.md
 BANDS = [(0.0, 0.25, "robust"), (0.25, 1.0, "degraded"), (1.0, np.inf, "not interpretable")]
 
 

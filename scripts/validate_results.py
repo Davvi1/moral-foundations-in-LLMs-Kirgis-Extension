@@ -59,7 +59,7 @@ CLOZE_ARMS_BY_SUFFIX = {"": [], "_v2": ["cloze"]}
 MASS_ARMS_BY_SUFFIX = {"": ["label", "string"],
                        "_v2": ["label", "string_line", "string_bare", "cloze"]}
 
-# Thresholds fixed in the analysis plan (state.md).
+# Thresholds fixed in the analysis plan (docs/state.md).
 REFUSAL_FLAG = 0.10          # model x foundation cell flagged above this
 LOW_MASS_FLAG = 0.50         # label-scoring probability mass below this is suspect
 

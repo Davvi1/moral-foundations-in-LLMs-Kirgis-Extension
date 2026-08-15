@@ -108,7 +108,7 @@ def main() -> int:
     `scripts/` with `--help` to prove it can print usage on a machine with no GPU. This
     script had no argparse, so `--help` was simply an ignored argv entry and the script RAN,
     regenerating the roster from the hard-coded N=20 ROSTER list. Alphabetical order meant
-    `add_phase2_models.py` (since deleted, see V1_TO_V2.md) added the Phase-2 models
+    `add_phase2_models.py` (since deleted, see docs/V1_TO_V2.md) added the Phase-2 models
     moments earlier and this overwrote them,
     so every `pytest` invocation silently reverted the roster from N=30 to N=20.
 

@@ -68,7 +68,7 @@ retained mass becomes an interpretable lower bound on "the model answers in one 
 option formats", and F1's two readings become separable -- if `line` recovers the mass that
 `bare` lost AND recovers agreement with label, v1's string arm was mismeasuring; if mass
 recovers and disagreement persists, the disagreement is real. That contrast is registered as
-P1/P2 in state.md, before this code produced a number.
+P1/P2 in docs/state.md, before this code produced a number.
 
 WHAT IT DOES NOT BUY: free generation is unaffected. Greedy and sampled still decode text and
 parse it, and they still come from `conditions.py`. This module replaces the two probability

@@ -1,4 +1,4 @@
-"""The headline numbers in FINDINGS.md must match what the data actually produces.
+"""The headline numbers in docs/FINDINGS.md must match what the data actually produces.
 
 WHY THIS EXISTS. On 2026-08-10 two changes moved the project's most-quoted figure: excluding
 a near-constant model (N 31 -> 30) and reclassifying Social Norms as the non-moral control it
@@ -26,14 +26,14 @@ import pytest
 
 REPO = Path(__file__).resolve().parent.parent
 DATA = REPO / "results" / "derived" / "analysis_long_v2.csv"
-FINDINGS = REPO / "FINDINGS.md"
+FINDINGS = REPO / "docs/FINDINGS.md"
 
 # Clifford built the Social Norms items as a non-moral CONTROL (2015, p.9, verified by fetching
 # the paper). Averaging it into a foundation-level statistic inflated every cross-method
 # correlation, because floor-bound items rank identically under every readout.
 CONTROL = "Social Norms"
 N_MORAL_FOUNDATIONS = 6
-N_MODELS_ANALYSED = 30      # 31 collected; SmolLM2-1.7B excluded, see LIMITATIONS.md 22
+N_MODELS_ANALYSED = 30      # 31 collected; SmolLM2-1.7B excluded, see docs/LIMITATIONS.md 22
 
 # The Kirgis confound pair: top-3 logprob weighting (~ label) vs mean of ten samples (~ sampled).
 HEADLINE_PAIR = ("label", "sampled")
@@ -78,7 +78,7 @@ def test_model_count_matches_the_documented_sample():
     n = df["model"].nunique()
     assert n == N_MODELS_ANALYSED, (
         f"{n} models in the analysable data, but the write-up says {N_MODELS_ANALYSED}. "
-        f"If the roster changed, update N_MODELS_ANALYSED and FINDINGS.md together.")
+        f"If the roster changed, update N_MODELS_ANALYSED and docs/FINDINGS.md together.")
 
 
 def test_headline_rho_matches_the_data():
@@ -88,15 +88,15 @@ def test_headline_rho_matches_the_data():
     rho = _mean_spearman(df, *HEADLINE_PAIR, moral)
     assert math.isclose(rho, HEADLINE_RHO, abs_tol=TOLERANCE), (
         f"rho{HEADLINE_PAIR} over the six moral foundations is {rho:.4f}, but the constant "
-        f"says {HEADLINE_RHO}. Recompute and update FINDINGS.md deliberately.")
+        f"says {HEADLINE_RHO}. Recompute and update docs/FINDINGS.md deliberately.")
 
 
 def test_findings_quotes_the_current_headline_number():
     if not FINDINGS.exists():
-        pytest.skip("FINDINGS.md missing")
+        pytest.skip("docs/FINDINGS.md missing")
     text = FINDINGS.read_text(encoding="utf-8")
     assert f"{HEADLINE_RHO}" in text, (
-        f"FINDINGS.md does not contain the current headline rho ({HEADLINE_RHO}). "
+        f"docs/FINDINGS.md does not contain the current headline rho ({HEADLINE_RHO}). "
         f"The prose has drifted from the data.")
 
 
@@ -105,7 +105,7 @@ def test_pooling_the_control_inflates_cross_method_agreement():
 
     Floor-bound items rank near-identically under every readout, so folding them into a
     foundation-level average makes methods look more agreeable than they are. If this ever
-    stops being true the justification in FINDINGS.md 3 needs rewriting.
+    stops being true the justification in docs/FINDINGS.md 3 needs rewriting.
     """
     df = _load()
     founds = sorted(df["foundation"].unique())
@@ -115,5 +115,5 @@ def test_pooling_the_control_inflates_cross_method_agreement():
     rho_control = _mean_spearman(df, *HEADLINE_PAIR, [CONTROL])
     assert rho_control > rho_moral, (
         "the control no longer shows higher cross-method agreement than the moral foundations; "
-        "the floor-artifact explanation in FINDINGS.md 3 no longer holds")
+        "the floor-artifact explanation in docs/FINDINGS.md 3 no longer holds")
     assert rho_pooled > rho_moral, "pooling the control should inflate the average"

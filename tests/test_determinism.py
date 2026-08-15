@@ -146,7 +146,7 @@ def _build(tmp_repo_out: Path, suffix: str, hashseed: str) -> Path:
     return dest
 
 
-# Only "_v2" remains: the v1 collection was deleted 2026-08-10 (V1_TO_V2.md). The parametrize
+# Only "_v2" remains: the v1 collection was deleted 2026-08-10 (docs/V1_TO_V2.md). The parametrize
 # is kept with one value rather than inlined, because the determinism guarantee is per
 # COLLECTION and a future harness must be added here, not tested ad hoc.
 @pytest.mark.parametrize("suffix", ["_v2"])
@@ -168,4 +168,4 @@ def test_analysis_dataset_rebuilds_identically(tmp_path, suffix):
     assert filecmp.cmp(a, b, shallow=False), (
         f"analysis_long{suffix}.csv differs between PYTHONHASHSEED=1 and =2. "
         "A committed dataset that does not regenerate from its inputs is not a dataset. "
-        "See CORRECTIONS.md C10.")
+        "See docs/CORRECTIONS.md C10.")
