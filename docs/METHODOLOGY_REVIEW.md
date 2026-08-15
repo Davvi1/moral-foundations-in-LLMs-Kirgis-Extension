@@ -13,26 +13,30 @@
 > | # | flaw | status |
 > |---|---|---|
 > | F1 | string scoring mismeasures | **RESOLVED, with a twist.** The full option line does carry the mass (P1′, 31/31 models) — but it turns out to be *the same measurement as label scoring* (ρ = 0.969, item-level r = 0.988), because the prompt displays the digit→phrase mapping. The design has **three independent probability readouts, not four**. Half F1's original evidence was withdrawn as invalid (C6). |
-> | F2 | label position-scan degrees of freedom | **RESOLVED.** Forced continuation gives exact p_k with no top-k truncation and no position rule. Label mass 0.81 → 0.997. |
+> | F2 | label position-scan degrees of freedom | **RESOLVED, and the headline figure is corrected.** Forced continuation gives exact p_k with no top-k truncation and no position rule. Label mass went 0.81 → 0.997 **on the smoke-test model**; across the roster it did not — 7 of 31 models sit below 0.5 and Mistral-7B is at **0.008**. This row read "Label mass 0.81 → 0.997" unqualified until 2026-08-15, which is the claim `LIMITATIONS.md` §3 exists to withdraw; the retraction reached `FINDINGS.md` and not this table. Forced continuation removed the *truncation* and *position* defects; it cannot make a model put mass on a digit it does not want to emit. |
 > | F3 | underpowered by design | **ACTED ON, PREDICTION FAILED.** N raised 20 → 31. P7 predicted ≥2 foundations would escape `indeterminate`; **none did**. The estimand is not resolvable at feasible N. Family random effect remains unfitted — see "still outstanding". |
 > | F4 | capability claim untested | **RESOLVED, and the strongest positive result.** Ladders to 72.7B. P5 supported on both, LOO-robust, after removing a compression confound that would have manufactured a third of the effect. |
 > | F5 | everything conditional on one prompt | **NOT DONE, and this row was load-bearing in the worst way.** The cloze arm varies the prompt, changes two things at once, and *must* be excluded from the primary — this sentence was one of the three places that said so while **no code enforced it**. It was included in every published R until 2026-08-11, inflating R by **2.70×**. See **C15**. Prompt-as-designed-factor remains future work: `THE_NEXT_EXPERIMENT.md`. |
-> | F6 | Kirgis's substantive finding never audited | **RESOLVED at both N.** Raw gap cannot adjudicate (compression predicts negative, C3); compression-adjusted gap +0.077 to +0.179 across six readouts, and it grows with scale. |
+> | F6 | Kirgis's substantive finding never audited | **RESOLVED at both N** — meaning the audit now exists, *not* that the claim is established. Raw gap cannot adjudicate (compression predicts negative, C3); compression-adjusted gap **+0.081 to +0.187** across six readouts (corrected 2026-08-15 from "+0.077 to +0.179", which was the **N=31, no-exclusions** basis — C18), and it grows with scale. **The audit artifact's own verdict still reads "SUGGESTIVE, not established, in either direction"** — only 15/30 models show the adjusted gap and it carries no interval. It predates P5 and was never re-run, so `FINDINGS.md`'s SUPPORTED rests entirely on the scale evidence, which is marginal per ladder. |
 > | F7 | refusal contaminates readouts | **RESOLVED and extended.** ρ = −0.54 over 31 models. Plus the MNAR audit: a multi-readout design measures the missing-data bias instead of assuming it. |
 > | F8 | internlm boundary / greedy determinism | **PARTIALLY RESOLVED — this row previously said RESOLVED and overstated.** The *boundary* half is resolved: LCP computed engine-side, shift 0 on all 31 models (the original diagnosis of *why* internlm failed was falsified, C7, and the true cause remains unverified — v2 does not depend on it). The *greedy determinism* half is now **RESOLVED, and it FAILED**: greedy is not reproducible across runs — raw text differs on 10.56% of cells, the parsed score on 2.28%, mean shift 1.038. See `LIMITATIONS.md` §12 and `results/derived/greedy_determinism.md`. |
-> | F9 | permutation-null deviation | **RESOLVED.** 700/700 full-MCMC fits. Null median 0.0006–0.0021 against observed 0.34–1.08. The deviation paragraph can be deleted. |
+> | F9 | permutation-null deviation | **RESOLVED, on a six-arm basket — see C17.** 700/700 full-MCMC fits, null median 0.0006–0.0021. Two corrections to this row, both made 2026-08-15. **(a)** The observed range it compared against, "0.34–1.08", was the **with-cloze** basis; design-conformant it is **0.133–0.469**, so the margin is ~2 orders of magnitude rather than ~3. **(b)** "The deviation paragraph can be deleted" was wrong twice over: `controls_v2.md` §1 is *still* the moment estimator, so its deviation note is still true and stays; and the MCMC null itself was fitted on all six arms, the C15 defect surviving in a second script because the test written in response to C15 checked only `analyse_variance_ratio.py`. The script is now fixed and the guard covers every script that computes R. The **artifact is not refit** — a null collapses to ~0 under any basket, so 700 fits of pod time would move nothing. |
 >
-> **Outstanding and NOT deliberate — found on the limitations pass 2026-08-09:** the
-> `scan`-parsed sensitivity analysis specified at `ANALYSIS_PLAN.md:192` ("the primary
-> analysis is repeated excluding them") was **never run**. Descriptively it moves the
-> greedy model ranking to ρ = 0.832 against the all-rows ranking, which is the same
-> order as the method effects under study. See `LIMITATIONS.md` §1.
+> **Found on the limitations pass 2026-08-09, RESOLVED 2026-08-10:** the `scan`-parsed
+> sensitivity specified at `ANALYSIS_PLAN.md:192` had never been run. It has been:
+> `variance_ratio_v2_noscan.csv`, shifting R by −20% to +3% with no verdict change, and moving
+> the greedy model ranking to ρ = 0.832 against the all-rows ranking. **The family random
+> effect was fitted the same day** (`variance_ratio_v2_family.csv`, −2% to +5%).
 >
-> **Still outstanding, deliberately:** F5 (prompt as designed factor); the family random effect
-> for F3 (five Qwens are not five independent draws); a scale-augmented variance model that
-> lets σ(model:method) depend on log-parameters — the right version of the P6 follow-up,
-> dropped from the pod batch because a naive small/large split would be underpowered (N≈9)
-> and return `indeterminate` for both halves.
+> **Still outstanding, deliberately:** F5 (prompt as designed factor); a scale-augmented
+> variance model that lets σ(model:method) depend on log-parameters — the right version of the
+> P6 follow-up, dropped from the pod batch because a naive small/large split would be
+> underpowered (N≈9) and return `indeterminate` for both halves.
+>
+> **Added 2026-08-15 (C16), and it belongs in this table more than most rows do:** no
+> robustness check in this project ever varied the **models**. Doing so shows **one model of 27
+> carries 34% of the interaction sum of squares**, and dropping it halves R — the same order as
+> C15, from one model rather than one arm. See `controls_v2.md` §5.
 
 
 <details>

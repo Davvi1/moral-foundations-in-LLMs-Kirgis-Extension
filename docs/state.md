@@ -45,12 +45,25 @@ What remains is the write-up.
   Both pods stopped and verified `EXITED`. Total spend $20.04 of $60 credit ($39.96 remaining).
 - **Prediction scorecard:** P1′ P2 P3 P4′ P5 P6 supported (P2 and P3 with caveats),
   **P4r and P7 falsified**. See "OUTCOMES" below.
-- **12 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
+- **19 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
   after the fact (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run
   overwriting a v1 artifact). All now guarded by `tests/test_determinism.py` and
-  `tests/test_artifact_provenance.py`. **300 tests pass.**
-- **Still open, deliberately:** F5 (prompt as a designed factor), the family random effect,
-  and a scale-augmented variance model. All named in `METHODOLOGY_REVIEW.md`.
+  `tests/test_artifact_provenance.py`. **303 tests pass.**
+- **Still open, deliberately:** F5 (prompt as a designed factor) and a scale-augmented variance
+  model. Both named in `METHODOLOGY_REVIEW.md`.
+
+> **CORRECTED 2026-08-15 (C19).** This block said "12 corrections", "300 tests", and listed
+> **the family random effect as still open** — it was fitted on 2026-08-10
+> (`variance_ratio_v2_family.csv`, −2% to +5%, no verdict change). That made this the third
+> document asserting undone work that the artifacts show was done, after `LIMITATIONS.md` §13
+> and the `METHODOLOGY_REVIEW.md` outstanding list.
+>
+> **The primary is also N = 30, not the N = 31 named above**: `variance_ratio_v2.csv` was refit
+> on 2026-08-11 with cloze excluded (C15) and SmolLM2 dropped (`LIMITATIONS.md` §22). The
+> 700-fit MCMC null remains at N = 31 *and on a six-arm basket* (C17), disclosed rather than
+> refit — a null collapses to ~0 under any basket.
+>
+> Nothing in the **registered predictions** below was touched; this is the status block only.
 
 <details>
 <summary>Historical status from the pre-flight phase (2026-08-07)</summary>

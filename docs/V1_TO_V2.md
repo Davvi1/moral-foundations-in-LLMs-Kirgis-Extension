@@ -132,7 +132,7 @@ Removing the v1 *data* left v1 *code* stranded. Cleared in a follow-up:
   parametrising over both harnesses.
 
 **And the finding that made this worth doing.** `pytest.ini` sets `testpaths = tests`, so
-`scripts/test_conditions_v2.py` and `scripts/test_harness_smoke.py` — 613 lines covering the
+`tests/test_conditions_v2.py` and `tests/test_harness_smoke.py` — 613 lines covering the
 **live** scorer and harness — had never run in the suite, while ~800 lines thoroughly tested the
 harness we had just deleted. **The test suite was inverted.** Both files moved into `tests/`.
 

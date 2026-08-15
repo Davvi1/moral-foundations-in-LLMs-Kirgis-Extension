@@ -1,6 +1,6 @@
 """End-to-end smoke test of the v2 harness against a fake vLLM. No GPU, no weights.
 
-    python scripts/test_harness_smoke.py
+    python -m pytest tests/test_harness_smoke.py
 
 WHY: `test_conditions_v2.py` tests the scoring LOGIC. It cannot catch integration faults —
 a column missing from FIELDS, a manifest that will not serialise, a cloze prompt that never

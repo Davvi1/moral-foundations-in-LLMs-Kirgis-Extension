@@ -41,7 +41,29 @@ IGNORE_EXACT = {
     "README.md",
 }
 
-CITATION = re.compile(r"`([A-Za-z0-9_./-]+\.(?:md|yaml|yml))`")
+# Paths inside SOMEONE ELSE'S repository — Kirgis's, which we read but do not vendor. They must
+# never resolve here, and flagging them would train the reader to ignore this test.
+EXTERNAL_PREFIXES = ("data/results/", "data/survey/", "llm_moral_foundations2/", "surveys/")
+EXTERNAL_EXACT = {"logprob_responses.csv", "vignettes.csv", "vignettes_short.csv",
+                  "steering.py", "mft_base.py"}
+
+CITATION = re.compile(r"`([A-Za-z0-9_./-]+\.(?:md|yaml|yml|py|csv))`")
+
+# Paths given with a DIRECTORY, in prose or in a runnable command block. These get a stricter
+# check than CITATION: the stated directory must be right, not just the filename.
+#
+# WHY THE STRICTER CHECK EXISTS. Until 2026-08-15 this file checked only `.md|.yaml|.yml`, and
+# `_resolve()` fell back to matching the BARE FILENAME under any of six roots. Both holes
+# pointed the same way, and the README fell through them: it told the reader to run the two v2
+# scorer suites from the scripts directory, when both live under tests. The commands had been
+# wrong in the repo's most-read file, inside a document this test was already scanning, and the
+# extractor could not see it. Turning the check on found the same error in three more places:
+# V1_TO_V2.md, and each of the two suites documenting its own invocation.
+#
+# (Written without literal example paths on purpose — this file is scanned by its own test, and
+# a wrong path quoted here as an illustration would fail it. That is the check working.)
+COMMAND_PATH = re.compile(r"(?:^|[\s`(])((?:scripts|tests|config|data|results|docs)/"
+                          r"[A-Za-z0-9_./-]+\.(?:py|md|yaml|yml|csv|sh))")
 
 
 def _sources():
@@ -58,11 +80,43 @@ def _resolve(cited: str, src: Path) -> bool:
     """A citation resolves if the path exists from the repo root, from docs/, or beside the
     citing file. Documents in docs/ refer to each other by bare filename and that is correct."""
     name = Path(cited).name
-    if name in IGNORE_EXACT:
+    if name in IGNORE_EXACT or name in EXTERNAL_EXACT:
+        return True
+    if cited.startswith(EXTERNAL_PREFIXES):
         return True
     roots = (REPO, REPO / "docs", src.parent, REPO / "results" / "derived",
-             REPO / "data" / "source", REPO / "config")
+             REPO / "data" / "source", REPO / "config",
+             # added 2026-08-15 with the .py/.csv extension: docs and tests refer to harness
+             # scripts by bare name, which is correct and must resolve.
+             REPO / "scripts", REPO / "tests")
     return any((root / cited).exists() or (root / name).exists() for root in roots)
+
+
+def test_every_path_with_a_directory_resolves_at_that_directory():
+    """A path written with a directory must exist AT that directory, not merely somewhere.
+
+    The bare-filename fallback in `_resolve()` is right for docs/ cross-references, which name
+    each other without a directory by convention. It is wrong the moment a path states its
+    directory: then the directory is part of the claim, and a reader who types the command
+    finds nothing. See the COMMAND_PATH comment for the instance that motivated this.
+    """
+    broken: list[str] = []
+    checked = 0
+    for src in _sources():
+        text = src.read_text(encoding="utf-8", errors="replace")
+        for cited in sorted(set(COMMAND_PATH.findall(text))):
+            if (Path(cited).name in IGNORE_EXACT or Path(cited).name in EXTERNAL_EXACT
+                    or cited.startswith(EXTERNAL_PREFIXES)):
+                continue
+            checked += 1
+            if not (REPO / cited).exists():
+                elsewhere = [str(p.relative_to(REPO)) for p in REPO.rglob(Path(cited).name)
+                             if ".git" not in p.parts and "__pycache__" not in p.parts]
+                hint = f" — but it exists at {elsewhere[0]}" if elsewhere else ""
+                broken.append(f"{src.relative_to(REPO)} says `{cited}`{hint}")
+    assert checked > 20, f"only {checked} directory-qualified paths found; extractor broken?"
+    assert not broken, (
+        f"{len(broken)} path(s) name a directory they are not in:\n  " + "\n  ".join(broken))
 
 
 def test_every_cited_document_exists():

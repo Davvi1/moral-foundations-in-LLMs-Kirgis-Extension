@@ -49,6 +49,18 @@ METHODS: list = []           # populated in main() from the dataset actually loa
 # should calibrate the estimand we actually publish, not a different one.
 CONTROL_EXCLUDED_METHODS = {"cloze"}
 
+# Clifford designed the Social Norms items as a non-moral CONTROL stimulus set, not a seventh
+# foundation — the same constant exists in analyse_variance_ratio.py. It is reported, never
+# averaged into a foundation-level number (that pooling inflated every rank correlation
+# before 2026-08-10).
+CONTROL_FOUNDATION = "Social Norms"
+
+# Section 4 only. The cloze arm varies the PROMPT as well as the readout, so its pairwise R is
+# part method and part prompt and is NOT a method contrast (C15). It is nevertheless shown in
+# the matrix, because the matrix exists precisely to make every arm's contribution visible
+# rather than to pre-select a basket — and it is labelled wherever it appears.
+PROMPT_VARYING_METHODS = {"cloze"}
+
 
 def methods_in(df) -> list:
     have = set(df.condition.unique()) - CONTROL_EXCLUDED_METHODS
@@ -90,16 +102,21 @@ def moment_R(y, m_idx, k_idx, i_idx, M, K, I):
     return (s2_MR / s2_M) if s2_M > 0 else float("nan")
 
 
-def balanced_block(df, fdn):
+def balanced_block(df, fdn, methods=None):
     """Largest fully-crossed model x method x item block for one foundation.
 
     The moment estimator needs balance. Exclusions make the real data unbalanced, so the
     null is computed on the complete-cases block and the achieved size is reported.
+
+    `methods` defaults to the module-level METHODS (the fixed-prompt arms). Section 4 passes
+    an explicit list so the pairwise matrix can be built on ONE block covering every arm,
+    which is what makes its cells comparable to each other.
     """
+    methods = METHODS if methods is None else methods
     sub = df[(df.foundation == fdn) & (~df.excluded) & df.score.notna()]
     piv = sub.pivot_table(index=["model", "item_id"], columns="condition",
                           values="score", aggfunc="first")
-    piv = piv.dropna(subset=[c for c in METHODS if c in piv.columns])
+    piv = piv.dropna(subset=[c for c in methods if c in piv.columns])
     if piv.empty:
         return None
     counts = piv.reset_index().groupby("model")["item_id"].nunique()
@@ -113,7 +130,7 @@ def balanced_block(df, fdn):
         return None
     piv = piv.sort_values(["model", "item_id"])
     arr = np.stack([piv[m].values.reshape(len(keep_models), len(items))
-                    for m in METHODS], axis=1)   # (M, K, I)
+                    for m in methods], axis=1)   # (M, K, I)
     return arr, keep_models, items
 
 
@@ -221,6 +238,170 @@ def main() -> int:
     for (a, b), v in allr.items():
         p(f"- **{a} ~ {b}**: {np.mean(v):.3f}  (min {min(v):.3f}, max {max(v):.3f}, n={len(v)})")
     p("")
+
+    # ---------------- 4. pairwise R ------------------------------------------------
+    #
+    # WHY THIS EXISTS. R is a ratio of variance components computed over whatever set of arms
+    # you put in the fit, so its value is a property of that CHOSEN SET, not of the models.
+    # C15 was one instance: cloze sat inside the primary and inflated R 2.70x. The general
+    # problem is that the primary reports ONE scalar averaged over five arms, and a scalar
+    # cannot show that the arms disagree wildly about how much they disagree.
+    #
+    # The fix is not another exclusion — that is just a different basket, and it invites the
+    # obvious objection that we dropped the arm that disagreed. The fix is to stop choosing.
+    # Every PAIR of arms gets its own R, on one common block so the cells are comparable, and
+    # the reader sees the whole structure. Any basket-level R is then a weighted average of
+    # cells that are all on the page.
+    #
+    # Same estimator as section 1, so these numbers sit on the same scale as the observed R
+    # reported there.
+    p("## 4. Pairwise R — every method pair, on one common block\n")
+    p("R is defined over whichever arms enter the fit, so a single scalar is a property of "
+      "that chosen set rather than of the models. This table removes the choice: each cell "
+      "is R for a two-arm design, computed with the section-1 moment estimator on ONE "
+      "complete-case block per foundation, so every cell is comparable to every other.\n")
+    p(f"Averaged over the six moral foundations. **{CONTROL_FOUNDATION} is Clifford's "
+      f"non-moral control and is reported separately, never averaged in.**\n")
+    p("Rows/columns marked † vary the PROMPT as well as the readout, so their cells are not "
+      "method contrasts (C15). They are shown because the point of the table is to make "
+      "every arm's contribution visible.\n")
+
+    matrix_methods = [m for m in METHOD_ORDER if m in set(df.condition.unique())]
+    mpairs = [(a, b) for i, a in enumerate(matrix_methods) for b in matrix_methods[i + 1:]]
+    pair_R: dict[tuple, list] = defaultdict(list)
+    ctrl_R: dict[tuple, float] = {}
+    blocks: list[str] = []
+    for fdn in sorted(df.foundation.unique()):
+        blk = balanced_block(df, fdn, matrix_methods)
+        if blk is None:
+            continue
+        arr, models, items = blk
+        blocks.append(f"{fdn} {arr.shape[0]}x{arr.shape[2]}")
+        idx = {m: i for i, m in enumerate(matrix_methods)}
+        for a, b in mpairs:
+            sub2 = arr[:, [idx[a], idx[b]], :]
+            M2, _, I2 = sub2.shape
+            r = moment_R(sub2.ravel(), None, None, None, M2, 2, I2)
+            if not np.isfinite(r):
+                continue
+            if fdn == CONTROL_FOUNDATION:
+                ctrl_R[(a, b)] = r
+            else:
+                pair_R[(a, b)].append(r)
+
+    def _lab(m):
+        return f"{m}†" if m in PROMPT_VARYING_METHODS else m
+
+    p("| | " + " | ".join(_lab(m) for m in matrix_methods) + " |")
+    p("|---" * (len(matrix_methods) + 1) + "|")
+    for a in matrix_methods:
+        cells = []
+        for b in matrix_methods:
+            if a == b:
+                cells.append("—")
+                continue
+            v = pair_R.get((a, b)) or pair_R.get((b, a))
+            cells.append(f"{np.mean(v):.2f}" if v else "—")
+        p(f"| **{_lab(a)}** | " + " | ".join(cells) + " |")
+    p("")
+    p(f"Blocks (models x items): {', '.join(blocks)}\n")
+
+    p("Sorted, with mean retained probability mass for the probability arms — the column that "
+      "explains the ordering:\n")
+    mass = ok.groupby("condition")["logprob_mass"].mean()
+    p("| pair | R (6 moral) | control alone | mass, arm A | mass, arm B |")
+    p("|---|---:|---:|---:|---:|")
+    for (a, b), v in sorted(pair_R.items(), key=lambda kv: np.mean(kv[1])):
+        ma, mb = mass.get(a, float("nan")), mass.get(b, float("nan"))
+        p(f"| {_lab(a)} ~ {_lab(b)} | **{np.mean(v):.3f}** | "
+          f"{ctrl_R.get((a, b), float('nan')):.3f} | "
+          f"{'—' if math.isnan(ma) else f'{ma:.4f}'} | "
+          f"{'—' if math.isnan(mb) else f'{mb:.4f}'} |")
+    p("")
+    p("Negative values are moment-estimator truncation — the interaction variance is below "
+      "what residual noise alone produces — and a Bayesian fit with a half-normal prior on "
+      "the SD would return a small positive number instead. Read them as 'indistinguishable "
+      "from no interaction', not as a magnitude.\n")
+
+    # ---------------- 5. leave-one-model-out ----------------------------------------
+    #
+    # WHY THIS EXISTS (C16). Every robustness check this project ran on R varied the ARMS:
+    # C15's leave-one-condition-out, the scan-excluded refit, the family random effect. Nobody
+    # ever varied the MODELS. R is estimated from ~27 models, several of which the project
+    # itself describes as having pathological probability mass, so the obvious question — is
+    # this number a property of the roster or of two or three models in it? — had gone unasked
+    # for the entire life of the estimand.
+    #
+    # Two statistics, deliberately, because one alone is arguable:
+    #   * share of the raw interaction SUM OF SQUARES. No variance-component estimator is
+    #     involved at all, so it cannot be an artifact of the moment estimator's truncation.
+    #   * leave-one-out on R itself, which is what a reader actually cares about but which
+    #     moves the numerator AND the denominator at once.
+    # If the two disagree, trust neither. Here they agree.
+    p("## 5. Leave-one-model-out — how concentrated is R?\n")
+    p("R is a ratio of variance components estimated over ~27 models. Every robustness check "
+      "run before 2026-08-15 varied the ARMS (C15, scan-exclusion, family effect); none varied "
+      "the MODELS. This section asks whether R is a property of the roster or of a few "
+      "models in it.\n")
+    p("Cloze is excluded throughout, as everywhere else in this file.\n")
+
+    fdns_moral = [f for f in sorted(df.foundation.unique()) if f != CONTROL_FOUNDATION]
+    blocks5 = {}
+    for fdn in fdns_moral:
+        b = balanced_block(df, fdn)
+        if b is not None:
+            blocks5[fdn] = b
+
+    def _R_over(drop=None):
+        vals = []
+        for fdn, (arr, models, items) in blocks5.items():
+            a = arr
+            if drop is not None:
+                if drop not in models:
+                    continue
+                a = np.delete(arr, models.index(drop), axis=0)
+            r = moment_R(a.ravel(), None, None, None, a.shape[0], a.shape[1], a.shape[2])
+            if np.isfinite(r):
+                vals.append(r)
+        return float(np.mean(vals)) if vals else float("nan")
+
+    # Raw interaction sum of squares, per model, pooled over the six moral foundations.
+    ss_total, ss_by_model = 0.0, defaultdict(float)
+    for fdn, (arr, models, items) in blocks5.items():
+        cm = arr.mean(axis=2)                                     # (M, K) cell means
+        inter = (cm - cm.mean(1, keepdims=True)
+                 - cm.mean(0, keepdims=True) + cm.mean())         # interaction contrasts
+        for mdl, v in zip(models, (inter ** 2).sum(axis=1)):
+            ss_by_model[mdl] += float(v)
+        ss_total += float((inter ** 2).sum())
+
+    base = _R_over()
+    n_models = len(set().union(*[set(m) for _, m, _ in blocks5.values()]))
+    equal_share = 100.0 / n_models if n_models else float("nan")
+    p(f"Baseline R (moment estimator, mean over the six moral foundations): **{base:.3f}**. "
+      f"{n_models} models enter at least one block, so an equal share of the interaction "
+      f"sum of squares would be **{equal_share:.1f}%** each.\n")
+    p("| model | share of interaction SS | R without it | change in R |")
+    p("|---|---:|---:|---:|")
+    ranked = sorted(ss_by_model.items(), key=lambda kv: -kv[1])
+    for mdl, ss in ranked[:6]:
+        r = _R_over(mdl)
+        p(f"| {mdl} | {100 * ss / ss_total:.1f}% | {r:.3f} | {100 * (r - base) / base:+.0f}% |")
+    rest = [ss for _, ss in ranked[6:]]
+    if rest:
+        p(f"| *mean of the remaining {len(rest)}* | *{100 * np.mean(rest) / ss_total:.1f}%* "
+          f"| — | — |")
+    p("")
+    top_m, top_ss = ranked[0]
+    p(f"**{top_m} alone carries {100 * top_ss / ss_total:.1f}% of the interaction sum of "
+      f"squares** — {top_ss / np.mean([s for _, s in ranked]):.1f}x the average model's "
+      f"contribution — and dropping it moves R by {100 * (_R_over(top_m) - base) / base:+.0f}%. "
+      f"That is the same order as C15, from one model rather than one arm.\n")
+    p("Read it alongside section 4 and `LIMITATIONS.md` 3: the concentration is not a "
+      "coincidence, it is the same finding from a different direction. The models that "
+      "dominate the interaction are the ones whose probability readouts sit on almost no "
+      "retained mass, so the method effect is carried by cells the design can barely "
+      "measure.\n")
 
     out_path.write_text("\n".join(L), encoding="utf-8")
     print("\n".join(L))

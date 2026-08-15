@@ -40,6 +40,32 @@ HEADLINE_PAIR = ("label", "sampled")
 HEADLINE_RHO = 0.818
 TOLERANCE = 0.0005          # tight: this is a recomputation, not an approximation
 
+# ---------------------------------------------------------------------------------------
+# EVERY cross-method rho quoted in the prose, not just the headline (C18).
+#
+# Guarding one number is what let C18 happen. Five header-less table rows were stranded in
+# FINDINGS.md 3 when the table above them was recomputed on the six moral foundations, and the
+# prose kept quoting them: label~string_bare as 0.451 (0.415), label~cloze as 0.404 (0.374),
+# string_bare~cloze as 0.269 (0.226). They were N=31, control-pooled values. HEADLINE_RHO was
+# right the whole time, and being right was exactly why nothing failed.
+#
+# So this closes the CLASS: every pair whose rho appears in the write-up is recomputed here. A
+# pair quoted in prose and missing from this dict is the gap that lets the next C18 through.
+QUOTED_RHO = {
+    ("label", "string_line"): 0.964,
+    ("label", "greedy"):      0.921,
+    ("string_line", "greedy"): 0.920,
+    ("label", "sampled"):     0.818,
+    ("sampled", "string_line"): 0.795,
+    ("greedy", "sampled"):    0.762,
+    ("label", "string_bare"): 0.415,
+    ("cloze", "label"):       0.374,
+    ("cloze", "string_bare"): 0.226,
+}
+# Looser than TOLERANCE because the table rounds to 3dp and two of these are quoted to 2dp
+# elsewhere; still far tighter than the 0.03-0.04 gaps the stale values carried.
+QUOTED_TOLERANCE = 0.005
+
 
 def _load() -> pd.DataFrame:
     if not DATA.exists():
@@ -89,6 +115,40 @@ def test_headline_rho_matches_the_data():
     assert math.isclose(rho, HEADLINE_RHO, abs_tol=TOLERANCE), (
         f"rho{HEADLINE_PAIR} over the six moral foundations is {rho:.4f}, but the constant "
         f"says {HEADLINE_RHO}. Recompute and update docs/FINDINGS.md deliberately.")
+
+
+@pytest.mark.parametrize("pair,expected", sorted(QUOTED_RHO.items()))
+def test_every_quoted_rho_matches_the_data(pair, expected):
+    """C18: guarding one number is why five stale ones survived a document-wide recomputation."""
+    df = _load()
+    moral = [f for f in sorted(df["foundation"].unique()) if f != CONTROL]
+    rho = _mean_spearman(df, pair[0], pair[1], moral)
+    assert math.isclose(rho, expected, abs_tol=QUOTED_TOLERANCE), (
+        f"rho{pair} over the six moral foundations is {rho:.4f}, but the write-up quotes "
+        f"{expected}. Either the data changed or the prose is stale — C18 was the latter.")
+
+
+def test_no_stale_rho_values_survive_in_the_prose():
+    """The specific C18 values must never reappear.
+
+    They are all N=31 / control-pooled bases for pairs the write-up now reports on the
+    six-foundation N=30 basis. Each is a plausible-looking number, which is precisely why it
+    survived five days of review: nothing about 0.451 looks wrong next to a true 0.415.
+    """
+    if not FINDINGS.exists():
+        pytest.skip("docs/FINDINGS.md missing")
+    # Scope to rho CONTEXTS. A bare substring scan is wrong: 0.404 is also a legitimate R value
+    # in the variance table (Fairness, family effect), and a test that fires on that would be
+    # trained away rather than fixed. Withdrawn values are also allowed inside the correction
+    # notes, which quote them deliberately -- so blockquotes and C18-tagged lines are skipped.
+    lines = [ln for ln in FINDINGS.read_text(encoding="utf-8").splitlines()
+             if not ln.lstrip().startswith(">") and "C18" not in ln
+             and ("ρ" in ln or "rho" in ln.lower())]
+    for stale, live in (("0.451", "0.415"), ("0.404", "0.374"), ("0.269", "0.226")):
+        hit = next((ln for ln in lines if stale in ln), None)
+        assert hit is None, (
+            f"docs/FINDINGS.md quotes the withdrawn rho {stale} outside a correction note; "
+            f"the current six-foundation figure is {live} (C18).\n  offending line: {hit.strip()}")
 
 
 def test_findings_quotes_the_current_headline_number():

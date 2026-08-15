@@ -54,6 +54,36 @@ def test_variance_ratio_excludes_cloze_by_default():
         "no filter dropping rows where condition == 'cloze'")
 
 
+@pytest.mark.parametrize("script", [
+    "analyse_variance_ratio.py",     # the primary — this is where C15 was found
+    "mcmc_permutation_null.py",      # the null — C17, found 2026-08-15
+    "analyse_controls.py",           # the moment null + pairwise R
+])
+def test_every_script_that_computes_R_excludes_cloze_by_default(script):
+    """C15 closed the instance. This closes the CLASS.
+
+    C15's own lesson was not "we forgot about cloze in the primary". It was that a design
+    commitment recorded only in prose has nothing enforcing it. The test written in response
+    asserted against `analyse_variance_ratio.py` ALONE — so when the same audit was run again
+    on 2026-08-15, `mcmc_permutation_null.py` was still fitting all six arms, and the 700-fit
+    null cited in `docs/FINDINGS.md` 2 was a six-arm null compared against a five-arm R.
+
+    Three scripts compute R. All three must exclude the prompt-varying arm by default, and any
+    script added later that computes R must be added here.
+    """
+    s = _src(script)
+    assert "cloze" in s, (
+        f"{script} computes R but never mentions cloze. This is the exact state that produced "
+        f"C15 — a method-effect estimate silently containing a prompt effect.")
+    # Either an opt-in flag guarding a filter (the primary/null pattern), or a module-level
+    # exclusion constant (the analyse_controls.py pattern). Both are enforcement; prose is not.
+    opt_in = re.search(r"if not args\.include_cloze", s)
+    constant = re.search(r"^[A-Z_]*(EXCLUDED|PROMPT_VARYING)[A-Z_]*\s*[:=]", s, re.M)
+    assert opt_in or constant, (
+        f"{script} mentions cloze but nothing EXCLUDES it by default. It must be dropped "
+        f"unless explicitly opted into (config/prompt.yaml:33, docs/METHODOLOGY_REVIEW.md:13).")
+
+
 def test_including_cloze_writes_a_distinct_file():
     """If someone opts in, the result must not overwrite the primary artifact (the C12 shape)."""
     s = _src("analyse_variance_ratio.py")

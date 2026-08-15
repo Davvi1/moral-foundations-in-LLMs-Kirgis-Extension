@@ -21,9 +21,15 @@ where the evidence is weak:
 - **The prompt invariant holds exactly**: across 3,596 model × item cells, the five
   fixed-prompt arms share one prompt hash — **zero violations** — and the cloze arm differs in
   all 3,596, as designed.
-- **The design is close to balanced**: exclusions remove 2.0% of rows (43 of 1,302 cells), all
-  in greedy and sampled; item counts per foundation are complete across all six conditions; no
-  item is excluded in more than 5% of its rows.
+- **The design is close to balanced**: cell-level exclusions remove **2.1% of rows (43 of
+  1,260 cells)**, all in greedy and sampled; item counts per foundation are complete across all
+  six conditions; no item is excluded in more than 5% of its rows. *(Corrected 2026-08-15: this
+  read "2.0% of rows (43 of 1,302 cells)" — 2.0% was the row share and 43/1,302 is 3.3%, so the
+  parenthetical did not compute the percentage in front of it. 1,302 counts all 31 models;
+  the 43 cells are the 30 that remain after the whole-model exclusion, whose denominator is
+  1,260. Full breakdown now in `results/derived/exclusions_v2.md`.)*
+- **Counting the whole-model exclusion**, which is a validity judgement rather than a data
+  filter and belongs in a separate line (§22): 5.3% of rows, 85 of 1,302 cells.
 - **Two claims previously asserted from memory are now sourced** by fetching Clifford et al.
   (2015) — see `references.md`. Both were correct, and one is now stronger than it was.
 
@@ -38,7 +44,13 @@ Categories, because they should be written up differently:
 
 # The five that most constrain the write-up
 
-## 1. A pre-specified robustness check was never run, and it would have mattered · PROCESS
+## 1. A pre-specified robustness check went unrun for two days, and it would have mattered · PROCESS
+
+> **FULLY RESOLVED 2026-08-10 — read the box at the end of this section before the history.**
+> Both halves are done: the ranking result on 2026-08-09, the R refit on 2026-08-10. The
+> narrative below is retained because it was accurate when written, and because the *reason*
+> the omission existed is worth keeping. **The sentence claiming the R refit was still
+> outstanding survived here until 2026-08-15 and was false for five days — see C19.**
 
 `ANALYSIS_PLAN.md:192` specifies that **`scan`-parsed rows** — where the answer digit was
 recovered from prose rather than found at the start of the response — be reported separately,
@@ -75,8 +87,26 @@ Excluding prose-derived digits, the two arms Kirgis confounded agree **more**, n
 be. And greedy ~ sampled jumps from 0.790 to 0.959 — scan-parsing was adding noise to both
 free-generation arms, and removing it shows they agree far better than we reported.
 
-**So the omission did not flatter our conclusions; correcting it strengthens them.** The R
-refit still needs a pod and remains outstanding.
+**So the omission did not flatter our conclusions; correcting it strengthens them.**
+
+> **RESOLVED 2026-08-10; this section said otherwise until 2026-08-15 (C19).** The sentence
+> that stood here — *"The R refit still needs a pod and remains outstanding"* — was **false when
+> the refit ran on 2026-08-10**. `results/derived/variance_ratio_v2_noscan.csv` carries all 28
+> rows at `scan_excluded=True`, `n_models=30`, `n_methods=5`, and `refit_summary.txt` prints the
+> table. `FINDINGS.md` §2 has reported the result ("scan-exclusion shifts R by −20% to +3%")
+> since then, so the two documents contradicted each other for five days.
+>
+> | foundation | R, primary | R, scan-excluded |
+> |---|---:|---:|
+> | Care | 0.181 | 0.144 |
+> | Loyalty | 0.181 | 0.164 |
+> | Sanctity | 0.246 | 0.208 |
+> | Liberty | 0.317 | 0.294 |
+> | Fairness | 0.408 | 0.356 |
+> | Authority | 0.469 | 0.414 |
+> | *Social Norms (control)* | *0.133* | *0.137* |
+>
+> No verdict changes. The direction is the reassuring one, matching the ranking result above.
 
 ## 1b. R conflates rank reordering with scale differences between methods · EVIDENTIAL
 
@@ -441,10 +471,26 @@ resolved; the determinism check is not. That row overstates.
 ## 13. Models are not exchangeable, and the analysis assumes they are · EVIDENTIAL
 
 The variance model treats models as exchangeable draws. They are not — eight Qwens and four
-Llamas share pretraining recipes, so effective N is below nominal N. **The family random effect
-was specified (F3) and never fitted.** Until it is, the intervals on R are narrower than they
-should be, meaning the `indeterminate` verdicts are if anything *understated* — the honest
-direction, but unquantified.
+Llamas share pretraining recipes, so effective N is below nominal N.
+
+> **FITTED 2026-08-10; this section said "never fitted" until 2026-08-15 (C19).** The text that
+> stood here — *"The family random effect was specified (F3) and never fitted. Until it is, the
+> intervals on R are narrower than they should be"* — was false from the day of the refit.
+> `variance_ratio_v2_family.csv` carries 28 rows at `family_effect=True`, and `FINDINGS.md` §2
+> has reported it ("−2% to +5%") since.
+>
+> **What the fit actually shows is weaker than the concern predicted.** Adding `(1|family)`
+> moves R by −2% to +5% and widens no interval enough to change a verdict. That does **not**
+> retire the exchangeability problem: with 12 families and several singletons the family
+> variance is itself weakly identified, so a null result here is close to uninformative. The
+> honest statement is *"we fitted it and it moved nothing, on a specification too weak to have
+> detected much"* — not *"models turned out to be exchangeable after all"*.
+
+**The remaining unquantified part is the concentration**, which is a different problem from
+family structure and was not looked for until 2026-08-15: one model of 27 carries **34% of the
+interaction sum of squares** and dropping it halves R (C16). Effective N for the *numerator* of
+R is therefore far below 27 — not because models cluster by family, but because a handful of
+models with near-zero retained mass do almost all of the work.
 
 Likewise the scale-augmented variance model (letting σ(model:method) depend on log-parameters)
 is the proper follow-up to P6 and was **deliberately not run**: a naive small/large split leaves
@@ -480,6 +526,24 @@ ladder is individually significant at 0.05** (qwen p = 0.083, llama p = 0.060); 
 fit is, and pooling is the weaker design. Report P5 as *supported in direction, LOO-robust,
 marginal per ladder*. Note also §9: the x in that regression is itself noisy.
 
+## 15b. A pre-specified sensitivity was substituted, not run, and the substitution was never declared · PROCESS
+
+`state.md:761` commits: *"If refusal rates exceed ~10% on any foundation for any model, that
+model × foundation cell is flagged and **the analysis is run with and without it**."*
+
+**The flagging happens** — `validate_results.py` carries `REFUSAL_FLAG = 0.10`. **The
+with-and-without analysis was never run.** What exists instead is
+`results/derived/refusal_bias_audit.md`, which measures the MNAR bias directly (drop vs impute
+4.0 vs impute the model's own label score) and shows the direction is inconsistent across the
+roster.
+
+**The substitution is defensible and is arguably the better analysis** — it bounds the bias
+rather than showing that one arbitrary handling gives a similar answer to another. What is not
+defensible is that it was never declared as a deviation. A pre-specified check that quietly
+becomes a different check is the researcher degree of freedom this project exists to audit, and
+the deviation from the permutation-null specification (`controls_v2.md` §1) shows we knew how to
+declare one. Found 2026-08-15 on the commitments sweep (C19).
+
 ## 16. Missing data in the free-generation arms is not missing at random · EVIDENTIAL
 
 Refusals are dropped, and refusal is plainly not random. We can bound the bias because **label
@@ -505,6 +569,13 @@ internlm's string arm as structurally missing) were fixed by the author after se
 but before any outcome model — weaker than external preregistration, stronger than choosing
 after seeing R. Say so.
 
+> **One of those two thresholds is vestigial in v2, noted 2026-08-15.** The internlm rule does
+> nothing on the primary collection: internlm2_5-7b-chat has all 116 rows in **both** string
+> arms, because v2 measures the token boundary engine-side and the v1 failure mode cannot
+> recur (C7). It is retained in the record because it was a real decision on the v1 data, but
+> it should not be cited as evidence about how tightly the v2 analysis was pre-specified — on
+> v2 the honest count is **one** author-fixed threshold, not two.
+
 ## 19. Construct assumptions imported from human psychometrics · INSTRUMENT
 
 The MFV was validated on people. Treating a token distribution as a response distribution is an
@@ -524,7 +595,7 @@ power for LLM moral judgment); we assumed the instrument and audited the measure
 
 ## 21. Reproducibility defects found late · PROCESS
 
-Twelve corrections in `CORRECTIONS.md`; three were defects in artifacts already committed and
+**Nineteen** corrections in `CORRECTIONS.md`; three were defects in artifacts already committed and
 cited (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run overwriting a v1
 file). None changed a published conclusion — the seed audit measured C11 at **0.8–2.2% of
 credible-interval width with no verdict flips** — and all three are now guarded by tests. But
@@ -535,19 +606,48 @@ defect. A reader is entitled to weigh that.
 
 ## What would actually change the conclusions
 
-Ranked by leverage, so "future work" is concrete:
+> **REBUILT 2026-08-15 (C19), because this list was five-sevenths wrong.** It was written on
+> 2026-08-09 and never updated. Five of its seven items were completed on 2026-08-10–11 and
+> reported in `FINDINGS.md`, while this list went on describing them as outstanding — item 4
+> was contradicted by §12 of *this same file*, which opens with a box headed "RESOLVED
+> 2026-08-10". Nothing caught it because every audit pass in this project checked **claims
+> against data**; a stale status assertion carries no number to re-derive. The sweep that found
+> it — pre-specified commitments and status claims checked against the artifact directory — is
+> new, and is the reason C19 exists.
+>
+> **The direction matters and is worth stating: this document was *understating* the work
+> done.** That is the opposite of the failure mode a reader guards against, which is precisely
+> why nobody looked.
 
-1. **Run the scan-excluded sensitivity analysis (§1).** Pre-specified, never executed, and
-   descriptively it moves greedy rankings to ρ = 0.832. This is the cheapest and most overdue.
-2. **F5 — prompt as a designed factor (§7).** Until it exists we cannot say whether scoring
-   method matters more than an arbitrary wording choice.
-3. **The family random effect (§13)**, which would widen the intervals on R honestly.
-4. **Verify greedy determinism (§12).** Two models, one re-run, minutes of GPU time.
-5. **Propagate the ±0.2 baseline standard error (§9)**, including into the compression slope
-   where regression dilution is currently unestimated.
-6. **A scale-augmented variance model (§13)** as the proper test of P6.
-7. **Report Social Norms separately (§5)** rather than as a seventh foundation, or model the
-   floor explicitly.
+### Done since the list was written
+
+| was listed as outstanding | actually completed | artifact |
+|---|---|---|
+| scan-excluded sensitivity (§1) | 2026-08-10 | `variance_ratio_v2_noscan.csv` |
+| family random effect (§13) | 2026-08-10 | `variance_ratio_v2_family.csv` |
+| verify greedy determinism (§12) | 2026-08-10 | `greedy_determinism.md` |
+| propagate the ±0.2 baseline SE (§9) | 2026-08-10 | `measurement_error.md` |
+| report Social Norms separately (§5) | 2026-08-10 | throughout `FINDINGS.md`; `is_control` column |
+
+Added since, and not on the original list because nobody had thought to ask: the **excluded-cell
+table and the with/without-exclusions comparison** (`exclusions_v2.md`), both pre-specified at
+`ANALYSIS_PLAN.md:191` and never produced; and the **leave-one-model-out** (`controls_v2.md` §5,
+C16).
+
+### Genuinely still outstanding
+
+1. **F5 — prompt as a designed factor (§7).** Until it exists we cannot say whether scoring
+   method matters more than an arbitrary wording choice. **This is the deepest gap in the
+   project** and the obvious sceptical response to the whole design.
+2. **A scale-augmented variance model (§13)** as the proper test of P6 — deliberately not run,
+   because a naive small/large split leaves N ≈ 9 in the large group where B2 puts
+   classification accuracy at 0.64.
+3. **Refit the MCMC permutation null without cloze (C17).** The committed null is six-arm. The
+   script is fixed; the artifact is not, and refitting is 700 MCMC fits of pod time to move a
+   number that is already three orders of magnitude clear of the observed R. Listed for
+   completeness, not recommended.
+4. **Hand-code a few hundred rows to validate the refusal regex (§1e).** Cheap, laptop-only,
+   and F7 plus the entire MNAR audit rest on that unvalidated split.
 
 ---
 

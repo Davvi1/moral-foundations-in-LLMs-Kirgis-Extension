@@ -415,6 +415,9 @@ zero" says nothing about whether the model producing the CI applies where it was
 
 ## Standing note for the write-up
 
+*(Written when the log ran to C14. The tally below is unchanged for C1–C14; C15–C19 are
+counted in the updated tally at the end of this file.)*
+
 Seven of these twelve were found by a check that was **built in advance** — a validation
 simulation (C1), a pre-specified sensitivity analysis (C2), known-answer unit tests (C6, C7),
 or a registered falsifier (C8). One (C3) was found only because the author asked for a
@@ -554,3 +557,201 @@ central criticism of Kirgis is that he reported a method effect that was confoun
 something else. We did the same thing, in our own primary estimand, having written down three
 times that we must not. **Nothing in the codebase enforced a design decision that existed only
 in prose.**
+
+---
+
+# The 2026-08-15 sweep — C16 to C19
+
+The four below came from one review, and they share a cause worth naming before the entries.
+
+**Every audit this project had run checked claims against DATA.** Pass 3 of `LIMITATIONS.md`
+re-derived 37 numeric claims from the artifacts and all matched. `test_doc_citations.py` checks
+that cited paths resolve. `test_headline_numbers.py` guarded one number.
+
+**Nothing checked documents against each other, or status claims against the artifact
+directory.** A sentence saying "this analysis remains outstanding" contains no number to
+re-derive and no path to resolve, so it is invisible to every check we had. Three of these four
+are that shape. The fourth (C16) is the same blind spot in the analysis: every robustness check
+varied the *arms*, none varied the *models*.
+
+---
+
+## C16 — half the primary estimand comes from one model, and nothing had looked
+**Date:** 2026-08-15 · **Severity:** high — no published number is wrong, but the headline is far
+less general than it reads
+
+**Claimed.** `FINDINGS.md` §2 reports R as a property of the roster — "method effects are
+roughly a fifth to a half of between-model variance" over 30 analysed models — supported by
+sensitivities on scan-parsing (−20% to +3%), the family effect (−2% to +5%) and the arm basket
+(C15).
+
+**True.** **Mistral-7B-Instruct-v0.3 alone carries 34.3% of the interaction sum of squares**
+across the six moral foundations, against an equal share of 3.7% and a remaining-model average
+of 1.6% — **9.3× the average contribution**. Dropping it moves R from 0.348 to 0.171, **−51%**,
+in the same order as C15 itself. Per foundation the drop runs −31% (Loyalty) to −66% (Care).
+
+Two statistics, deliberately, because either alone is arguable:
+
+- the **share of raw interaction sum of squares** involves no variance-component estimator, so
+  it cannot be moment-estimator truncation;
+- the **leave-one-out on R** moves numerator and denominator together, and confirms the numerator
+  is doing the work: σ²(model:method) falls 31–66% while σ²(model) moves only +3% to +10%.
+
+**Why it is not a coincidence, and this is the part that matters.** Mistral-7B is the model
+`LIMITATIONS.md` §3 records at **label retained mass 0.008**. Its `string_bare` mean is 1.53
+against `greedy` 3.45 — a 1.9-point swing on a 0–4 scale. So C16 and the pairwise-R tier
+structure in `FINDINGS.md` §2 are the same finding from two directions: **the method effect is
+carried by cells the design can barely measure.** The tier table says it arm-wise, C16 says it
+model-wise, and neither had been connected to the other.
+
+**Caught by:** an external review asking whether R was robust to model composition — a question
+no check in this repo could have answered, because the leave-one-out machinery existed
+(`controls_v2.md` §4, `moment_R`) and had only ever been pointed at conditions.
+
+**Changes.** Leave-one-model-out is now a permanent section of `analyse_controls.py` (§5) rather
+than a one-off. `FINDINGS.md` §2 and §7 carry it; §1 carries it in the one-paragraph version.
+**No number is withdrawn** — R is what it always was — but any write-up quoting the pooled R
+without the concentration is quoting a roster-level statistic for something closer to a
+few-model phenomenon. **Write-up value:** the strongest available illustration of the project's
+own thesis, since it is a case where the number is arithmetically correct and the *unit of
+generalisation* is wrong.
+
+---
+
+## C17 — C15 survived in a second script, because the test written for it guarded only the first
+**Date:** 2026-08-15 · **Severity:** medium — the conclusion holds; the enforcement claim did not
+
+**Claimed.** `test_design_commitments.py` was written after C15, and its docstring states the
+lesson: *"The general failure is not 'we forgot about cloze'. It is that a commitment recorded
+only in prose has nothing enforcing it."* `METHODOLOGY_REVIEW.md` F9 marked the permutation-null
+deviation **RESOLVED**.
+
+**True.** Three scripts compute R. The test asserted against **one**. `mcmc_permutation_null.py`
+had no cloze handling at all, so the 700-fit null cited in `FINDINGS.md` §2 was fitted on
+**six arms** and compared against a five-arm observed R. F9 additionally quoted the observed
+range as "0.34–1.08", which is the with-cloze basis; design-conformant it is 0.133–0.469.
+
+**What it does not change.** A permutation null collapses to ~0 under *any* basket — that is
+what makes it a calibration check rather than an inferential quantity — and 0.001 against 0.18 is
+not a margin a basket change can close. **The calibration conclusion stands.**
+
+**What it does change.** The claim that the C15 class was closed. It was not; it was closed for
+one instance.
+
+**Caught by:** reading the whole of `mcmc_permutation_null.py` rather than trusting the test
+that existed to cover it.
+
+**Changes.** Cloze excluded by default in `mcmc_permutation_null.py`, with `--include-cloze` and
+a `_withcloze` filename variant (the C12 pattern). `test_design_commitments.py` now
+**parametrises over all three scripts that compute R**, and any script added later that computes
+R must be added to that list. The committed null artifact is **not** refit — 700 MCMC fits of
+pod time to move nothing — and the six-arm basis is disclosed in `FINDINGS.md` §2 instead of
+being silently corrected.
+
+---
+
+## C18 — a stranded table kept two superseded numbers in circulation for five days
+**Date:** 2026-08-15 · **Severity:** low in effect, high in irony
+
+**Claimed.** `FINDINGS.md` §3 prose described the genuinely distinct readouts as `string_bare`
+(ρ = 0.451 with label) and `cloze` (0.404); §8 scored P4r as "FALSIFIED — ρ 0.269 vs 0.404"; §5
+and `METHODOLOGY_REVIEW.md` F6 gave the compression-adjusted gap as +0.077 to +0.179.
+
+**True.** All of those are **pre-correction bases**. Five header-less table rows were stranded in
+§3 when the table above them was recomputed on the six moral foundations — a remnant carrying
+N=31, control-pooled values — and the prose went on quoting them. On the current basis:
+label~string_bare **0.415**, label~cloze **0.374**, string_bare~cloze **0.226**. The adjusted-gap
+range is **+0.081 to +0.187**; the +0.077 to +0.179 figure was reproduced exactly by re-running
+the audit at N=31 with no exclusions, which identifies it beyond doubt.
+
+**Nothing reverses.** P4r is still FALSIFIED (0.226 vs 0.374). P2 is still SUPPORTED. The
+direction and every verdict are unchanged.
+
+**Why it is in this file anyway.** This is the error class the project polices in others: a
+number that stays in circulation because the correction reached the table and not the sentence.
+The §3 main table was correct throughout; only the prose reading from the ghost was wrong.
+
+**Caught by:** an external review recomputing every ρ in the document from
+`analysis_long_v2.csv`, which is the check `test_headline_numbers.py` performed for exactly one
+of them.
+
+**Changes.** Fragment deleted. All quoted ρ corrected with the old values recorded inline.
+`test_headline_numbers.py` now verifies **every cross-method ρ quoted in prose** against the
+data, not just the headline — closing the class, in the C9 style.
+
+---
+
+## C19 — the limitations document was five-sevenths wrong about its own outstanding work
+**Date:** 2026-08-15 · **Severity:** medium, and the direction is the surprising part
+
+**Claimed.** `LIMITATIONS.md` "What would actually change the conclusions" listed seven items of
+future work. §1 said *"The R refit still needs a pod and remains outstanding."* §13 said *"The
+family random effect was specified (F3) and never fitted. Until it is, the intervals on R are
+narrower than they should be."*
+
+**True.** **Five of the seven were completed on 2026-08-10–11**, and `FINDINGS.md` had been
+reporting their results ever since. `refit_summary.txt`, timestamped 2026-08-10T21:03:02Z, names
+`variance_ratio_v2_noscan.csv` and `variance_ratio_v2_family.csv` and prints both tables. Item 4
+of the list ("verify greedy determinism") was contradicted by §12 of the *same file*, which opens
+with a box headed "RESOLVED 2026-08-10".
+
+Three further pre-specified commitments were found unexecuted on the same sweep, and unlike the
+scan omission — disclosed prominently as §1 — none had been disclosed at all:
+
+| commitment | status found |
+|---|---|
+| `ANALYSIS_PLAN.md:191` / `state.md:435` — report with and without exclusions, **plus a table of what was dropped** | fits existed, never reported; table never produced |
+| `state.md:444` — achieved N reported with its simulated classification accuracy | never stated for N=30 |
+| `state.md:761` — refusal >10% cells flagged, analysis run with and without | flagging done; analysis **substituted** by the MNAR audit, substitution never declared |
+
+**The direction is the point.** This document was **understating the work done** — the opposite
+of the failure mode a reader guards against, which is exactly why nobody looked. A limitations
+section that claims less than it did is still inaccurate, and a facilitator reading §13 next to
+`FINDINGS.md` §2 sees two documents disagreeing about whether an analysis exists.
+
+**Caught by:** an external review checking pre-specified commitments and status claims against
+the artifact directory — a sweep this project had never run, because every prior pass checked
+claims against **data** and a stale status assertion has no number to re-derive.
+
+**Changes.** The list is rebuilt into "done since this list was written" and "genuinely still
+outstanding" (four items). §1 and §13 carry dated correction boxes with the results they had been
+denying. The excluded-cell table and the with/without comparison now exist
+(`scripts/report_exclusions.py` → `results/derived/exclusions_v2.md`), and the with/without
+sensitivity turns out to be **−21% to +26%**, larger than either sensitivity `FINDINGS.md` was
+reporting as "the sensitivities". Achieved N is now reported with its simulated accuracy, which
+**explains P7's failure** better than P7 did: the observed R values cluster at the 0.25 band
+boundary, where B2 puts classification accuracy at 0.51 regardless of N. The refusal substitution
+is declared as §15b.
+
+**The standing lesson, and it generalises past this project.** Verification effort concentrates
+where errors are expected. Every check here pointed at numbers, because numbers are where a
+reviewer looks — so the errors accumulated in prose status claims, which nothing was watching.
+**A document's account of what it did needs a check as much as its arithmetic does.**
+
+---
+
+## Updated tally, 2026-08-15 — nineteen corrections
+
+Replaces the C14-era note above, which counted twelve.
+
+| how it was found | corrections | count |
+|---|---|---:|
+| a check **built in advance** | C1, C2, C6, C7, C8 | 5 |
+| an audit **for siblings** of a known defect | C11, C13 | 2 |
+| **luck** — a failure that looked unrelated | C9, C10 | 2 |
+| the author **asking for a double-check** | C3, C5 | 2 |
+| **reading the numbers under a verdict** | C4, C12, C14, C15 | 4 |
+| **external review** | C16, C17, C18, C19 | 4 |
+
+**Not one was found by looking at a result and feeling that it seemed wrong.** That was true at
+twelve and it is still true at nineteen.
+
+**What the last four add to the lesson.** C1–C15 were found from inside the project, and the
+checks that found them were all pointed at *numbers*. The 2026-08-15 four were found from
+outside, and three of them are not number errors at all — they are a document's account of
+itself drifting from what the repository contains. **We had built good defences against being
+wrong about the data and none at all against being wrong about ourselves.**
+
+The write-up should say this plainly. It is a sharper version of the project's own thesis than
+any of the measurement findings: a claim is only as reliable as the check aimed at it, and we
+aimed every check at the half of our claims that was easiest to verify.

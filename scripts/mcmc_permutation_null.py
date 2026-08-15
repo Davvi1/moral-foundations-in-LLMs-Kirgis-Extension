@@ -121,6 +121,11 @@ def main() -> int:
     ap.add_argument("--tune", type=int, default=1000)
     ap.add_argument("--chains", type=int, default=4)
     ap.add_argument("--seed", type=int, default=20260809)
+    ap.add_argument("--include-cloze", action="store_true",
+                    help="INCLUDE the cloze arm. Off by default, and the default is the "
+                         "design: cloze is scored against a DIFFERENT PROMPT, so a "
+                         "method-effect estimate containing it is confounded with prompt. "
+                         "Mirrors analyse_variance_ratio.py. See C15/C17.")
     ap.add_argument("--pooled-residual", action="store_true",
                     help="use the pooled-residual model instead of method-specific")
     ap.add_argument("--test", action="store_true", help="1 foundation, 4 perms, short chains")
@@ -135,6 +140,23 @@ def main() -> int:
     if "excluded" in df:
         df["excluded"] = df["excluded"].astype(str) == "True"
         df = df[~df["excluded"]]
+
+    # ---- CLOZE IS NOT A FIXED-PROMPT CONDITION (C15, and C17 for this file) -------------
+    # This filter was added on 2026-08-15, months after the same fix landed in
+    # analyse_variance_ratio.py. The committed `mcmc_permutation_null_v2.csv` therefore has a
+    # SIX-ARM basket while the published R has five, and the mismatch is disclosed in
+    # docs/FINDINGS.md 2 rather than papered over: refitting 700 MCMC fits costs pod time and
+    # would move nothing, because a null collapses to ~0 under any basket.
+    #
+    # It is fixed anyway, because the C15 lesson was NOT "we forgot about cloze" -- it was that
+    # a design commitment living only in prose has nothing enforcing it. Leaving the one
+    # remaining unenforced copy in place would repeat the error knowingly.
+    if not args.include_cloze:
+        before = len(df)
+        df = df[df["condition"].astype(str) != "cloze"].copy()
+        print(f"cloze EXCLUDED from the null (the design; see C15): dropped "
+              f"{before - len(df)} of {before} rows. Pass --include-cloze to override.")
+
     df = df.rename(columns={"condition": "method", "item_id": "item"})
     df["item"] = df["item"].astype(str)
 
@@ -148,9 +170,13 @@ def main() -> int:
     # Suffix follows the input dataset, so the artifact declares its own provenance.
     # An unsuffixed name means the v1 harness by convention; leaving a v2-derived file
     # unsuffixed asserts something false about it. See docs/CORRECTIONS.md C12.
+    # The VARIANT must be in the name too, for the C12 reason: a --include-cloze run must not
+    # silently overwrite the design-conformant null with a confounded one.
     _sfx = "_v2" if "_v2" in Path(args.data).name else ""
+    _var = "_withcloze" if args.include_cloze else ""
     out_path = Path(args.out) if args.out else DERIVED / (
-        f"mcmc_null_test{_sfx}.csv" if args.test else f"mcmc_permutation_null{_sfx}.csv")
+        f"mcmc_null_test{_sfx}{_var}.csv" if args.test
+        else f"mcmc_permutation_null{_sfx}{_var}.csv")
     out_path.parent.mkdir(parents=True, exist_ok=True)
 
     print(f"data      : {args.data}")

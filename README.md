@@ -37,39 +37,61 @@ contribution here is narrower and specific:
 
 Anything stronger than that is over-claiming.
 
-## The four conditions
+## The six arms
 
-Names follow the MCQ scoring literature, not invented terminology.
+Names follow the MCQ scoring literature, not invented terminology. The plan specified four;
+the v2 harness splits string scoring into two surface forms and adds a cloze probe, because
+the four-arm version could not tell "the same measurement" from "a different one" (see
+`docs/V1_TO_V2.md`).
 
-| condition | what is scored |
-|---|---|
-| **label scoring** | probability of the option label token (`"0"`…`"4"`) at the first generated position |
-| **string scoring** | full-sequence log-likelihood of the option text ("Not at all wrong") |
-| **free generation, greedy** | decode at T=0, parse the digit |
-| **free generation, sampled** | sample at T=1, k=10, parse, average |
+| arm | what is scored | fixed prompt? |
+|---|---|---|
+| **label scoring** | probability of the option label token (`"0"`…`"4"`) as a forced continuation | yes |
+| **string scoring, line** | full-sequence log-likelihood of the whole option line (`"3: Very wrong"`) | yes |
+| **string scoring, bare** | full-sequence log-likelihood of the option text alone (`"Very wrong"`) | yes |
+| **free generation, greedy** | decode at T=0, parse the digit | yes |
+| **free generation, sampled** | sample at T=1, k=10, parse, average | yes |
+| **cloze** | option text scored with the option list *removed* from the prompt | **no — by design** |
 
-The **prompt is held fixed and byte-identical across all four**. See `config/prompt.yaml` for
-the two contestable decisions this required, and the limitation it forces (our string scoring
-shows the options in the prompt, so it is not textbook cloze).
+The **prompt is byte-identical across the five fixed-prompt arms** — asserted per item by
+`validate_results.py`, zero violations across 3,596 model × item cells. **Cloze deliberately
+varies it**, which is what makes it cloze, and it is therefore **excluded from the primary
+variance ratio**: a prompt effect inside a number defined as a method effect is the error this
+project audits Kirgis for. Including it inflated R by 2.70× for several weeks — `CORRECTIONS.md`
+C15, the worst entry in the log.
+
+See `config/prompt.yaml` for the two contestable decisions the fixed prompt required, and the
+limitation it forces (our string scoring shows the options in the prompt, so it is not textbook
+cloze — which is why the separate cloze arm exists).
 
 ---
 
 ## Repository layout
 
 ```
-config/prompt.yaml          the fixed prompt; two design decisions argued in full
-data/source/                raw inputs, never edited — see PROVENANCE.md
-data/mfv_116.csv            116 items, QSTN format
-data/mfv_116_meta.csv       foundation labels + Clifford's per-vignette human means
-scripts/build_items.py      derives the two data files from source; self-verifying
-scripts/probe_tokenization.py   the "0" vs " 0" hazard check, per tokenizer
-results/                    probe logs and derived, analysis-ready outputs
-docs/state.md                    living record — decisions, analysis plan, findings
-docs/FINDINGS.md                 synthesis; claims with strength labels
-docs/LIMITATIONS.md              everything constraining what may be claimed
-docs/CORRECTIONS.md              every claim withdrawn or reversed, and how it was caught
-docs/references.md               every citation verified by fetching the source
-`docs/FINDINGS.md`                   operational sequence + pod cheat-sheet
+config/prompt.yaml            the fixed prompt; two design decisions argued in full
+config/models.yaml            the roster, with pinned revision SHAs
+data/source/                  raw inputs, never edited — see PROVENANCE.md
+data/mfv_116.csv              116 items, QSTN format
+data/mfv_116_meta.csv         foundation labels + Clifford's per-vignette human means
+scripts/build_items.py        derives the two data files from source; self-verifying
+scripts/run_experiment.py     the harness: six arms, checkpointed, manifest per model
+scripts/build_analysis_data.py  raw CSVs -> analysis_long_v2.csv, with exclusions
+scripts/analyse_variance_ratio.py  the primary estimand R
+scripts/analyse_controls.py   permutation null, positive control, pairwise R, leave-one-out
+results/raw/                  one CSV + manifest per model, as collected
+results/derived/              analysis-ready outputs and every derived report
+
+docs/ANALYSIS_PLAN.md         the plan, locked before any confirmatory data existed
+docs/state.md                 living record — registered predictions, verbatim
+docs/FINDINGS.md              synthesis; claims with strength labels
+docs/LIMITATIONS.md           everything constraining what may be claimed
+docs/CORRECTIONS.md           every claim withdrawn or reversed, and how it was caught
+docs/METHODOLOGY_REVIEW.md    flaw tracker, F1–F9, with resolution status
+docs/METHODS_EXPLAINER.md     how each arm is actually computed
+docs/V1_TO_V2.md              why the harness was rebuilt
+docs/THE_NEXT_EXPERIMENT.md   what the design analysis says a follow-up would need
+docs/references.md            every citation verified by fetching the source
 ```
 
 ## Reproducing
@@ -88,19 +110,26 @@ rather than emitting a bad questionnaire.
 
 ```bash
 pip install pytest transformers truststore pyyaml
-pytest                      # 219 tests, ~3 min, no GPU needed
+pytest                      # 303 tests, ~2.5 min, no GPU needed
 ```
 
 vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of the vLLM API
 (`tests/fake_vllm.py`) driven by **real tokenizers** over the **real 116 items**. The suite
-covers the prompt invariant, tokenization claims, all four condition runners, the manifest
-contract, checkpointing, VRAM planning, and sequence-length budget.
+covers the prompt invariant, tokenization claims, all six arm runners, the manifest contract,
+checkpointing, VRAM planning, and sequence-length budget.
 
-Plus two laptop-only suites for the v2 scorer, outside pytest:
+It also guards the claims themselves, which matters more than it sounds: `test_headline_numbers.py`
+recomputes every ρ quoted in the write-up from the committed data, `test_design_commitments.py`
+asserts that design decisions written in prose are enforced in code, and
+`test_determinism.py` rebuilds the analysis dataset under two `PYTHONHASHSEED` values and
+requires byte-identical output. Each exists because something slipped past its absence — see
+`docs/CORRECTIONS.md`.
+
+The v2 scorer suites need network access for real tokenizers:
 
 ```bash
-python scripts/test_conditions_v2.py --online   # 41 known-answer + real-tokenizer checks
-python scripts/test_harness_smoke.py            # 50 integration checks, fake vLLM
+pytest tests/test_conditions_v2.py    # known-answer + real-tokenizer checks
+pytest tests/test_harness_smoke.py    # integration checks against the fake vLLM
 ```
 
 Three bugs were caught this way that would each have cost GPU time:
@@ -183,10 +212,43 @@ publishable direction and therefore the direction of drift.
 
 ## Status
 
-Environment verified, instrument built, prompt fixed, tokenization hazard discharged. Next: a
-design simulation to establish whether R is estimable with useful precision at feasible N —
-because R is a ratio of two variance components estimated from few groups, and the interval may
-otherwise be too wide for the decision rule to be informative.
+**Collection and analysis complete. 31 models collected, 30 analysed, 21,576 rows.** What
+remains is the write-up. Full results in `docs/FINDINGS.md`; everything constraining them in
+`docs/LIMITATIONS.md`; every claim withdrawn or reversed in `docs/CORRECTIONS.md`.
+
+### Headline, stated at the strength the evidence supports
+
+- **The model × method interaction is real** — a 700-fit permutation null collapses to ≈ 0.001
+  against an observed R of 0.13–0.47 — **but its magnitude was never resolved.** All seven
+  verdicts are `indeterminate` and our own power prediction (P7) is falsified. The observed
+  values land on the 0.25 band boundary, where the design simulation puts classification
+  accuracy at 0.51 *regardless of N*. This estimand is not resolvable at any N a student
+  project can reach, and saying so is the result.
+- **The disagreement is concentrated, twice over.** Almost all of it comes from two low-mass
+  probes — the four arms carrying real probability mass agree at pairwise R ≤ 0.20 — and **one
+  model of 27 carries 34% of the interaction** (C16). Both point the same way: the method
+  effect lives in cells the design can barely measure.
+- **Kirgis's specific confound is survivable.** His two arms (≈ `label` and ≈ `sampled`) rank
+  models at **ρ = 0.818** over the six moral foundations, pairwise R = 0.081. The flaw that
+  motivated this project is one his conclusions can largely survive, and reporting that is the
+  audit's result rather than a concession.
+- **The strongest material is methodological**, and it is independent of R: a faithful v1
+  label-scoring implementation **silently produced meaningless output on 6 of 16 models**, with
+  retained probability mass the only signal; free generation hides whether a model answers at
+  all (Ministral-8B: 0% under greedy, ~50% under sampling, byte-identical prompts); and a
+  multi-readout design converts an untestable missing-not-at-random assumption into a measured
+  one.
+- **Not shown: that Kirgis is wrong.** We did not replicate his models, prompt, or capability
+  range, and we independently support two of his four claims.
+
+### Nineteen corrections, logged rather than absorbed
+
+`docs/CORRECTIONS.md` records every withdrawn claim and how it was caught — including C15,
+where our own primary estimand contained a prompt-confounded arm for weeks despite three
+documents saying it must not, and C19, where the limitations document spent five days claiming
+work was outstanding that had already been done. **None was found by looking at a result and
+feeling it seemed wrong.** That is the project's own thesis turned on itself, and it belongs in
+the write-up.
 
 ## Licence
 

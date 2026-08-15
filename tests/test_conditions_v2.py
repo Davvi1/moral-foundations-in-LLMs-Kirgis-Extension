@@ -1,7 +1,7 @@
 """Tests for the v2 forced-continuation scorer. Runs on a laptop; no GPU, no model weights.
 
-    python scripts/test_conditions_v2.py              # offline, known-answer tests only
-    python scripts/test_conditions_v2.py --online     # + real roster tokenizers (downloads
+    python -m pytest tests/test_conditions_v2.py              # offline, known-answer tests only
+    python -m pytest tests/test_conditions_v2.py --online     # + real roster tokenizers (downloads
                                                       #   tokenizer files only, a few MB)
 
 WHY THIS FILE EXISTS. v1's scoring bugs did not raise exceptions. They returned plausible
