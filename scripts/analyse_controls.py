@@ -43,8 +43,15 @@ METHOD_ORDER = ["label", "string", "string_line", "string_bare", "cloze", "greed
 METHODS: list = []           # populated in main() from the dataset actually loaded
 
 
+# CLOZE IS EXCLUDED BY DEFAULT — same reason as analyse_variance_ratio.py (C15). The
+# permutation control recomputes R, so a cloze-inclusive block reports a confounded observed R
+# even though the CALIBRATION conclusion (observed >> null) holds either way. The control
+# should calibrate the estimand we actually publish, not a different one.
+CONTROL_EXCLUDED_METHODS = {"cloze"}
+
+
 def methods_in(df) -> list:
-    have = set(df.condition.unique())
+    have = set(df.condition.unique()) - CONTROL_EXCLUDED_METHODS
     return [m for m in METHOD_ORDER if m in have] + sorted(have - set(METHOD_ORDER))
 
 

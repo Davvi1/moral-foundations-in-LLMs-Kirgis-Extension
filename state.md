@@ -3,6 +3,34 @@
 Living record. Sessions start without memory of prior ones — if a decision isn't written
 here, it didn't happen. Update it when something is settled, not at the end.
 
+## What this file is, after the 2026-08-11 prune
+
+**This file's one irreplaceable job is holding the REGISTERED PREDICTIONS**, and their entire
+value is that the git timestamp precedes the data. Everything under
+*"Pre-specified before any results exist"* is therefore **verbatim and must stay that way** —
+including the predictions that were falsified, which are the most useful ones in a write-up.
+
+346 lines were removed: a ~360-line go/no-go session log whose conclusions live in
+`references.md`, and a five-bullet limitations draft wholly superseded by `LIMITATIONS.md`.
+Both are in git history. Nothing pre-specified was touched.
+
+**The reason for pruning is not tidiness.** C15 — the worst error in this project, a
+prompt-confounded arm inside the primary estimand that inflated it 2.70× — sat unnoticed
+because the commitment to exclude it was buried in prose across three files. A 1,100-line
+record where finding a specific commitment means reading past several hundred lines of resolved
+session narrative is the same failure mode with a different surface.
+
+Where each kind of thing now lives:
+
+| | |
+|---|---|
+| registered predictions, decision rules, thresholds | **here**, verbatim |
+| what a source actually says | `references.md` |
+| what we got wrong and how it was caught | `CORRECTIONS.md` |
+| what constrains the claims | `LIMITATIONS.md` |
+| what we found | `FINDINGS.md` |
+| why v1 became v2 | `V1_TO_V2.md` |
+
 ---
 
 ## Status
@@ -674,367 +702,31 @@ later. Disagreement is the more publishable direction and therefore the directio
 
 ---
 
-## Go / no-go — blocking, do this first
-
-1. Clone github.com/peterkirgis/llm-moral-foundations. Confirm three things exist: the 116
-   MFV item texts with foundation labels, his exact prompt string, his per-item responses.
-2. Read the scoring code. Does he renormalise the top-3 weights? Which token set does he
-   index? Record verbatim here.
-3. If items are absent, fall back to Clifford et al. (2015). If neither route works, this
-   project does not run — stop and pick another.
-4. Check arXiv:2403.00998 for overlap. It compares five scoring methods on MCQ tasks
-   including fit to human data. If it already covers the profile-stability question, the
-   contribution narrows and the framing must change.
-5. RESOLVED 2026-08-07: QSTN checked (paper fetched and read). Two consequences.
-   (a) Novelty: their evaluation compares 8 response generation methods on ANES/GLES/ATP
-   (32M responses) and finds significant method effects — the old novelty claim was
-   falsified; the revised claim above is the one to defend. (b) Harness: QSTN is MIT,
-   pip-installable, vLLM-backed, supports instruct models, and covers token-probability,
-   restricted, and open generation with parsers — three of four conditions. String scoring
-   (sequence log-likelihood of full option text) is NOT in their method list and needs
-   custom code. Evaluate building on QSTN before writing a harness from scratch.
-6. Re-check github.com/wassname/llm-moral-foundations2 for movement.
-
-**Nothing gets built before 1–3 are answered here in writing.**
-
-**Executed 2026-08-07. Items 1, 2, 3, 5, 6 answered below. Item 4 (arXiv:2403.00998 overlap)
-was NOT re-run this session — it was already scoped in references.md and is not blocking.**
-
----
-
-## Go / no-go findings — 2026-08-07
-
-Method: cloned `peterkirgis/llm-moral-foundations`, `dess-mannheim/QSTN`, and
-`wassname/llm-moral-foundations2` into a scratch dir outside this repo; read the files;
-fetched Kirgis arXiv:2511.11790 (PDF, 10pp) and Clifford et al. 2015 (PDF, 21pp) and read
-the relevant pages directly. Everything below is quoted from a file or a page I read.
-
-### 1. What is actually in Kirgis's repo
-
-19 files, 5 commits, HEAD `fc39db0 add analysis`. All three things are present.
-
-**(a) The 116 MFV item texts with foundation labels — PRESENT.**
-`data/survey/vignettes_short.csv`, 116 rows. Columns: `Scenario, Foundation, Care,
-Fairness, Loyalty, Authority, Sanctity, Liberty, Not Wrong, Wrong`.
-Also `data/survey/vignettes.csv`, 132 rows — the full Clifford set with finer Care labels.
-
-Foundation counts, 116-item file: Authority 17, Care 16, Fairness 17, Liberty 17,
-Loyalty 16, Sanctity 17, Social Norms 16.
-
-**This answers "which exact 116?"** He starts from Clifford's full 132 and drops all 16
-`Care (p, a)` (physical harm, animals) and `Care (p, h)` (physical harm, humans) items,
-keeping only the 16 `Care (e)` (emotional harm) items. 132 − 16 = 116. The dropped set is
-the animal-cruelty and physical-violence vignettes (squirrel, cat, dolphin, pony, geese;
-stapler, ruler, slapping, hot coffee, spanking, thumbtack). Verified by set difference.
-
-*Consequence for your design, not his error:* his Care foundation is **emotional harm
-only**. Physical harm is absent from the whole instrument as administered. Anything you
-say about "Care" inherits that. Also relevant to the refusal risk already logged — the
-most graphic Care items are already gone, so differential refusal will concentrate in
-Sanctity, as predicted.
-
-**(b) His exact prompt string as administered — RECOVERABLE, from two sources combined.**
-
-The question-text template, `surveys/mft_base.py:35-40`, verbatim:
-
-    q = QuestionLinearScale(
-      question_name = "moral_judgment",
-      question_text = "Please rate how morally wrong this behavior is on the following five-point scale: {{dilemma}}",
-      question_options = [0,1,2,3,4],
-      option_labels = {0: "Not at all wrong", 1: "Not too wrong", 2: "Somewhat wrong", 3: "Very wrong", 4: "Extremely wrong"}
-    )
-
-That is the template, not the wire format — EDSL's `QuestionLinearScale` wraps it. The
-wrapper is not in the repo (it lives in `edsl==0.1.13`), **but the paper prints the
-rendered result** on p.4, verbatim:
-
-    Example Prompt (Care): Please rate how wrong this behavior is on the following five-point
-    scale: You see a girl laughing at another student forgetting her lines at a school play.
-
-    0: Not at all wrong
-    1: Not too wrong
-    2: Somewhat wrong
-    3: Very wrong
-    4: Extremely wrong
-
-    Only 1 option may be selected.
-    Respond only with the code corresponding to one of the options. E.g., "0" or "4" by itself.
-    After the answer, you can put a comment explaining why you chose that option on the next line.
-
-Consistent with `'prompt_tokens': 122` in the raw API responses.
-
-**Discrepancy, minor:** the paper's box says "how wrong this behavior is"; the code says
-"how **morally** wrong". The code is authoritative — the same string appears again at
-`mft_base.py:60` as the prefix used to strip the question text back off, and the stripped
-`Scenario` values in the response CSVs match. Treat the paper's box as a transcription slip.
-
-**(c) His per-item, per-model responses — PRESENT, three files.**
-
-| file | rows | models × items | contents |
-|---|---|---|---|
-| `data/results/logprob_responses.csv` | 696 | 6 × 116 | full raw API response incl. per-token top-3 logprobs |
-| `data/results/sampled_responses.csv` | 1856 | 16 × 116 | full raw API response, `logprobs: None` |
-| `data/results/cleaned_model_responses.csv` | 2436 | 21 × 116 | merged, scored, foundation-joined |
-
-Every model has exactly 116 rows, no gaps. 6 + 16 = 22 raw; `llama-4-Maverick` is dropped
-in the notebook, giving the 21 of the paper. Also present: `data/embeddings/{emfd,mfd,mfd_2}_scores.csv`
-(the Fig 5 FrameAxis intensities — already out of scope) and the five paper figures as PNG.
-
-### 2. The scoring code — both questions answered verbatim
-
-File: `analysis/final_analysis.ipynb`, cell 2, function `compute_expected_value`.
-
-**(a) Does he renormalise? — HE DOES. This is a CORRECTION.**
-
-Code, verbatim:
-
-        total_prob = 0.0
-        weighted_sum = 0.0
-
-        # Compute the weighted sum of the allowed token values.
-        for entry in top_logprobs:
-            cand_token = entry.get("token", "").strip()
-            if cand_token in allowed_tokens:
-                prob = math.exp(entry["logprob"])
-                weighted_sum += int(cand_token) * prob
-                total_prob += prob
-
-        if total_prob == 0:
-            return None
-
-        return weighted_sum / total_prob
-
-Paper, p.4, verbatim:
-
-    E_score = Σ_{k=1}^{3} s_k exp(ℓ_k) = Σ_{k=1}^{3} s_k p_k
-
-**CORRECTION to references.md line 24 and to the "Open, unverified" list.** The old note
-read "Formula as printed does not renormalise... **Unverified whether the code
-renormalises — check the notebook.**" Half right, and the half that was wrong matters:
-
-- The **printed formula** does not renormalise. No denominator. **references.md was right.**
-- The **code** does renormalise, and additionally filters to digit tokens. **The suspicion
-  that it might not was wrong.**
-- **Therefore the paper and the code disagree with each other.** That is a cleaner finding
-  than either branch you were expecting, and it is the single strongest concrete fact this
-  session produced. Fix references.md line 24 to say this.
-
-**(b) Which token set? — Top 3 of the full vocabulary, filtered to digits, then
-renormalised over whatever survived. Suspicion CONFIRMED, mechanism worse than suspected.**
-
-`top_logprobs` is the provider's top-3 over the entire vocabulary (EDSL passes
-`logprobs=True`; the raw data shows exactly 3 entries per token). The loop keeps only
-entries in `allowed_tokens = {"0","1","2","3","4"}`. So the denominator is a
-**data-dependent random subset of size 1, 2, or 3** — not the five valid options, and not
-a fixed set.
-
-**Name the consequence, because it is load-bearing for your framing:** when only one of the
-top three is a digit, `weighted_sum / total_prob` = k·p / p = **k exactly**. The estimator
-silently degenerates to argmax. So his "logprob" arm is not one estimator — it is a mixture
-of a 3-point expectation, a 2-point expectation, and plain argmax, and which one you get is
-decided per item per model by whether non-digit tokens crowd the top-3. This is stronger
-than "logprob scoring vs. sampled scoring differ": his logprob condition is not internally
-consistent with itself. You can demonstrate this on his own committed data without running
-a single model, because `logprob_responses.csv` contains the raw top-3 for all 696 responses.
-
-Two further things in the same cell that compound it:
-
-    df['Expected Value Answer'] = df['Expected Value Answer'].fillna(df['Answer'])
-
-When logprob extraction fails, it silently falls back to the EDSL-parsed integer. The
-logprob arm therefore contains an unreported number of parsed free-generation answers.
-
-    df.groupby(['Service','Foundation','Model'])['Expected Value Answer'].transform(lambda x: x.fillna(x.mean()))
-
-Remaining missing values are mean-imputed within Service × Foundation × Model — i.e.
-imputed at the cell mean before that cell's mean and SEM are computed. Harmless to the
-means, but it deflates the SEM, so the 95% CIs in Figure 2 are narrower than they should
-be by an unreported amount. Worth one sentence in the write-up; not worth a fight.
-
-**CORRECTION — "perfectly collinear with provider" is an over-claim.** Paper Table 1 (p.4)
-plus the two response files give the actual split:
-
-- **Logprob-scored (6):** GPT-3.5-Turbo, GPT-4-Turbo, GPT-4o, GPT-4.1 · Grok-2, Grok-3
-- **Sampled, mean of 10 (15):** all 4 Anthropic, both DeepSeek, all 4 Google, all 3 Meta,
-  **plus GPT-4.5 and o3-Mini**
-
-So OpenAI has models in **both** arms (4 logprob, 2 sampled). Scoring method is perfectly
-collinear with provider for 5 of 6 providers, not all 6. The confound is still severe and
-the between-provider claims are still not identified — but CLAUDE.md and the project
-one-paragraph summary both say "perfectly collinear," and a reviewer who checks Table 1
-will catch that. **Restate as: collinear with provider for every provider except OpenAI,
-where the split is confounded with model identity instead and so still identifies nothing.**
-Weaker wording, same conclusion, and it survives contact with the paper.
-
-### 3. The appendix inconsistency — RESOLVED. Two typos, no substantive effect.
-
-Appendix A, p.10, verbatim:
-
-    In total, I have 16 survey responses and 100 survey questions. Thus, the dataset that I
-    am performing PCA on can be written as:
-        X = Responses × Questions ∈ R^{16×100}
-    ...
-        XV = UΣV^T V = UΣ ∈ R^{129×2}
-    ...
-    Originally, V ∈ R^{100×2}. For my analysis, I group questions by their foundation labels
-    to produce V' ∈ R^{6×2}.
-
-What the data and the code say:
-
-- **100 questions — CORRECT.** The notebook drops Social Norms before the PCA. 116 − 16
-  Social Norms = 100. Verified: exactly 100 unique non-Social-Norms scenarios.
-- **V ∈ R^{100×2}, V' ∈ R^{6×2} — CORRECT.** 6 = the six foundations once Social Norms goes.
-- **"16 survey responses" / R^{16×100} — WRONG.** Cell 10 pivots `index="Model"` over 21
-  models concatenated with one `"human"` row. The matrix is **22 × 100**.
-- **R^{129×2} — WRONG, and inconsistent with his own algebra.** X ∈ R^{16×100} times
-  V ∈ R^{100×2} is R^{16×2} by his own notation, not R^{129×2}. It is not 22 either.
-  **129 matches no count anywhere in the repo** — not 132, 116, 100, 21, 22, 16, 6, 2436,
-  1856, or 696.
-
-The only 16 in the data that could plausibly have produced "16 responses" is the model
-count in `sampled_responses.csv`. **That is a guess and I am labelling it as one** — it is
-not a resolution and should not be written up as one.
-
-**Bottom line: 116 items and 21 models are both confirmed against the data; the PCA is
-22 × 100. The appendix cannot be used to reconstruct his Figure 4 — cell 10 can.**
-This is a detail, not an argument. Do not lead with it.
-
-### 4. Clifford's per-vignette human means — OBTAINABLE. Definite. Figure 2 replicates.
-
-Two independent sources, cross-verified against each other:
-
-- **Source of truth:** Clifford et al. (2015), **Table 1, "Respondent ratings of moral
-  scenarios," pages 1183–1186 — in the main article, not supplementary material.** Columns:
-  Scenario · Foundation · Care/Fairness/Loyalty/Authority/Sanctity/Liberty classification %
-  · Not Wrong % · **Wrong (mean severity)**. Free PDF at cabezalab.org and scottaclifford.com.
-- **Already transcribed:** the `Wrong` column of Kirgis's `data/survey/vignettes.csv` (132)
-  and `vignettes_short.csv` (116) is a verbatim copy of Clifford's Table 1.
-
-Verified by exact match on 9 rows spanning Care (e), Care (p,a), Sanctity and Social Norms —
-e.g. "You see a teenage boy chuckling at an amputee he passes by while on the subway" →
-Care (e), 83% / 0% / 0% / 3% / 10% / 3%, Not Wrong 0%, **Wrong 3.4** in both. Social Norms
-floor cases match too (rotary phone → Not Wrong 100%, Wrong 0.0). The transcription is good.
-
-Scale matches: Clifford's Measures section reads "rate how morally wrong the behavior is on
-a 5-point scale labeled *not at all wrong, not too wrong, somewhat wrong, very wrong,
-extremely wrong*" — the exact five labels Kirgis reuses with codes 0–4. Observed range on
-the 116-item set: min 0.0, max 3.8, mean 2.20.
-
-**Two caveats on the baseline, both of which you should state before a reviewer does.**
-
-**CORRECTION — the baseline is not nationally representative.** Clifford, Study 1:
-respondents were "recruited in three waves (n = 330, 192, 94) from a national online panel
-by Qualtrics," "limited to the age range of 18–40 (M = 35, 32, 33)," and "balanced on
-ideology (to maintain an equal number of liberals, moderates, and conservatives)."
-Kirgis's Discussion describes this as "a nationally representative sample of US adults."
-It is an ideology-quota online panel of 18-to-40-year-olds. **Do not repeat his
-description.** This is a free, fully documented criticism and it is directly relevant to
-his headline claim, since "models diverge from the human baseline" is only as good as the
-baseline. It costs you nothing to state and it is the kind of thing a facilitator will
-reward you for catching.
-
-**n ≈ 30 per vignette.** Clifford: "Respondents were given a random subset (14-16) of the
-vignettes such that each vignette was rated by approximately 30 individuals." On a 0–4
-scale that puts the standard error of each item mean around 0.2. Treating these means as a
-fixed, error-free reference — which the Figure 2 mean-difference plot does — understates
-uncertainty. If you replicate Fig 2, either propagate that error or say plainly that you
-did not.
-
-The positive control in the analysis plan is therefore **live**, and the weaker fallback
-("severe care above social-norm items") is not needed. Keep it written down anyway.
-
-### 5. QSTN as a foundation — VERIFIED, state.md's assertion was right. Recommendation: build on it.
-
-MIT. `requires-python >=3.12`; deps `pandas, pydantic, openai, tiktoken, json_repair`;
-`qstn[vllm]` pulls `vllm>=0.12`. Tests, docs, CI, active (HEAD `322963d update docs`).
-
-Concrete response-generation classes exported from `qstn.inference`:
-`ChoiceResponseGenerationMethod`, `LogprobResponseGenerationMethod`,
-`JSONSingleResponseGenerationMethod`, `JSONReasoningResponseGenerationMethod`,
-`JSONVerbalizedDistribution`.
-
-Against the four conditions in CLAUDE.md's terminology table:
-
-| Condition | QSTN off the shelf? | What you write |
-|---|---|---|
-| **label scoring** | **Yes.** `LogprobResponseGenerationMethod(token_position=0, token_limit=1, output_index_only=True)` | The expectation over 0–4, and the renormalisation decision. `_get_logprobs` hands back a raw `{token: logprob}` dict and computes nothing. ~10 lines — and it is exactly the decision you are studying, so you want it explicit anyway. |
-| **free generation, greedy** | **Yes.** `JSONSingleResponseGenerationMethod` at T=0 + their parser | Nothing. |
-| **free generation, sampled** | **Yes, with an operational caveat** | Nothing, but see below. |
-| **string scoring** | **No.** | All of it. |
-
-**Caveat on sampled generation.** Both output paths read `request_output.outputs[0]`
-(`local_inference.py:541` and `:583`), so vLLM's `n=k` per request is not honoured — you
-would silently get one sample. k samples means k passes over the questionnaire with
-different `seed` values on `batch_generation`. Prefix caching makes this cheap in tokens,
-but it is k batch calls, not one. Budget accordingly; it does not change the design.
-
-**String scoring — VERIFIED absent, and the reason it cannot be faked is concrete.**
-Setting `output_index_only=False` on the logprob method still reads **one token position**.
-That is first-token-of-option-text scoring, not sequence log-likelihood. And on *this*
-instrument that is degenerate: the five options are "Not at all wrong" / "Not too wrong" /
-"Somewhat wrong" / "Very wrong" / "Extremely wrong" — **options 0 and 1 share their first
-token, "Not".** First-token scoring cannot separate them. So string scoring here *must* be
-a full-sequence log-likelihood, and you then face a real, nameable choice: length-normalise
-or not, since the options differ in token length. Name it as a choice in the write-up;
-it is a researcher degree of freedom and pretending otherwise is the kind of thing this
-project exists to criticise. (`JSONVerbalizedDistribution` is the model *stating*
-probabilities in JSON — a different construct entirely, not string scoring.)
-
-**One unadvertised reason to take QSTN:** `local_inference.py:540` reads
-
-    x.decoded_token.lstrip(space_char).lstrip(): x.logprob
-
-That is the leading-space tokenization hazard from arXiv:2509.15020 — the top day-one risk
-in the "Known risks" section below — already handled, with the comment "Strip space token
-and any leading whitespace from tokenization." Their questionnaire format is
-`questionnaire_item_id,question_content`, so `vignettes_short.csv` maps in with a rename.
-
-**Recommendation: build on QSTN; hand-write string scoring only.** Reasons, in order:
-(1) it removes the two things most likely to consume day one — vLLM batching/prefix caching,
-and the tokenization bug; (2) the item format is trivially compatible; (3) it puts you in
-the same tooling as the closest prior work, which is a defensible answer at a check-in —
-"I used the framework from the paper I have to engage with, and added the one condition it
-lacks"; (4) the division of labour is clean and explainable: three conditions from a
-published, tested framework, one condition written by you because nobody has it.
-
-**Risks to state honestly rather than discover:** Python ≥3.12 and vllm ≥0.12 — verify
-against the rented GPU image *before* committing, this is the kind of thing that eats an
-afternoon. And you inherit their prompt-construction layer, which makes the prompt a fixed
-nuisance parameter you adopt rather than choose. That is acceptable — arguably better than
-an ad hoc prompt, because it is documented — but say so rather than letting it pass.
-
-**Consequence for the replication claim, now firmer.** You will not be sending Kirgis's
-literal EDSL-rendered prompt. "Prompt held fixed" was already logged as a risk; it is now
-a harder constraint — under QSTN you *cannot* match his wire format even if you wanted to.
-This is not a prompt-level replication of Kirgis and the write-up must say so plainly.
-It does not threaten the design, because scoring method is manipulated *within* your own
-fixed prompt, which is the whole point.
-
-### 6. wassname/llm-moral-foundations2 — no movement
-
-Remote `HEAD = f05ffe1e9a87528138ea84f026ec991974383b08`, **dated 2025-09-16**, identical
-to the clone. **~11 months stale as of today.** No paper, no release, still a journal.
-
-The entry referenced in references.md is dated 2025-08-21 and reads verbatim:
-
-    I was using ranked logprobs for judging but after experimenting with judgembench just
-    using weighted or argmax is better
-
-references.md's characterisation of it is accurate — **no correction needed there.**
-
-The repo has grown past what references.md describes: it now carries steering-vector data
-(`data/steering/*.json5`, `llm_moral_foundations2/steering.py`), a "daily dilemma" strand,
-and `nbs/mcf_vignettes/01_gather_data_hf_logprobs.py`. Still an undocumented side project.
-The territory is not occupied. Do not cite the journal entry as evidence for anything — it
-is one line with no method attached — but it remains corroborating.
-
-### Carried forward, not done this session
-
-- arXiv:2403.00998 overlap check (old go/no-go item 4). Not blocking; already scoped in
-  references.md. Do it before the write-up, not before the run.
-- references.md line 24 needs the correction from finding 2(a) written into it.
-- CLAUDE.md and the project summary need "perfectly collinear with provider" softened per
-  finding 2(b).
+## Go / no-go — completed 2026-08-07, session log removed 2026-08-11
+
+The go/no-go read Kirgis's repo and paper, Clifford et al. (2015), QSTN, and
+`wassname/llm-moral-foundations2`, and cleared the project to proceed. **Its ~360-line session
+log has been removed from this file.** Every verified conclusion it produced lives in
+`references.md`, which is the canonical record and holds each claim to the "verified by
+fetching the source" standard. Keeping a second, longer copy here meant two places to check and
+one of them silently going stale.
+
+What it established, in one line each — details and citations in `references.md`:
+
+- **Kirgis's paper and code disagree about renormalisation.** The printed formula has no
+  denominator; `compute_expected_value` divides by `total_prob`. Where only one of the top three
+  tokens is a digit the estimator degenerates to argmax.
+- **Scoring method is collinear with provider for five of six providers**, not perfectly
+  collinear — OpenAI has models in both arms. Say it the weaker way; a reviewer who checks
+  Table 1 will catch the stronger one.
+- **Clifford's per-vignette human means are obtainable** (Table 1, pp.1183–1186) and his
+  baseline is an ideology-quota online panel of 18–40s, **not** the "nationally representative
+  sample of US adults" Kirgis's discussion calls it.
+- **QSTN is usable as tooling** and, later, as prior work that falsified this project's original
+  novelty claim.
+- **`wassname/llm-moral-foundations2` is stale** and does not occupy the territory.
+
+The full log is in git history — `git log -p -- state.md`, or the `pre-cleaning-out-v1` tag.
 
 ---
 
@@ -1080,21 +772,11 @@ is one line with no method attached — but it remains corroborating.
 
 ---
 
-## Limitations for the write-up — draft now, don't discover later
+## Limitations for the write-up
 
-- **Not externally registered.** Decision 2026-08-07: OSF deposit dropped. The analysis plan
-  is locked in `ANALYSIS_PLAN.md` at git tag `analysis-plan-locked` (commit `75b57b2`), which
-  provably contains no `results/raw/`. **Call this a pre-specified analysis plan, never a
-  preregistration** — a tag in a repository the author controls is an internal discipline
-  device, not independent verification. The discipline is real (changing the decision rule now
-  produces a visible diff against a tagged commit) but the stronger word is not available and
-  using it would be exactly the kind of over-claim that sinks a write-up.
-
-- This did not replicate Kirgis's findings. It replicated his design on a different model
-  sample and manipulated something he held fixed by necessity.
-- Treating a token distribution as a response distribution is a construct assumption
-  imported from human psychometrics. The MFV was validated on people.
-- Thirteen small instruction-tuned models are not the frontier.
-- Whether scoring method is a researcher degree of freedom or part of the construct
-  definition is a values question about what "a model's moral profile" means, not a
-  technical one.
+**Moved to `LIMITATIONS.md`, 2026-08-11.** This section held five bullets drafted early; all
+five are now covered there at length, including the one that matters most —
+**§18: this is a pre-specified plan, not a preregistration.** A tag in a repository the author
+controls is an internal discipline device, not independent verification, and the stronger word
+must never be used. `LIMITATIONS.md` runs to 22 entries; maintaining a five-line summary
+alongside it was how a limitation goes stale without anyone noticing.
