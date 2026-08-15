@@ -1,0 +1,48 @@
+# The GPU inference environment that produced results/raw/. Linux + NVIDIA only —
+# vLLM does not run on Windows or on CPU.
+#
+# THESE VERSIONS ARE NOT ASPIRATIONAL. They are read off the run manifests, which
+# record the interpreter and package versions per model at collection time. All 31
+# v2 models were collected on one identical stack:
+#
+#     python  3.12.3
+#     vllm    0.26.0
+#     transformers 5.14.1
+#     torch   2.11.0+cu130
+#
+# Verify for yourself:
+#     python -c "import json,glob,collections; \
+#       print(collections.Counter(tuple(sorted(json.load(open(f))['packages'].items())) \
+#       for f in glob.glob('results/raw/*_v2.manifest.json')))"
+#
+# GPUs: 24 models on an RTX PRO 4500 Blackwell (32 GB, sm_120), 7 large models on a
+# B200. Both are recorded per model in the manifests.
+#
+# INSTALL
+#   pip install "qstn[vllm]"        # pulls a compatible vllm/torch pair
+#   pip install -r requirements-inference.txt
+#
+# torch is pinned WITHOUT its local version segment. The build actually used was
+# 2.11.0+cu130, which is not on plain PyPI — it comes from the vLLM install or from
+# https://download.pytorch.org/whl/cu130. Under PEP 440 a `==2.11.0` specifier is
+# satisfied by `2.11.0+cu130`, so installing vLLM first and letting it resolve the CUDA
+# build still satisfies this line. An earlier draft commented torch out entirely to
+# dodge the index problem; that left a dependency two scripts import undeclared, and
+# tests/test_self_description.py failed on it.
+#
+# BLACKWELL (sm_120) — NOT OPTIONAL:
+#     export VLLM_USE_FLASHINFER_SAMPLER=0
+# FlashInfer's top_k_top_p_sampling_from_logits crashes vLLM engine initialisation on
+# sm_120. Without this, vLLM will not start at all on that card.
+#
+# Before spending anything, run the pre-flight — it checks env vars, packages, GPU and
+# sm_120 kernels, config integrity, the VRAM plan for every model, that every pinned
+# revision resolves, and that a prompt renders inside the length budget:
+#     source /workspace/env.sh && python scripts/preflight.py
+
+qstn[vllm]
+vllm==0.26.0
+torch==2.11.0
+transformers==5.14.1
+truststore==0.10.4
+PyYAML==6.0.2

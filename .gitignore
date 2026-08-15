@@ -1,6 +1,17 @@
-# Large raw model outputs — regenerable from the pod, too big for git.
-# Derived, analysis-ready files in results/derived/ ARE committed.
-results/raw/
+# results/raw/ IS COMMITTED, as of 2026-08-16.
+#
+# It used to be ignored here, with the reason "regenerable from the pod, too big for
+# git". Both halves were wrong. It is 13 MB of CSV across 62 files — not large. And it
+# is NOT regenerable: it is the output of 31 models on rented GPUs, one of which
+# (greedy decoding) is measurably non-deterministic across runs, so re-collecting it
+# would produce different numbers rather than the same ones.
+#
+# The practical consequence, found by cloning the repo and running the documented
+# pipeline: `build_analysis_data.py` failed immediately on a fresh clone, so the
+# raw -> derived step of a project whose entire subject is measurement provenance
+# could not be reproduced by anyone but its author.
+#
+# Model WEIGHTS are excluded below and always will be.
 
 # Python
 __pycache__/

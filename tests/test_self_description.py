@@ -104,6 +104,95 @@ def test_corrections_tally_table_covers_every_entry():
     assert not missing, f"tally omits C{', C'.join(map(str, missing))}"
 
 
+# --------------------------------------------------------------------------- deps
+# Third-party import name -> the distribution that provides it.
+DIST = {
+    "pandas": "pandas", "numpy": "numpy", "scipy": "scipy",
+    "matplotlib": "matplotlib", "yaml": "PyYAML", "pytest": "pytest",
+    "transformers": "transformers", "truststore": "truststore",
+    "pptx": "python-pptx", "PIL": "pillow",
+    # requirements-fit.txt — the Bayesian stack, not installed on a laptop
+    "bambi": "bambi", "pymc": "pymc", "arviz": "arviz",
+    # requirements-inference.txt — Linux + GPU only
+    "vllm": "vllm", "torch": "torch", "qstn": "qstn",
+}
+REQ_FILES = ["requirements.txt", "requirements-fit.txt", "requirements-inference.txt"]
+
+
+def _declared() -> set[str]:
+    out = set()
+    for rel in REQ_FILES:
+        for line in _text(rel).splitlines():
+            line = line.split("#")[0].strip()
+            if line:
+                out.add(re.split(r"[<>=\[!~]", line, 1)[0].strip().lower())
+    return out
+
+
+def test_every_third_party_import_is_declared():
+    """A requirements file is a claim; this checks it against what the code imports.
+
+    Without this, "pip install -r requirements.txt" is prose — the same category of
+    unenforced commitment as C15. Standard-library modules are excluded by asking the
+    interpreter rather than by keeping a hand-written list that would itself go stale.
+    """
+    import sys
+    stdlib = set(sys.stdlib_module_names)
+    declared = _declared()
+
+    found: dict[str, set[str]] = {}
+    for py in sorted((REPO / "scripts").rglob("*.py")) + \
+            sorted((REPO / "tests").rglob("*.py")):
+        tree = __import__("ast").parse(py.read_text(encoding="utf-8"), str(py))
+        for node in __import__("ast").walk(tree):
+            if isinstance(node, __import__("ast").Import):
+                names = [a.name.split(".")[0] for a in node.names]
+            elif isinstance(node, __import__("ast").ImportFrom):
+                names = [node.module.split(".")[0]] if node.module and not node.level else []
+            else:
+                continue
+            for nm in names:
+                if nm in stdlib or nm == "__future__":
+                    continue
+                # first-party: a sibling module in scripts/ or tests/
+                if (REPO / "scripts" / f"{nm}.py").exists() or \
+                        (REPO / "tests" / f"{nm}.py").exists():
+                    continue
+                found.setdefault(nm, set()).add(py.relative_to(REPO).as_posix())
+
+    missing = {}
+    for nm, where in found.items():
+        dist = DIST.get(nm, nm).lower()
+        if dist not in declared:
+            missing[nm] = sorted(where)
+    assert not missing, (
+        "imported but not in any requirements file:\n  " + "\n  ".join(
+            f"{k} (from {', '.join(v)})" for k, v in sorted(missing.items())))
+
+
+def test_requirements_pins_match_the_installed_analysis_stack():
+    """requirements.txt claims the versions the committed artifacts were built with.
+
+    Only checks what is actually importable here, so it is meaningful on a laptop and
+    on CI without demanding the GPU or Bayesian stacks be present.
+    """
+    import importlib.metadata as md
+    wrong = []
+    for line in _text("requirements.txt").splitlines():
+        line = line.split("#")[0].strip()
+        if "==" not in line:
+            continue
+        name, pin = (s.strip() for s in line.split("=="))
+        try:
+            have = md.version(name)
+        except md.PackageNotFoundError:
+            continue
+        if have != pin:
+            wrong.append(f"{name}: pinned {pin}, installed {have}")
+    assert not wrong, (
+        "requirements.txt disagrees with this environment:\n  " + "\n  ".join(wrong))
+
+
 # --------------------------------------------------------------------------- tests
 def test_stated_test_count_matches_collection(request):
     """'N tests' in prose must equal what pytest actually collected.

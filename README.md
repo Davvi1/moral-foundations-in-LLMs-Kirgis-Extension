@@ -5,7 +5,7 @@ Models"* ([arXiv:2511.11790](https://arxiv.org/abs/2511.11790)), on open-weight 
 **scoring method manipulated as a within-model treatment**.
 
 **31 models collected · 30 analysed · 6 scoring arms · 116 vignettes · 21,576 rows · 21 logged
-corrections · 320 tests**
+corrections · 322 tests**
 
 ---
 
@@ -288,6 +288,32 @@ rather than the instance:
 
 ## Reproducing
 
+Everything except the GPU inference and the Bayesian fit runs on a laptop from a clean
+clone. That is verified on every push by `.github/workflows/tests.yml`, which installs from
+`requirements.txt`, rebuilds the analysis dataset from `results/raw/`, and asserts the
+rebuild is **byte-identical** to the committed one.
+
+```bash
+git clone https://github.com/Davvi1/moral-foundations-in-LLMs-Kirgis-Extension
+cd moral-foundations-in-LLMs-Kirgis-Extension
+python -m pip install -r requirements.txt      # Python 3.10+; 3.12 in CI
+pytest                                          # 322 tests, ~5 min, no GPU
+```
+
+| file | what it is for | where it has to run |
+|---|---|---|
+| `requirements.txt` | analysis, figures, deck, tests | any laptop |
+| `requirements-fit.txt` | the Bayesian variance ratio and the MCMC null | Linux + C++ toolchain |
+| `requirements-inference.txt` | collecting `results/raw/` | Linux + NVIDIA GPU |
+
+**`results/raw/` is committed** — 13 MB, 62 files, one CSV and one manifest per model. It was
+gitignored until 2026-08-16 on the stated grounds of being "regenerable, too big for git",
+and both halves were false: it is small, and it is *not* regenerable, because greedy decoding
+is measurably non-deterministic across runs (`LIMITATIONS.md` §12). A fresh clone could not
+run `build_analysis_data.py` at all. Each manifest records the interpreter, package versions,
+GPU and pinned revision for that model; all 31 v2 models were collected on one identical
+stack (Python 3.12.3 · vLLM 0.26.0 · transformers 5.14.1 · torch 2.11.0+cu130).
+
 ### Item file
 
 ```bash
@@ -301,8 +327,7 @@ emitting a bad questionnaire.
 ### Tests
 
 ```bash
-pip install pytest transformers truststore pyyaml
-pytest                      # 320 tests, ~5 min, no GPU needed
+pytest                      # 322 tests, ~5 min, no GPU needed
 ```
 
 vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of the vLLM API
@@ -326,11 +351,34 @@ python scripts/build_analysis_data.py --suffix _v2      # raw CSVs -> analysis_l
 python scripts/validate_results.py --suffix _v2         # QA gate; exit 0 = analysable
 python scripts/analyse_controls.py                      # nulls, pairwise R, leave-one-out
 python scripts/report_exclusions.py                     # what was dropped, and with/without
+python scripts/analyse_scale.py                         # P5 / P6, compression-adjusted
 python scripts/analyse_variance_ratio.py --data results/derived/analysis_long_v2.csv
 ```
 
-Only the last needs a Linux box with a working C++ toolchain — PyTensor falls back to pure
-Python otherwise and a small fit takes over ten minutes. Everything else runs on a laptop.
+Only the last needs a Linux box with a working C++ toolchain (`requirements-fit.txt`) —
+PyTensor falls back to pure Python otherwise and a small fit takes over ten minutes.
+Everything else runs on a laptop.
+
+**Two scripts cannot be run from a clone, by design rather than omission:**
+`audit_greedy_determinism.py` compares the v1 and v2 collections and v1 was deleted from the
+tree (`docs/V1_TO_V2.md`), so its committed output is the record; `reanalyse_kirgis.py` takes
+`--kirgis-repo` and needs a local clone of Kirgis's repository, which is not vendored here.
+
+### Figures and the deck
+
+```bash
+python scripts/make_figures.py --check     # re-derive 16 values, assert, draw nothing
+python scripts/make_figures.py             # figures/ (titled) + figures/deck/ (untitled)
+python scripts/make_deck.py                # -> MFT-in-LLMs-presentation.pptx, 20 slides
+```
+
+Every number in a figure is **derived at runtime** from `results/derived/` and asserted
+against the committed artifacts before anything is drawn — `--check` does the assertions
+alone. That is not ceremony: C18 and C21 are both cases of a number surviving in prose after
+its basis moved, and the check caught a real one here, a reimplementation of the
+compression-adjusted gap that gave +0.279 against the artifact's +0.324. The `.pptx` is
+gitignored; the source and the figures it consumes are committed, so it cannot drift from
+them unnoticed.
 
 ### Pre-flight, before anything expensive
 

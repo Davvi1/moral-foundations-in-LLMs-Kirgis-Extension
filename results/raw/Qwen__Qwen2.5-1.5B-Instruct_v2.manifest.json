@@ -1,0 +1,86 @@
+{
+  "model": "Qwen/Qwen2.5-1.5B-Instruct",
+  "revision": "989aa7980e4cf806f80c7fef2b1adb7bc71aa306",
+  "family": "qwen",
+  "harness": "v2",
+  "params_b": 1.5,
+  "n_items": 116,
+  "k_samples": 10,
+  "conditions": [
+    "cloze",
+    "greedy",
+    "label",
+    "sampled",
+    "string_bare",
+    "string_line"
+  ],
+  "prompt_sha_first": "add09e54f847dca8",
+  "prompt_style": "system_role",
+  "trust_remote_code": false,
+  "prompt_sha_all_distinct": true,
+  "prompt_config_sha": "d1877025fe8ae5f6",
+  "items_file_sha": "dae9643999520b16",
+  "option_label_token_ids": {
+    "0": [
+      15
+    ],
+    "1": [
+      16
+    ],
+    "2": [
+      17
+    ],
+    "3": [
+      18
+    ],
+    "4": [
+      19
+    ]
+  },
+  "packages": {
+    "vllm": "0.26.0",
+    "transformers": "5.14.1",
+    "torch": "2.11.0+cu130"
+  },
+  "python": "3.12.3",
+  "gpu": "NVIDIA RTX PRO 4500 Blackwell",
+  "env": {
+    "VLLM_USE_FLASHINFER_SAMPLER": "0",
+    "HF_HOME": "/workspace/hf-cache"
+  },
+  "vllm_args": {
+    "max_model_len": 1024,
+    "gpu_memory_utilization": 0.85,
+    "enforce_eager": true,
+    "dtype": "bfloat16",
+    "tensor_parallel_size": 1
+  },
+  "n_gpus_visible": 1,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "tokenization": {
+    "engine_n_tokens": 91,
+    "local_n_no_specials": 91,
+    "local_n_with_specials": 91,
+    "engine_minus_local_no_specials": 0,
+    "v1_boundary_was_correct": true
+  },
+  "boundary_shift_rows": 0,
+  "degenerate_option_rows": 0,
+  "cloze_prompt_sha_first": "2a0a63b7265495b2",
+  "elapsed_s": 41.0,
+  "n_rows": 1740,
+  "parse_failed": 0,
+  "refusals": 0,
+  "scan_parsed": 0
+}

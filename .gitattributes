@@ -1,0 +1,44 @@
+# Line endings are normalised to LF IN THE REPOSITORY, for every text and data file.
+#
+# WHY THIS EXISTS. This repository was authored on Windows and its analysis is run on
+# Linux, and the committed artifacts are compared byte-for-byte in places:
+# `test_determinism.py` rebuilds analysis_long_v2.csv under two PYTHONHASHSEED values
+# and requires an identical file (C10, C11); `test_artifact_provenance.py` asserts no
+# committed artifact blends the two harnesses. Without this file, `git` would hand a
+# Windows clone CRLF and a Linux clone LF for the same commit, so those comparisons
+# would be testing the checkout platform as much as the code.
+#
+# The run manifests happen to be insulated — `items_file_sha` is computed from
+# `Path.read_text()`, which normalises newlines on the way in — but that is a lucky
+# property of one call site, not a policy, and it is not something the next person
+# should have to discover before trusting a hash.
+
+# Everything text-like: normalise on commit, check out LF everywhere.
+*                text=auto eol=lf
+
+# Data and source: never touched, never converted on checkout.
+*.csv            text eol=lf
+*.md             text eol=lf
+*.py             text eol=lf
+*.yaml           text eol=lf
+*.yml            text eol=lf
+*.json           text eol=lf
+*.txt            text eol=lf
+*.sh             text eol=lf
+*.ini            text eol=lf
+.gitignore       text eol=lf
+.gitattributes   text eol=lf
+
+# Binary — never convert, never diff as text.
+*.png            binary
+*.jpg            binary
+*.pdf            binary
+*.pptx           binary
+*.safetensors    binary
+*.bin            binary
+*.gguf           binary
+
+# CSVs are deliberately left as ordinary diffable text. An earlier draft of this file
+# marked them `-diff`, to keep `git diff` tidy — which is exactly wrong here. Seeing
+# what a refit changed in variance_ratio_v2.csv is how C15 was sized (R inflated
+# 2.70x) and how C21 was caught. A quiet diff is a worse default than a long one.

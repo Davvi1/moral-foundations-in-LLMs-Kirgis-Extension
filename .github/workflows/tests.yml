@@ -1,0 +1,64 @@
+# Run the suite on every push and pull request.
+#
+# WHY THIS EXISTS. This project's own thesis is that a commitment written in prose and
+# enforced nowhere is not a commitment — that is C15, the worst entry in
+# docs/CORRECTIONS.md, where a design decision stated in three documents and enforced
+# in no code inflated the headline estimand by 2.70x for weeks. Twenty-one corrections
+# later, the repository had 320 tests and no automation that ran them: whether the
+# guards passed depended on the author remembering to type `pytest`.
+#
+# It also verifies the thing the requirements files claim. A pinned dependency list is
+# only worth something if someone has installed from it on a clean machine, and until
+# this workflow existed nobody had.
+#
+# Deliberately NOT here: the Bayesian fit (requirements-fit.txt) and GPU inference
+# (requirements-inference.txt). The first needs a C++ toolchain and takes minutes per
+# fit; the second needs an NVIDIA GPU. Both produced committed artifacts, and the
+# analysis scripts run against those.
+
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements.txt
+
+      - name: Install from the pinned requirements
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r requirements.txt
+
+      - name: Item file rebuilds from source and self-verifies
+        run: python scripts/build_items.py
+
+      - name: Analysis dataset rebuilds from results/raw/
+        run: python scripts/build_analysis_data.py --suffix _v2
+
+      - name: Committed analysis dataset is byte-identical to the rebuild
+        # The whole point of committing results/raw/ is that this step can exist.
+        run: git diff --exit-code -- results/derived/analysis_long_v2.csv
+
+      - name: QA gate
+        run: python scripts/validate_results.py --suffix _v2
+
+      - name: Figures reproduce their asserted values
+        run: python scripts/make_figures.py --check
+
+      - name: Deck counts match the data
+        run: python scripts/make_deck.py --check
+
+      - name: Test suite
+        run: pytest

@@ -1,0 +1,21 @@
+# The Bayesian variance-ratio fit — scripts/analyse_variance_ratio.py and
+# scripts/mcmc_permutation_null.py. Install ON TOP of requirements.txt.
+#
+#   python -m pip install -r requirements.txt -r requirements-fit.txt
+#
+# WHY THIS IS SEPARATE, and it is not tidiness: PyTensor (under PyMC) compiles its
+# graph with a C++ toolchain. Without one it silently falls back to pure Python and a
+# single small fit takes over ten minutes instead of seconds — so on a Windows laptop
+# with no compiler these scripts "work" while being unusable. Every fit in
+# results/derived/variance_ratio_v2*.csv was run on Linux.
+#
+# A Bayesian fit is required rather than stylistic: the ANOVA moment estimator returns
+# a negative model variance — leaving R undefined — on up to 7.4% of simulated
+# replicates at N=8 (results/derived/design_simulation.md 3). A properly constrained
+# posterior cannot do that.
+#
+# Convergence achieved on the committed fits: max r-hat 1.02 across all 112 fits.
+
+bambi==0.15.0
+pymc==5.25.1
+arviz==0.23.4

@@ -1,0 +1,86 @@
+{
+  "model": "microsoft/phi-4",
+  "revision": "2db69c1c3e91a05d2c64a3185acfbaf36f744e25",
+  "family": "phi",
+  "harness": "v2",
+  "params_b": 14.7,
+  "n_items": 116,
+  "k_samples": 10,
+  "conditions": [
+    "cloze",
+    "greedy",
+    "label",
+    "sampled",
+    "string_bare",
+    "string_line"
+  ],
+  "prompt_sha_first": "44df89a8f1990f93",
+  "prompt_style": "system_role",
+  "trust_remote_code": false,
+  "prompt_sha_all_distinct": true,
+  "prompt_config_sha": "d1877025fe8ae5f6",
+  "items_file_sha": "dae9643999520b16",
+  "option_label_token_ids": {
+    "0": [
+      15
+    ],
+    "1": [
+      16
+    ],
+    "2": [
+      17
+    ],
+    "3": [
+      18
+    ],
+    "4": [
+      19
+    ]
+  },
+  "packages": {
+    "vllm": "0.26.0",
+    "transformers": "5.14.1",
+    "torch": "2.11.0+cu130"
+  },
+  "python": "3.12.3",
+  "gpu": "NVIDIA B200",
+  "env": {
+    "VLLM_USE_FLASHINFER_SAMPLER": "0",
+    "HF_HOME": "/workspace/hf-cache"
+  },
+  "vllm_args": {
+    "max_model_len": 1024,
+    "gpu_memory_utilization": 0.85,
+    "enforce_eager": true,
+    "dtype": "bfloat16",
+    "tensor_parallel_size": 1
+  },
+  "n_gpus_visible": 1,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "tokenization": {
+    "engine_n_tokens": 88,
+    "local_n_no_specials": 88,
+    "local_n_with_specials": 88,
+    "engine_minus_local_no_specials": 0,
+    "v1_boundary_was_correct": true
+  },
+  "boundary_shift_rows": 0,
+  "degenerate_option_rows": 0,
+  "cloze_prompt_sha_first": "3593cffab09a0bbb",
+  "elapsed_s": 106.6,
+  "n_rows": 1740,
+  "parse_failed": 11,
+  "refusals": 21,
+  "scan_parsed": 28
+}

@@ -1,0 +1,86 @@
+{
+  "model": "mistralai/Mistral-Small-24B-Instruct-2501",
+  "revision": "9527884be6e5616bdd54de542f9ae13384489724",
+  "family": "mistral",
+  "harness": "v2",
+  "params_b": 23.6,
+  "n_items": 116,
+  "k_samples": 10,
+  "conditions": [
+    "cloze",
+    "greedy",
+    "label",
+    "sampled",
+    "string_bare",
+    "string_line"
+  ],
+  "prompt_sha_first": "9bc5fc27275971d5",
+  "prompt_style": "system_role",
+  "trust_remote_code": false,
+  "prompt_sha_all_distinct": true,
+  "prompt_config_sha": "d1877025fe8ae5f6",
+  "items_file_sha": "dae9643999520b16",
+  "option_label_token_ids": {
+    "0": [
+      1048
+    ],
+    "1": [
+      1049
+    ],
+    "2": [
+      1050
+    ],
+    "3": [
+      1051
+    ],
+    "4": [
+      1052
+    ]
+  },
+  "packages": {
+    "vllm": "0.26.0",
+    "transformers": "5.14.1",
+    "torch": "2.11.0+cu130"
+  },
+  "python": "3.12.3",
+  "gpu": "NVIDIA B200",
+  "env": {
+    "VLLM_USE_FLASHINFER_SAMPLER": "0",
+    "HF_HOME": "/workspace/hf-cache"
+  },
+  "vllm_args": {
+    "max_model_len": 1024,
+    "gpu_memory_utilization": 0.85,
+    "enforce_eager": true,
+    "dtype": "bfloat16",
+    "tensor_parallel_size": 1
+  },
+  "n_gpus_visible": 1,
+  "seeds": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9
+  ],
+  "tokenization": {
+    "engine_n_tokens": 104,
+    "local_n_no_specials": 103,
+    "local_n_with_specials": 104,
+    "engine_minus_local_no_specials": 1,
+    "v1_boundary_was_correct": false
+  },
+  "boundary_shift_rows": 0,
+  "degenerate_option_rows": 0,
+  "cloze_prompt_sha_first": "e7ae73e9f230dcef",
+  "elapsed_s": 178.0,
+  "n_rows": 1740,
+  "parse_failed": 88,
+  "refusals": 2,
+  "scan_parsed": 139
+}
