@@ -523,7 +523,7 @@ Llama-3.1-405B was considered and declined — ~812 GiB, ~8 GPUs, and still not 
 
 P5 survives only after removing a compression confound, and that removal is a modelling choice.
 Compression changes enormously with scale (Qwen ladder: **b = 0.113 → 1.059**; slope of b on
-log-params **+0.4346, p < 0.001**), and since pure compression predicts a *negative* gap, the raw
+log-params **+0.4004, p < 0.001**), and since pure compression predicts a *negative* gap, the raw
 gap must rise with scale even with no change in moral profile.
 
 We adjust by residualising each model's scores on the human baseline. **After adjustment neither
@@ -600,11 +600,11 @@ power for LLM moral judgment); we assumed the instrument and audited the measure
 
 ## 21. Reproducibility defects found late · PROCESS
 
-**Nineteen** corrections in `CORRECTIONS.md`; three were defects in artifacts already committed and
+**Twenty-one** corrections in `CORRECTIONS.md`; three were defects in artifacts already committed and
 cited (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run overwriting a v1
 file). None changed a published conclusion — the seed audit measured C11 at **0.8–2.2% of
 credible-interval width with no verdict flips** — and all three are now guarded by tests. But
-**two of twelve corrections were found by luck**, and every guard was written *after* its
+**two of twenty-one corrections were found by luck**, and every guard was written *after* its
 defect. A reader is entitled to weigh that.
 
 ---

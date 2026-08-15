@@ -45,10 +45,10 @@ What remains is the write-up.
   Both pods stopped and verified `EXITED`. Total spend $20.04 of $60 credit ($39.96 remaining).
 - **Prediction scorecard:** P1′ P2 P3 P4′ P5 P6 supported (P2 and P3 with caveats),
   **P4r and P7 falsified**. See "OUTCOMES" below.
-- **19 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
+- **21 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
   after the fact (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run
   overwriting a v1 artifact). All now guarded by `tests/test_determinism.py` and
-  `tests/test_artifact_provenance.py`. **304 tests pass.**
+  `tests/test_artifact_provenance.py`. **320 tests pass.**
 - **Still open, deliberately:** F5 (prompt as a designed factor) and a scale-augmented variance
   model. Both named in `METHODOLOGY_REVIEW.md`.
 
@@ -502,7 +502,7 @@ originals stand unedited above, with amendments dated where a prediction proved 
 | P3 | **SUPPORTED but thin** | ρ = −0.195 (n=20), carried by Mistral-7B (moved 0.369; high-mass models ~0.013). Report the mechanism, not the correlation. |
 | P4′ | **SUPPORTED** | cloze mass > bare on 23/31 models |
 | P4r | **FALSIFIED** | ρ(cloze, bare) 0.269 < ρ(cloze, label) 0.404 — predicted the reverse |
-| P5 | **SUPPORTED** | qwen +0.3243 (LOO 8/8), llama +0.2609 (LOO 4/4), compression-adjusted. Raw slopes were ~⅓ confound: compression `b` runs 0.113→1.059 on the qwen ladder, slope on log-params +0.4346 (p<0.001). |
+| P5 | **SUPPORTED** | qwen +0.3243 (LOO 8/8), llama +0.2609 (LOO 4/4), compression-adjusted. Raw slopes were ~⅓ confound: compression `b` runs 0.113→1.059 on the qwen ladder, slope on log-params +0.4004 (p<0.001). |
 | P6 | **SUPPORTED** | all six families negative; both ladders LOO-stable. Implies R is partly a small-model artifact — qualifies our own headline. |
 | P7 | **FALSIFIED** | predicted ≥2 foundations escape `indeterminate` at N≈30. **None did.** All seven still indeterminate at N=31. |
 

@@ -798,9 +798,94 @@ document. A plausible wrong citation can come from the source itself.
 
 ---
 
-## Updated tally, 2026-08-15 — twenty corrections
+## C21 — the corrections count was wrong in this project's own front matter, and two pooled scale numbers were a fourth C18 instance
+**Date:** 2026-08-16 · **Severity:** low in effect; it is the *location* that earns the entry
 
-Replaces the C14-era note above, which counted twelve.
+**Claimed.** Three things. (a) `README.md` header, `README.md` §"The corrections record" and
+`state.md:48` gave the corrections count as **19** — while this file ran to C20 and its own tally
+was headed *"twenty corrections"*. (b) `FINDINGS.md` §4 gave the pooled compression-slope
+confound as **+0.4346, p < 0.001** and the pooled adjusted gap as **+0.2455, p = 0.009**;
+`LIMITATIONS.md` §15 and `state.md`'s P5 row carried the same +0.4346. (c) `LIMITATIONS.md` §21
+read *"two of twelve corrections were found by luck"*, a C14-era denominator.
+
+**True.** (a) Twenty, at the time; twenty-one with this entry. (b) `results/derived/scale_analysis.md`
+gives **+0.4004** and **+0.2450, p = 0.013** — verified by re-running `scripts/analyse_scale.py`,
+whose output diffs byte-identically against the committed artifact except for one stale
+`state.md` → `docs/state.md` path. So the artifact was current and the prose was on the **N = 31**
+basis, exactly as in C18. (c) Two of twenty.
+
+**Nothing reverses, and nothing was even close to reversing.** The pooled row is explicitly
+labelled *"context only"* in both the artifact and `FINDINGS.md`, and the artifact says in terms
+that the pooled fit **is not the test** — models are not exchangeable across families, so a
+between-family slope largely measures which families happen to be large. The prediction P5 rests
+on the two within-ladder slopes (qwen +0.3243, llama +0.2609), and **those were correct
+everywhere**. The compression confound is +0.40 rather than +0.43; it remains large, remains
+p < 0.001, and the "raw slopes are roughly a third confound" reading is unchanged.
+
+**Why it is in this file anyway, and it is the same reason as C18 and C20.** The stale numbers
+sat in the two documents a reader reaches first. And the count was wrong in the **front matter of
+the very document that exists to say the count**: `README.md` advertised nineteen corrections in
+its header line while linking to a file listing twenty. A project whose thesis is that a
+plausible number can be an artifact of how it was produced had a plausible number about *itself*
+in its own headline, for as long as nobody counted.
+
+**Caught by:** a read-through of the whole repository for an external presentation — i.e. the
+first time anyone had reason to state these numbers out loud to an audience. That is the same
+mechanism as C19 and C20: **every defect since C16 has been found by someone with a reason to
+restate the project rather than to re-derive it.** Three separate checks recompute ρ from the
+data; none of them counts the entries in `CORRECTIONS.md`, and none of them reads a pooled slope.
+
+**A fourth instance, found minutes later by running the suite the same documents describe.**
+`README.md` (×2) and `state.md:51` claimed **304 tests**; `pytest --collect-only` reports
+**306**. The suite passes — exit 0, no failures — so nothing about the claim's *substance* was
+wrong; the number beside it had simply not been recounted since the last two tests were added.
+It is the same defect as (a) in miniature, and it was found the same way: by an outsider
+executing the instructions rather than trusting the sentence.
+
+**Changes.** Count corrected to 21 in `README.md` (×3), `LIMITATIONS.md` §21 (×2) and
+`state.md:48`. Pooled figures corrected to the artifact basis in `FINDINGS.md` §4,
+`LIMITATIONS.md` §15 and `state.md`'s P5 row. Test count corrected to 306 in `README.md` (×2)
+and `state.md:51`, and the quoted runtime raised from ~2.5 min to ~5 min to match observation.
+`scale_analysis.md` regenerated so its internal path reference resolves.
+
+### The fix went stale within the hour, which is the actual lesson
+
+**This entry first said "no guard is added", and that sentence is now withdrawn.** It was
+written on the reasoning that closing the class properly needs a check on the repository's
+*self-description*, which did not exist. Then, in the same session, the two figure/deck scripts
+were added — and because `test_scripts_are_valid.py` parametrises over `scripts/*.py`, the
+suite went **306 → 316**, silently falsifying the "306" that had just been written into
+`README.md` as a correction. Adding the guard below took it to **320**.
+
+So the corrected count was wrong again within an hour, twice, without anyone touching a claim.
+**A hand-maintained count of a quantity that changes whenever a file is added is stale by
+construction**, and three manual fixes in one session is the proof. That retires the "deliberate
+admission" framing: the choice was never between a guard and honest disclosure, it was between a
+guard and re-breaking the same number indefinitely.
+
+`tests/test_self_description.py` now asserts, all **derived rather than hardcoded**:
+
+| check | source of truth |
+|---|---|
+| every "N corrections" claim in `README.md`, `state.md`, `LIMITATIONS.md` | count of `## C<n>` headings in this file |
+| the C-numbers are contiguous | this file |
+| the tally table accounts for every entry | this file |
+| every "N tests" claim | `len(session.items)` — what pytest actually collected on this run |
+
+It caught one thing on its first execution, correctly: `state.md:55` reads *This block said
+"12 corrections"*, a record of C19. A retrospective statement of a superseded count is not a
+defect and must not be "corrected" into a lie about what the block once said, so the guard
+allows a claim preceded by explicitly retrospective wording.
+
+**Caught by:** the guard, immediately, which is the first time in this project that a check
+found the defect it was written for rather than its author finding it first.
+
+---
+
+## Updated tally, 2026-08-16 — twenty-one corrections
+
+Replaces the C14-era note above, which counted twelve, and the 2026-08-15 note, which counted
+twenty.
 
 | how it was found | corrections | count |
 |---|---|---:|
@@ -810,15 +895,21 @@ Replaces the C14-era note above, which counted twelve.
 | the author **asking for a double-check** | C3, C5 | 2 |
 | **reading the numbers under a verdict** | C4, C12, C14, C15 | 4 |
 | **external review** | C16, C17, C18, C19, C20 | 5 |
+| **restating the project to an outside audience** | C21 | 1 |
 
 **Not one was found by looking at a result and feeling that it seemed wrong.** That was true at
-twelve and it is still true at twenty.
+twelve, at twenty, and it is still true at twenty-one.
 
-**What the last four add to the lesson.** C1–C15 were found from inside the project, and the
-checks that found them were all pointed at *numbers*. The 2026-08-15 four were found from
-outside, and three of them are not number errors at all — they are a document's account of
-itself drifting from what the repository contains. **We had built good defences against being
-wrong about the data and none at all against being wrong about ourselves.**
+**What the last five add to the lesson.** C1–C15 were found from inside the project, and the
+checks that found them were all pointed at *numbers*. C16–C21 were found from outside, and four
+of them are not number errors at all — they are a document's account of itself drifting from
+what the repository contains. **We had built good defences against being wrong about the data
+and none at all against being wrong about ourselves.**
+
+**C21 sharpens that by one turn.** It was found not by an audit but by the ordinary act of
+**restating the project for an audience** — and what it caught was a headline count that was
+wrong in the header of the file linking to the evidence against it. The defences are aimed at
+what the data says. Nothing is aimed at what we say we did.
 
 The write-up should say this plainly. It is a sharper version of the project's own thesis than
 any of the measurement findings: a claim is only as reliable as the check aimed at it, and we

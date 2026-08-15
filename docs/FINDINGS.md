@@ -301,7 +301,7 @@ ladders, robust to leave-one-out:
 |---|---:|---:|---:|---:|
 | qwen | 145× | **+0.3243** | 0.083 | 8/8 |
 | llama | 71× | **+0.2609** | 0.060 | 4/4 |
-| pooled *(context only)* | 145× | +0.2455 | 0.009 | — |
+| pooled *(context only)* | 145× | +0.2450 | 0.013 | — |
 
 Four of six families slope positive. **This resolves the Tier-0 puzzle**: the gap looked absent
 in ≤14B models because we were below the scale where it appears. It unifies Kirgis's claims 2
@@ -310,7 +310,7 @@ and 4 — the moral-profile divergence is a **capability phenomenon**.
 **The adjustment is the whole result, and the raw number would have been substantially an
 artifact.** Compression itself changes enormously with scale: fitting `score = a + b·human`, the
 Qwen ladder runs **b = 0.113 → 1.059**. The 0.5B model barely tracks the human baseline; the 72B
-model tracks it almost 1:1. Slope of `b` on log-parameters, pooled: **+0.4346, p < 0.001**.
+model tracks it almost 1:1. Slope of `b` on log-parameters, pooled: **+0.4004, p < 0.001**.
 Because pure compression predicts a *negative* gap (C3), the raw gap must rise with scale even
 if the moral profile never changes. The raw slopes (qwen +0.4674, llama +0.4182) are roughly a
 third confound. **After adjustment neither ladder is individually significant at 0.05** — only
