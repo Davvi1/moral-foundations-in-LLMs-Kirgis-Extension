@@ -5,7 +5,7 @@ Models"* ([arXiv:2511.11790](https://arxiv.org/abs/2511.11790)), on open-weight 
 **scoring method manipulated as a within-model treatment**.
 
 **31 models collected · 30 analysed · 6 scoring arms · 116 vignettes · 21,576 rows · 22 logged
-corrections · 331 tests**
+corrections · 336 tests**
 
 ---
 
@@ -298,7 +298,7 @@ rebuild is **byte-identical** to the committed one.
 git clone https://github.com/Davvi1/moral-foundations-in-LLMs-Kirgis-Extension
 cd moral-foundations-in-LLMs-Kirgis-Extension
 python -m pip install -r requirements.txt      # Python 3.10+; 3.12 in CI
-pytest                                          # 331 tests, ~5 min, no GPU
+pytest                                          # 336 tests, ~5 min, no GPU
 ```
 
 | file | what it is for | where it has to run |
@@ -328,7 +328,7 @@ emitting a bad questionnaire.
 ### Tests
 
 ```bash
-pytest                      # 331 tests, ~5 min, no GPU needed
+pytest                      # 336 tests, ~5 min, no GPU needed
 ```
 
 vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of the vLLM API
@@ -371,15 +371,27 @@ tree (`docs/V1_TO_V2.md`), so its committed output is the record; `reanalyse_kir
 python scripts/make_figures.py --check     # re-derive 16 values, assert, draw nothing
 python scripts/make_figures.py             # figures/ (titled) + figures/deck/ (untitled)
 python scripts/make_deck.py                # -> MFT-in-LLMs-presentation.pptx, 20 slides
+python scripts/make_blog.py --check        # verify the post's constraints, write nothing
+python scripts/make_blog.py                # -> MFT-in-LLMs-blog-post.docx
 ```
 
 Every number in a figure is **derived at runtime** from `results/derived/` and asserted
 against the committed artifacts before anything is drawn — `--check` does the assertions
 alone. That is not ceremony: C18 and C21 are both cases of a number surviving in prose after
 its basis moved, and the check caught a real one here, a reimplementation of the
-compression-adjusted gap that gave +0.279 against the artifact's +0.324. The `.pptx` is
-gitignored; the source and the figures it consumes are committed, so it cannot drift from
-them unnoticed.
+compression-adjusted gap that gave +0.279 against the artifact's +0.324.
+
+`make_blog.py` writes the long-form write-up from the same 20-section outline, adding a
+100-word primer on Moral Foundations Theory that the deck does not carry. Its `--check` mode
+asserts that primer's word cap and a house-style constraint on dashes.
+
+**Both binaries are committed as of 2026-08-16**, reversing an earlier rule that gitignored
+`*.pptx`. The reasoning is recorded in `.gitignore` itself. The standing rule is unchanged and
+is the one that matters: a committed artifact must reproduce from a committed generator, so
+regenerate before committing and never hand-edit the binary. Note the limit honestly, since
+`results/derived/` gets a stronger guarantee: a `.docx` and a `.pptx` are zip archives carrying
+timestamps, so neither is byte-reproducible and `test_artifacts_reproduce.py` cannot cover them
+the way it covers the derived Markdown. The `--check` modes are a weaker substitute.
 
 ### Pre-flight, before anything expensive
 

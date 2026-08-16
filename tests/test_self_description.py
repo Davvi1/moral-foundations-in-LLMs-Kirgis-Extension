@@ -110,7 +110,7 @@ DIST = {
     "pandas": "pandas", "numpy": "numpy", "scipy": "scipy",
     "matplotlib": "matplotlib", "yaml": "PyYAML", "pytest": "pytest",
     "transformers": "transformers", "truststore": "truststore",
-    "pptx": "python-pptx", "PIL": "pillow",
+    "pptx": "python-pptx", "docx": "python-docx", "PIL": "pillow",
     # requirements-fit.txt — the Bayesian stack, not installed on a laptop
     "bambi": "bambi", "pymc": "pymc", "arviz": "arviz",
     # requirements-inference.txt — Linux + GPU only

@@ -48,7 +48,7 @@ What remains is the write-up.
 - **22 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
   after the fact (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run
   overwriting a v1 artifact). All now guarded by `tests/test_determinism.py` and
-  `tests/test_artifact_provenance.py`. **331 tests pass.**
+  `tests/test_artifact_provenance.py`. **336 tests pass.**
 - **Still open, deliberately:** F5 (prompt as a designed factor) and a scale-augmented variance
   model. Both named in `METHODOLOGY_REVIEW.md`.
 

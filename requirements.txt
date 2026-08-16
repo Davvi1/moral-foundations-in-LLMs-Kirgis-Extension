@@ -1,7 +1,7 @@
 # Analysis, figures and the test suite. Runs on a laptop — no GPU, no CUDA.
 #
 # This is enough to reproduce EVERYTHING in results/derived/ and figures/ from
-# results/raw/, and to run all 320 tests, EXCEPT the Bayesian variance-ratio fit
+# results/raw/, and to run all 336 tests, EXCEPT the Bayesian variance-ratio fit
 # (requirements-fit.txt) and the inference that produced results/raw/ in the first
 # place (requirements-inference.txt).
 #
@@ -10,7 +10,7 @@
 # Local analysis environment: Python 3.10.11 on Windows.
 #
 #   python -m pip install -r requirements.txt
-#   pytest                                  # 320 tests, ~5 min
+#   pytest                                  # 336 tests, ~5 min
 #
 # transformers is here for the TESTS, not for inference: the harness is exercised
 # against a fake vLLM driven by the real tokenizers, so a tokenizer claim that stops
@@ -22,8 +22,9 @@ scipy==1.15.3
 matplotlib==3.10.9
 PyYAML==6.0.2
 
-# figures -> deck
+# figures -> deck, and the deck's outline -> blog post
 python-pptx==1.0.2
+python-docx==1.2.0
 pillow==11.3.0
 
 # tests

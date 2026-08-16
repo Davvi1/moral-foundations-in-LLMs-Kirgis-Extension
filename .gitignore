@@ -27,11 +27,24 @@ env/
 *.bin
 *.gguf
 
-# Built presentation — regenerable from committed figures with
-# `python scripts/make_deck.py`. The SOURCE (make_deck.py) and the INPUTS
-# (figures/) are committed; the binary is not, so it cannot drift from them
-# unnoticed or bloat the history on every rebuild.
-*.pptx
+# Built presentation and blog post — COMMITTED, as of 2026-08-16.
+#
+# This rule used to read `*.pptx`, on the reasoning that the deck is regenerable from
+# `scripts/make_deck.py` plus `figures/`, so committing the binary could only let it
+# drift from its source or bloat the history.
+#
+# Reversed deliberately. The drift half of that argument was the weaker one: both
+# binaries are now written by a generator that re-derives or asserts every number it
+# prints (`make_deck.py --check`, `make_blog.py --check`), and the generators are
+# committed beside them. The bloat half is real and accepted, at roughly 1.6 MB per deck
+# rebuild, because the artifacts are the deliverable and a reader who wants the talk or
+# the write-up should not have to clone the repo and install matplotlib to see it.
+#
+# THE STANDING RULE IS UNCHANGED and is the one that matters: a committed artifact must
+# reproduce from a committed generator. Regenerate before committing, never hand-edit
+# the binary. Neither .docx nor .pptx is byte-reproducible (both are zips carrying
+# timestamps), so `test_artifacts_reproduce.py` cannot cover them the way it covers
+# results/derived/*.md. The `--check` modes are the substitute, and they are weaker.
 
 # OS / editor
 .DS_Store

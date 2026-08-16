@@ -23,6 +23,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import re
 from pathlib import Path
 
 import pandas as pd
@@ -63,11 +64,22 @@ def repo_url() -> str:
         return "(repository URL not set)"
 
 
+def n_corrections() -> int:
+    """Count the entries in CORRECTIONS.md.
+
+    DERIVED, not hardcoded. An earlier version of this file asserted `== 21` and put
+    "21 logged corrections" on the title slide; logging C22 broke the check and would
+    have put a stale number in front of an audience if it had not. That is C21's whole
+    lesson, reproduced inside the script written to enforce it.
+    """
+    body = (ROOT / "docs" / "CORRECTIONS.md").read_text(encoding="utf-8")
+    return len(re.findall(r"^## C(\d+)\b", body, flags=re.M))
+
+
 def verify_counts():
     """Re-derive the headline counts the deck states, rather than trusting prose."""
     df = pd.read_csv(DERIVED / "analysis_long_v2.csv")
     vr = pd.read_csv(DERIVED / "variance_ratio_v2.csv")
-    corr = (ROOT / "docs" / "CORRECTIONS.md").read_text(encoding="utf-8")
 
     facts = {
         "models collected": df.model.nunique(),
@@ -75,13 +87,13 @@ def verify_counts():
         "rows": len(df),
         "items": df.item_id.nunique(),
         "arms": df.condition.nunique(),
-        "corrections": corr.count("\n## C"),
     }
     expect = {"models collected": 31, "models analysed": 30, "rows": 21576,
-              "items": 116, "arms": 6, "corrections": 21}
+              "items": 116, "arms": 6}
     for k, v in expect.items():
         assert facts[k] == v, f"{k}: derived {facts[k]}, deck says {v}"
         print(f"  ok   {k:20s} {facts[k]}")
+    print(f"  ok   {'corrections':20s} {n_corrections()}  (derived, not asserted)")
 
     p = vr[(vr.exclusions) & (~vr.scan_excluded) & (~vr.family_effect)
            & (vr.residual == "method-specific")].set_index("foundation")
@@ -252,7 +264,7 @@ Housekeeping: two days of work, $20 of compute, everything in the repo.
          "technical sprint", 14, INK_2)
     p = tf.add_paragraph()
     _run(p, "31 models  ·  116 vignettes  ·  6 scoring arms  ·  21,576 rows  ·  "
-         "21 logged corrections", 13, MUTED, space_before=8)
+         f"{n_corrections()} logged corrections", 13, MUTED, space_before=8)
     footer(s, n)
 
     # ---- 2. The paper under audit ---------------------------------------
@@ -901,7 +913,7 @@ response to this whole project and I have not answered it.
 
 Now the right-hand column, which I think is the most transferable thing here.
 
-21 logged corrections. Not one of them was found by looking at a result and feeling
+Twenty-two logged corrections. Not one of them was found by looking at a result and feeling
 that it seemed wrong. Measurement artifacts do not announce themselves.
 
 The worst was C15. My primary estimand contained the prompt-varying cloze arm for
@@ -935,7 +947,7 @@ what the project says about itself.
     x = Inches(7.6)
     rule(s, top - Inches(0.10), x0=x, x1=W - MARGIN)
     tf = _tb(s, x, top + Inches(0.10), Inches(5.1), Inches(0.5))
-    _run(tf.paragraphs[0], "21 logged corrections", 20, INK, bold=True)
+    _run(tf.paragraphs[0], f"{n_corrections()} logged corrections", 20, INK, bold=True)
     tf = _tb(s, x, top + Inches(0.58), Inches(5.1), Inches(4.0))
     _run(tf.paragraphs[0], "Not one was found by looking at a result and feeling "
          "that it seemed wrong.", 14, INK_2, line=1.3)
