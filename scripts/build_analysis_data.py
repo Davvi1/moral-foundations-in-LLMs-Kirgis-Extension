@@ -134,7 +134,43 @@ def main() -> int:
             score = st.mean(usable) if usable else ""
             se = ""
             if cond == "sampled" and len(usable) > 1:
-                se = st.stdev(usable) / math.sqrt(len(usable))
+                # CROSS-VERSION REPRODUCIBILITY, fixed 2026-08-16. This was:
+                #     se = st.stdev(usable) / math.sqrt(len(usable))
+                #
+                # `statistics.stdev` does not return the same float on every CPython.
+                # Measured on the Yi item-20 sampled cell (six 2s and four 1s), it gives
+                # 0.5163977794943222 on 3.10 and ...23 on 3.12 -- one unit in the last
+                # place, from a change in how the module sums internally. The committed
+                # dataset was built on the laptop's 3.10 and CI rebuilds it on 3.12, so
+                # `git diff --exit-code` failed on 307 sampled rows and took the whole
+                # workflow down with it, including the test suite, which never ran.
+                #
+                # Note what this was NOT: not non-determinism, not a data problem, and
+                # invisible to `test_determinism.py`, which reruns on ONE interpreter
+                # under two PYTHONHASHSEEDs. Two runs on this laptop always agreed. It
+                # took a second interpreter to see it, which is what CI is for.
+                #
+                # The fix computes the same estimator (sample SD, ddof=1) out of `fsum`
+                # and `sqrt`, both of which are DOCUMENTED as correctly rounded. So this
+                # is stable by contract rather than stable today: there is no version in
+                # which it is licensed to return a different float. Verified by rebuilding
+                # under 3.10 and 3.12 and diffing -- identical.
+                #
+                # THIS DID REGENERATE DATA, in 262 sampled rows, and the honest statement
+                # is that the new column is not bit-for-bit what 3.10's `statistics` gave.
+                # It moves NO result: `score_se` is written here and read nowhere -- not by
+                # an analysis script, not by a test, not cited in any document (checked by
+                # grep across the repo). It is descriptive output, the same standing the
+                # C12 comment below records for `failure_type`. Had it fed the fit, the
+                # right move would have been to refit and say so, not to quietly change it.
+                #
+                # The general rule, worth keeping: an artifact compared byte-for-byte must
+                # not be built from a library function whose exact float is an
+                # implementation detail. `statistics` documents its results, not its
+                # rounding.
+                mean_u = math.fsum(usable) / len(usable)
+                var = math.fsum((x - mean_u) ** 2 for x in usable) / (len(usable) - 1)
+                se = math.sqrt(var) / math.sqrt(len(usable))
 
             # DETERMINISM BUG, fixed 2026-08-09. This was:
             #     dominant = max(set(ft), key=ft.count)
