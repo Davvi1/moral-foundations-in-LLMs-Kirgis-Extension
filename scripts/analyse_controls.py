@@ -403,7 +403,7 @@ def main() -> int:
       "retained mass, so the method effect is carried by cells the design can barely "
       "measure.\n")
 
-    out_path.write_text("\n".join(L), encoding="utf-8")
+    out_path.write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nwrote {out_path}")
     return 0

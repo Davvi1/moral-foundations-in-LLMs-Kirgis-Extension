@@ -259,9 +259,9 @@ def main() -> int:
       "width honestly and uses the indeterminate verdict rather than rounding to the nearer "
       "band. N=8 should not carry the primary claim.\n")
 
-    sim.to_csv(OUTDIR / "design_simulation.csv", index=False)
-    cal.to_csv(OUTDIR / "design_calibration.csv", index=False)
-    (OUTDIR / "design_simulation.md").write_text("\n".join(L), encoding="utf-8")
+    sim.to_csv(OUTDIR / "design_simulation.csv", index=False, lineterminator="\n")
+    cal.to_csv(OUTDIR / "design_calibration.csv", index=False, lineterminator="\n")
+    (OUTDIR / "design_simulation.md").write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nwrote {OUTDIR/'design_simulation.md'}, .csv, and design_calibration.csv")
     return 0

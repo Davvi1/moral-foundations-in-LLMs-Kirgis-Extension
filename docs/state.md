@@ -45,10 +45,10 @@ What remains is the write-up.
   Both pods stopped and verified `EXITED`. Total spend $20.04 of $60 credit ($39.96 remaining).
 - **Prediction scorecard:** P1′ P2 P3 P4′ P5 P6 supported (P2 and P3 with caveats),
   **P4r and P7 falsified**. See "OUTCOMES" below.
-- **21 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
+- **22 corrections logged** in `CORRECTIONS.md`, three of them reproducibility defects found
   after the fact (C10 non-deterministic tie-break, C11 randomised MCMC seed, C12 a v2 run
   overwriting a v1 artifact). All now guarded by `tests/test_determinism.py` and
-  `tests/test_artifact_provenance.py`. **322 tests pass.**
+  `tests/test_artifact_provenance.py`. **331 tests pass.**
 - **Still open, deliberately:** F5 (prompt as a designed factor) and a scale-augmented variance
   model. Both named in `METHODOLOGY_REVIEW.md`.
 

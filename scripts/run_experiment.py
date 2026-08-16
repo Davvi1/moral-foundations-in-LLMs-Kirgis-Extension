@@ -254,7 +254,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
                f"(estimated need was {entry.get('params_b',0)*2*1.03+1.5:.1f} GiB)")
     print(f"  memory: {why}")
     if util < 0:
-        (RAW / f"{slug(mid)}.SKIPPED.txt").write_text(why + "\n", encoding="utf-8")
+        (RAW / f"{slug(mid)}.SKIPPED.txt").write_text(why + "\n", encoding="utf-8", newline="\n")
         print(f"  [skip] {mid} — insufficient VRAM, nothing downloaded")
         return
 
@@ -381,7 +381,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
 
     RAW.mkdir(parents=True, exist_ok=True)
     with out_csv.open("w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=FIELDS, extrasaction="ignore")
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=FIELDS, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows)
 
@@ -397,7 +397,7 @@ def run_model(entry: dict, prompt_cfg, items, meta, args) -> None:
     manifest["refusals"] = sum(1 for r in rows if r.get("refusal"))
     manifest["scan_parsed"] = sum(1 for r in rows if r.get("parse_strategy") == "scan")
     (RAW / f"{slug(mid)}{args.suffix}.manifest.json").write_text(
-        json.dumps(manifest, indent=2, default=str), encoding="utf-8")
+        json.dumps(manifest, indent=2, default=str), encoding="utf-8", newline="\n")
 
     fails = sum(1 for r in rows if r.get("parse_failed"))
     refus = sum(1 for r in rows if r.get("refusal"))
@@ -484,7 +484,7 @@ def main() -> int:
             # reports achieved N, and the design simulation says what that N costs.
             print(f"  !! FAILED {e['id']}: {type(exc).__name__}: {exc}")
             (RAW / f"{slug(e['id'])}.FAILED.txt").write_text(
-                f"{type(exc).__name__}: {exc}\n", encoding="utf-8")
+                f"{type(exc).__name__}: {exc}\n", encoding="utf-8", newline="\n")
     return 0
 
 

@@ -9,7 +9,7 @@ Clifford's item means come from ~30 raters each, so they carry sampling error. E
 `clifford_wrong_mean` is an **unconditional** mean — verified, not assumed: the one item with 100% "not wrong" has a mean of exactly 0.00. With `clifford_not_wrong_pct` we can reconstruct enough of the response distribution to bound the per-item SE from below.
 
 - two-point lower bound, averaged over items: **SE >= 0.149**
-- the value assumed in `references.md` from n≈30: **0.2**
+- the value assumed in `docs/references.md` from n≈30: **0.2**
 - the bound ignores spread among the non-zero answers, so the true SE is **larger** than the bound and the corrections below are conservative.
 
 ## Corrected compression slope
@@ -41,7 +41,7 @@ This matters more than the slope itself. `analyse_social_norms.py` concluded the
 | 0.20 | 0.777 | 0.868 | 1.045 | **+0.177** |
 | 0.30 | 0.935 | 0.499 | 1.045 | **+0.546** |
 
-The excess moves from −0.040 (uncorrected) to **+0.177** at sigma = 0.2. and to +0.546 at sigma = 0.3 — outside the bootstrap interval **[−0.327, +0.246]** reported in `social_norms_control.md`.
+The excess moves from −0.040 (uncorrected) to **+0.177** at sigma = 0.2. and to +0.546 at sigma = 0.3 — outside the bootstrap interval **[−0.327, +0.246]** reported in `results/derived/social_norms_control.md`.
 
 **This swing is the tell, and it is what exposed C14.** A stable estimate does not move by 0.6 across a plausible range of a nuisance parameter. It does here because the control sits **1.2 scale points below any moral item**, so the line is extrapolated across a gap containing no data and the long lever arm turns a small slope change into a large prediction change. See `analyse_social_norms.py`, section 'The catch'.
 

@@ -4,8 +4,8 @@ A replication-plus-audit of Kirgis, *"Differences in the Moral Foundations of La
 Models"* ([arXiv:2511.11790](https://arxiv.org/abs/2511.11790)), on open-weight models, with
 **scoring method manipulated as a within-model treatment**.
 
-**31 models collected · 30 analysed · 6 scoring arms · 116 vignettes · 21,576 rows · 21 logged
-corrections · 322 tests**
+**31 models collected · 30 analysed · 6 scoring arms · 116 vignettes · 21,576 rows · 22 logged
+corrections · 331 tests**
 
 ---
 
@@ -254,7 +254,7 @@ Short list; full treatment in `docs/LIMITATIONS.md`, which runs to 22 numbered e
 
 ## The corrections record
 
-`docs/CORRECTIONS.md` logs **21 corrections** — every claim withdrawn or reversed, and how each
+`docs/CORRECTIONS.md` logs **22 corrections** — every claim withdrawn or reversed, and how each
 was caught. This is kept deliberately, and not as penance: the project's thesis is that a
 plausible-looking number can be an artifact of how it was measured, so a version of it that
 quietly fixed its own measurement artifacts would be making the reviewer's argument for them.
@@ -268,7 +268,7 @@ The two most instructive:
   contradicting the findings document and, for one item, its own section 12. Every check in the
   repo pointed at *numbers*; a stale status claim has no number to re-derive.
 
-**Not one of the twenty-one was found by looking at a result and feeling that it seemed wrong.**
+**Not one of the twenty-two was found by looking at a result and feeling that it seemed wrong.**
 Measurement artifacts do not announce themselves, and the only reliable defence is a check
 specified before the number exists.
 
@@ -282,7 +282,8 @@ rather than the instance:
 | `test_determinism.py` | dataset rebuilds byte-identically under two `PYTHONHASHSEED` values | C10, C11 |
 | `test_artifact_provenance.py` | no committed artifact blends the two harnesses | C12 |
 | `test_doc_citations.py` | every cited path exists **at the directory given** | stale signposts, which is the mechanism behind C15 |
-| `test_self_description.py` | the repo's claims **about itself** — correction count, tally coverage, test count — against the repo | C19, C21 — every other guard points at the data; none pointed here, and the count went stale three times in one session |
+| `test_self_description.py` | the repo's claims **about itself** — correction count, tally coverage, test count, and that every import is in a requirements file | C19, C21 — every other guard points at the data; none pointed here, and the count went stale three times in one session |
+| `test_artifacts_reproduce.py` | every committed derived artifact is **byte-identical** to what its generator produces today | C22 — two artifacts still cited pre-`docs/` paths, because `test_doc_citations.py` reads prose and nobody considered that a *generated* file quotes paths too |
 
 ---
 
@@ -297,7 +298,7 @@ rebuild is **byte-identical** to the committed one.
 git clone https://github.com/Davvi1/moral-foundations-in-LLMs-Kirgis-Extension
 cd moral-foundations-in-LLMs-Kirgis-Extension
 python -m pip install -r requirements.txt      # Python 3.10+; 3.12 in CI
-pytest                                          # 322 tests, ~5 min, no GPU
+pytest                                          # 331 tests, ~5 min, no GPU
 ```
 
 | file | what it is for | where it has to run |
@@ -327,7 +328,7 @@ emitting a bad questionnaire.
 ### Tests
 
 ```bash
-pytest                      # 322 tests, ~5 min, no GPU needed
+pytest                      # 331 tests, ~5 min, no GPU needed
 ```
 
 vLLM is Linux+GPU only, so the harness is exercised against a faithful fake of the vLLM API

@@ -287,7 +287,7 @@ def main() -> int:
              "one wrong directional prediction of ours (pooled residuals were argued to "
              "inflate R; they deflate it), which is the standard being kept.\n")
 
-    Path(args.out).write_text("\n".join(L), encoding="utf-8")
+    Path(args.out).write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L[-6:]))
     print(f"\nwrote {args.out}")
     return 0

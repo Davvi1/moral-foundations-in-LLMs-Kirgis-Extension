@@ -218,7 +218,7 @@ def main() -> int:
             # unsorted CSV is not a reproducible artifact, which is the same class of defect as
             # C10/C11 in docs/CORRECTIONS.md.
             pd.DataFrame(results).sort_values(["foundation", "perm"]).to_csv(
-                out_path, index=False)
+                out_path, index=False, lineterminator="\n")
             if done % 10 == 0 or done == len(jobs):
                 el = time.time() - t0
                 rate = done / el if el else 0

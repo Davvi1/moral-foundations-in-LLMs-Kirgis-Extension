@@ -237,7 +237,7 @@ def main() -> int:
     OUT.mkdir(parents=True, exist_ok=True)
     out_name = f"analysis_long{sfx}.csv"
     with (OUT / out_name).open("w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=FIELDS, extrasaction="ignore")
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=FIELDS, extrasaction="ignore")
         w.writeheader()
         w.writerows(rows_out)
 

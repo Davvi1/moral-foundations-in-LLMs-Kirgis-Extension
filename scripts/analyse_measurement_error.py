@@ -215,7 +215,7 @@ def main() -> int:
 
     out = "\n".join(L)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(out, encoding="utf-8")
+    Path(args.out).write_text(out, encoding="utf-8", newline="\n")
     enc = sys.stdout.encoding or "utf-8"
     print(out.encode(enc, errors="replace").decode(enc, errors="replace"))
     print(f"\nwritten to {args.out}")

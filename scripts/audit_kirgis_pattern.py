@@ -351,7 +351,7 @@ def main() -> int:
       "*downward* in greedy/sampled for high-refusal models. A pattern surviving there is "
       "therefore conservative.\n")
 
-    Path(args.out).write_text("\n".join(L), encoding="utf-8")
+    Path(args.out).write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nwrote {OUT}")
     return 0

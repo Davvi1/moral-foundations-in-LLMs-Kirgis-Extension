@@ -203,7 +203,7 @@ def main() -> int:
     L.append("result.\n")
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
-    OUT.write_text("\n".join(L), encoding="utf-8")
+    OUT.write_text("\n".join(L), encoding="utf-8", newline="\n")
     print(f"wrote {OUT.relative_to(REPO)}")
     if ok:
         print(f"  {len(risk)}/{len(ok)} models carry the BOS mismatch")

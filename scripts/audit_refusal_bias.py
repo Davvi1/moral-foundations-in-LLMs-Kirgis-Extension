@@ -176,7 +176,7 @@ def main() -> int:
              "untestable MNAR assumption into a measured quantity. A single-readout study "
              "cannot do this at all, and would have to assume its way past the problem.\n")
 
-    Path(args.out).write_text("\n".join(L), encoding="utf-8")
+    Path(args.out).write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L[-12:]))
     print(f"\nwrote {args.out}")
     return 0

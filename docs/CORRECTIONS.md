@@ -882,10 +882,53 @@ found the defect it was written for rather than its author finding it first.
 
 ---
 
-## Updated tally, 2026-08-16 — twenty-one corrections
+## C22 — two committed artifacts had stopped matching the code that generates them
+**Date:** 2026-08-16 · **Severity:** low in effect, and it closes a real gap
 
-Replaces the C14-era note above, which counted twelve, and the 2026-08-15 note, which counted
-twenty.
+**Claimed.** `results/derived/measurement_error.md` and
+`results/derived/social_norms_control.md` are the output of
+`analyse_measurement_error.py` and `analyse_social_norms.py`, and every derived file in
+this repository is described as regenerable from its script.
+
+**True, until now.** Neither reproduced. Regenerating them produced a 21-byte and a
+10-byte difference: they cited `references.md`, `FINDINGS.md` and
+`social_norms_control.md` at the repository ROOT, where their generators had been
+updated to `docs/references.md`, `docs/FINDINGS.md` and
+`results/derived/social_norms_control.md` when the ten documents moved into `docs/` on
+2026-08-11. The artifacts were simply never re-run afterwards.
+
+**Nothing numeric moved.** The drift is entirely in embedded citations. Every number in
+both files re-derives unchanged, and the other six laptop-runnable artifacts reproduced
+byte-identically on the first attempt.
+
+**Why it is logged rather than quietly regenerated.** `test_doc_citations.py` exists
+precisely to stop stale signposts, and it has been passing throughout — because it reads
+paths quoted in **prose**. Nobody considered that a **generated** file also quotes paths,
+goes stale by the same mechanism, and is regenerated so rarely that nothing notices. That
+is the C15 shape for the fourth time: a rule enforced in one place and not in the
+adjacent place where it applies equally.
+
+**Caught by:** a reproducibility audit — cloning the repo and running the documented
+pipeline, then regenerating every derived artifact and diffing. The clone step is what
+found the larger problem alongside it: `results/raw/` was gitignored, so
+`build_analysis_data.py` failed immediately on a fresh checkout and the raw → derived
+step could not be reproduced by anyone but the author.
+
+**Changes.** Both artifacts regenerated. `tests/test_artifacts_reproduce.py` now runs
+each of the **eight** laptop-runnable generators to a temporary path and asserts the
+committed file is byte-identical, reporting the first differing line rather than a byte
+offset. ~22 s. Deliberately not covered, and said so in the file: the Bayesian fits
+(C++ toolchain, hours of MCMC), `greedy_determinism.md` (compares against v1, which was
+deleted from the tree), and `kirgis_rescored.csv` (needs a clone of someone else's
+repository). `analysis_long_v2.csv` is covered in CI instead, by `git diff --exit-code`
+against a rebuild.
+
+---
+
+## Updated tally, 2026-08-16 — twenty-two corrections
+
+Replaces the C14-era note above, which counted twelve, the 2026-08-15 note, which counted
+twenty, and the twenty-one note that followed it.
 
 | how it was found | corrections | count |
 |---|---|---:|
@@ -896,9 +939,10 @@ twenty.
 | **reading the numbers under a verdict** | C4, C12, C14, C15 | 4 |
 | **external review** | C16, C17, C18, C19, C20 | 5 |
 | **restating the project to an outside audience** | C21 | 1 |
+| **a reproducibility audit — cloning and re-running** | C22 | 1 |
 
 **Not one was found by looking at a result and feeling that it seemed wrong.** That was true at
-twelve, at twenty, and it is still true at twenty-one.
+twelve, at twenty, at twenty-one, and it is still true at twenty-two.
 
 **What the last five add to the lesson.** C1–C15 were found from inside the project, and the
 checks that found them were all pointed at *numbers*. C16–C21 were found from outside, and four

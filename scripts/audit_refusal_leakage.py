@@ -186,7 +186,7 @@ def main() -> int:
           f"behavioural non-answering appear decoupled on this sample.")
     p("")
 
-    Path(args.out).write_text("\n".join(L), encoding="utf-8")
+    Path(args.out).write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nwrote {args.out}")
     return 0

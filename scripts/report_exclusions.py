@@ -178,7 +178,7 @@ def main() -> int:
               f"is the reason for producing this table rather than only the fits.")
     p()
 
-    out_path.write_text("\n".join(L), encoding="utf-8")
+    out_path.write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nwrote {out_path}")
     return 0

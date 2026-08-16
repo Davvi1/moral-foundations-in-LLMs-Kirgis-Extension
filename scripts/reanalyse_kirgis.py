@@ -148,7 +148,7 @@ def main() -> int:
     df["kirgis_final"] = df["kirgis_code"].fillna(df["edsl_answer"])
 
     OUTDIR.mkdir(parents=True, exist_ok=True)
-    df.to_csv(OUTDIR / "kirgis_rescored.csv", index=False)
+    df.to_csv(OUTDIR / "kirgis_rescored.csv", index=False, lineterminator="\n")
 
     n = len(df)
     ok = df[~df["extraction_failed"]]
@@ -257,7 +257,7 @@ def main() -> int:
       "logprobs for options outside that set do not exist. This is itself part of the "
       "finding: his estimator cannot be repaired post hoc, only re-collected.\n")
 
-    (OUTDIR / "kirgis_reanalysis.md").write_text("\n".join(L), encoding="utf-8")
+    (OUTDIR / "kirgis_reanalysis.md").write_text("\n".join(L), encoding="utf-8", newline="\n")
     print("\n".join(L))
     print(f"\nwrote {OUTDIR / 'kirgis_reanalysis.md'}")
     print(f"wrote {OUTDIR / 'kirgis_rescored.csv'}")

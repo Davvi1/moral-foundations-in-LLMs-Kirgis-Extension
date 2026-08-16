@@ -179,7 +179,7 @@ def main() -> int:
 
     out = "\n".join(L)
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    args.out.write_text(out, encoding="utf-8")
+    args.out.write_text(out, encoding="utf-8", newline="\n")
     print(out)
     print(f"\nwritten to {args.out}")
     return 0

@@ -103,13 +103,13 @@ def main() -> int:
     # ---- write ---------------------------------------------------------------------
     # newline="" per the csv docs; utf-8 explicitly so the pod and the laptop agree.
     with OUT_ITEMS.open("w", newline="", encoding="utf-8") as fh:
-        w = csv.DictWriter(fh, fieldnames=["questionnaire_item_id", "question_content"])
+        w = csv.DictWriter(fh, lineterminator="\n", fieldnames=["questionnaire_item_id", "question_content"])
         w.writeheader()
         w.writerows(items)
 
     with OUT_META.open("w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(
-            fh,
+            fh, lineterminator="\n",
             fieldnames=[
                 "questionnaire_item_id",
                 "foundation",

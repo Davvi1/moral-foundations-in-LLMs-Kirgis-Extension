@@ -238,7 +238,7 @@ def main() -> int:
 
     out = "\n".join(L)
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    Path(args.out).write_text(out, encoding="utf-8")
+    Path(args.out).write_text(out, encoding="utf-8", newline="\n")
     # The Windows console is cp1252 and dies on the maths glyphs this report uses. Write the
     # file in UTF-8 (which is what matters) and degrade only the echo.
     enc = sys.stdout.encoding or "utf-8"
