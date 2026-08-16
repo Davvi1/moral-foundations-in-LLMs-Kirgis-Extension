@@ -12,6 +12,12 @@
 # `Path.read_text()`, which normalises newlines on the way in — but that is a lucky
 # property of one call site, not a policy, and it is not something the next person
 # should have to discover before trusting a hash.
+#
+# The same reasoning is why `*.docx` is listed under Binary below. It was committed on
+# 2026-08-16 without an entry and picked up `text=auto eol=lf` from the catch-all, which
+# is safe only because git sniffs the NUL bytes in a zip container and declines to
+# convert it. That is auto-detection doing the right thing by luck, not a declaration,
+# and the whole point of this file is to not rely on that.
 
 # Everything text-like: normalise on commit, check out LF everywhere.
 *                text=auto eol=lf
@@ -34,6 +40,7 @@
 *.jpg            binary
 *.pdf            binary
 *.pptx           binary
+*.docx           binary
 *.safetensors    binary
 *.bin            binary
 *.gguf           binary
