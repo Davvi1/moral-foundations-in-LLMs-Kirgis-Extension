@@ -61,4 +61,31 @@ jobs:
         run: python scripts/make_deck.py --check
 
       - name: Test suite
-        run: pytest
+        # Emit the failure summary as a CHECK ANNOTATION, not just into the log.
+        #
+        # WHY. Workflow logs need admin rights on this repository, so a failing run
+        # reported only "Process completed with exit code 1" to anyone without them --
+        # including whoever is trying to fix it from a clone. Annotations are readable
+        # from the check-runs API and show up inline on the commit, so the failing test
+        # names travel with the result instead of being locked behind the log.
+        #
+        # `%0A` is how a workflow command encodes a newline inside one annotation.
+        run: |
+          set +e
+          pytest -q --tb=short -rf > pytest-out.txt 2>&1
+          code=$?
+          tail -60 pytest-out.txt
+          if [ $code -ne 0 ]; then
+            summary=$(sed -n '/short test summary/,$p' pytest-out.txt | head -40)
+            [ -z "$summary" ] && summary=$(tail -40 pytest-out.txt)
+            echo "::error title=pytest failed::$(printf '%s' "$summary" | sed ':a;N;$!ba;s/\n/%0A/g')"
+          fi
+          exit $code
+
+      - name: Keep the pytest output even when it fails
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pytest-output
+          path: pytest-out.txt
+          if-no-files-found: ignore

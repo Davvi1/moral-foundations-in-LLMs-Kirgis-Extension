@@ -46,6 +46,9 @@ env/
 # timestamps), so `test_artifacts_reproduce.py` cannot cover them the way it covers
 # results/derived/*.md. The `--check` modes are the substitute, and they are weaker.
 
+# CI scratch: the captured pytest run that the workflow turns into an annotation.
+pytest-out.txt
+
 # OS / editor
 .DS_Store
 Thumbs.db
