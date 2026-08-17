@@ -31,3 +31,21 @@ pillow==11.3.0
 pytest==8.4.1
 transformers==5.14.1
 truststore==0.10.4
+
+# jinja2 is NOT imported anywhere in this repository, and it is still required.
+# `transformers` renders chat templates with it, so `tokenizer.apply_chat_template`
+# raises ImportError without it -- and that call is the basis of the prompt invariant,
+# the thing this project cannot afford to get wrong. Nineteen tests across
+# test_conditions.py and test_prompt_budget.py fail without it.
+#
+# Missing here until 2026-08-17, and invisible for a long time, because it arrives as a
+# transitive dependency of plenty of other packages: it was present on the laptop, so
+# `pytest` was green locally while a clean install from this file could not render a
+# single prompt. Found only when CI's test step actually ran for the first time.
+#
+# `test_self_description.py::test_every_third_party_import_is_declared` does not cover
+# this and is not broken: it walks `import` statements, and nothing here imports jinja2.
+# The gap is the class of dependency that a LIBRARY needs at runtime for a feature we
+# use. Worth remembering before trusting a green local suite as evidence about a
+# requirements file.
+jinja2==3.1.6
